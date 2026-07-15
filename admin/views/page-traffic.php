@@ -35,7 +35,7 @@ $at=0;foreach($ch['series'] as $s)$at+=array_sum($s);
 	<div class="gf-card-title">Recent Activity</div>
 	<form method="get" class="gf-filter"><input type="hidden" name="page" value="geo-forge-traffic"/>
 		<select name="family" onchange="this.form.submit()" style="font-size:12px;"><option value="">All bot families</option>
-			<?php foreach(BotFamily::cases() as $fam):?><option value="<?php echo esc_attr($fam->value);?>" <?php selected($ff?->value,$fam->value);?>><?php echo esc_html($fam->label());?></option><?php endforeach;?>
+			<?php foreach(BotFamily::get_all_families() as $fam_key => $fam_label):?><option value="<?php echo esc_attr($fam_key);?>" <?php selected($ff,$fam_key);?>><?php echo esc_html($fam_label);?></option><?php endforeach;?>
 		</select>
 		<select name="source" onchange="this.form.submit()" style="font-size:12px;"><option value="">All sources</option>
 			<option value="bot_ua" <?php selected($fs,'bot_ua');?>>Bot Crawl</option>
@@ -45,8 +45,8 @@ $at=0;foreach($ch['series'] as $s)$at+=array_sum($s);
 	</form>
 	<table class="striped"><thead><tr><th>Time</th><th>Bot</th><th>Source</th><th>URL</th><th>Status</th></tr></thead><tbody>
 	<?php if(empty($rw)):?><tr><td colspan="5" class="gf-muted" style="padding:20px;">No traffic yet. AI agents will start appearing after your site is scanned and optimized.</td></tr>
-	<?php else:foreach(array_slice($rw,0,50) as $r):$fm2=BotFamily::tryFrom((string)$r['bot_family']);$ok=((int)$r['response_status'])<400;?>
-	<tr><td style="font-size:11px;"><?php echo esc_html($r['recorded_at']);?></td><td><?php echo esc_html($fm2?$fm2->label():$r['bot_family']);?></td><td style="font-size:12px;"><?php echo esc_html($r['source']);?></td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;"><?php echo esc_html($r['request_url']);?></td><td><span style="color:<?php echo$ok?'#16a34a':'#dc2626';?>;"><?php echo$ok?'✅':'❌';?></span></td></tr>
+	<?php else:foreach(array_slice($rw,0,50) as $r):$bot_family_str=(string)$r['bot_family'];$ok=((int)$r['response_status'])<400;?>
+	<tr><td style="font-size:11px;"><?php echo esc_html($r['recorded_at']);?></td><td><?php echo esc_html(BotFamily::label($bot_family_str));?></td><td style="font-size:12px;"><?php echo esc_html($r['source']);?></td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;"><?php echo esc_html($r['request_url']);?></td><td><span style="color:<?php echo$ok?'#16a34a':'#dc2626';?>;"><?php echo$ok?'✅':'❌';?></span></td></tr>
 	<?php endforeach;endif;?></tbody></table>
 </div>
 </div>

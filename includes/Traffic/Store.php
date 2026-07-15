@@ -107,12 +107,12 @@ class Store {
 	/**
 	 * Fetch recent traffic rows, newest first.
 	 *
-	 * @param int            $limit  Max rows.
-	 * @param BotFamily|null $family Filter by bot family.
-	 * @param string|null    $source Filter by source ('bot_ua'|'well_known'|'markdown').
+	 * @param int         $limit  Max rows.
+	 * @param string|null $family Filter by bot family (e.g. 'openai', 'anthropic').
+	 * @param string|null $source Filter by source ('bot_ua'|'well_known'|'markdown').
 	 * @return array<int,array<string,mixed>>
 	 */
-	public static function recent( int $limit = 100, ?BotFamily $family = null, ?string $source = null ): array {
+	public static function recent( int $limit = 100, ?string $family = null, ?string $source = null ): array {
 		global $wpdb;
 		$table = $wpdb->prefix . self::TABLE;
 		$limit = max( 1, min( $limit, 1000 ) );
@@ -122,7 +122,7 @@ class Store {
 
 		if ( null !== $family ) {
 			$where[]  = 'bot_family = %s';
-			$values[] = $family->value;
+			$values[] = $family;
 		}
 		if ( null !== $source ) {
 			$where[]  = 'source = %s';
