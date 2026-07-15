@@ -2,7 +2,7 @@
 $fx=GeoForge::fixer();$fs=$fx?$fx->list():[];
 $si=fn($s)=>match($s){'applied'=>'✅','verified'=>'✅✅','rolled_back'=>'⏪','failed'=>'❌',default=>'○'};
 $rc=fn($r)=>match($r){'none'=>'#16a34a','low'=>'#2563eb','medium'=>'#ca8a04','high'=>'#dc2626',default=>'#94a3b8'};
-$gp=[];foreach($fs as $f){$l=$f['priority']===1&&in_array($f['risk_level'],['none','low'])?'Local Fixes (no risk)':($f['priority']<=2?'Server Config (low risk)':'Advanced (manual)');$gp[$l][]=$f;}
+$gp=[];foreach($fs as $f){$l=$f['priority']===1&&in_array($f['risk_level'],['none','low'])?'Quick Fixes':($f['priority']<=2?'Server Config':'Advanced');$gp[$l][]=$f;}
 ?>
 <div class="geo-forge-wrap">
 <div class="gf-header"><h1>Optimizations <span class="gf-subtitle">Fix now to improve your AI score</span></h1><p class="gf-muted">These optimizations can be applied immediately on your server. Each fix records a snapshot and can be rolled back.</p></div>
