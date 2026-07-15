@@ -170,3 +170,57 @@
 	align-items: center;
 	gap: 12px;
 }
+
+/* ==========================================================================
+   Traffic page.
+   ========================================================================== */
+
+.geo-forge-chart {
+	width: 100%;
+	border-collapse: collapse;
+}
+.geo-forge-chart td {
+	padding: 4px 6px;
+	vertical-align: bottom;
+}
+.geo-forge-chart-label {
+	width: 120px;
+	font-size: 12px;
+	white-space: nowrap;
+	color: #1d2327;
+}
+.geo-forge-chart-bars {
+	display: flex;
+	align-items: flex-end;
+	gap: 2px;
+	height: 80px;
+}
+.geo-forge-chart-bar {
+	flex: 1;
+	background: #2271b1;
+	border-radius: 2px 2px 0 0;
+	min-height: 2px;
+}
+.geo-forge-chart-total {
+	width: 60px;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	font-size: 12px;
+	color: #1d2327;
+}
+.geo-forge-chart-axis td {
+	padding-top: 4px;
+	border-top: 1px solid #dcdcde;
+}
+.geo-forge-chart-axis-labels {
+	display: flex;
+	font-size: 10px;
+	color: #646970;
+}
+
+.geo-forge-traffic-table .geo-forge-url-cell {
+	max-width: 400px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

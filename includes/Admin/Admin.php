@@ -36,6 +36,12 @@ final class Admin {
 			'callback' => 'render_fix_center',
 		),
 		array(
+			'slug'     => 'geo-forge-traffic',
+			'title'    => 'Traffic',
+			'view'     => 'page-traffic',
+			'callback' => 'render_traffic',
+		),
+		array(
 			'slug'     => 'geo-forge-llms',
 			'title'    => 'llms.txt',
 			'view'     => 'page-llms-editor',
@@ -89,6 +95,10 @@ final class Admin {
 
 	public function render_fix_center(): void {
 		$this->render_view( 'page-fix-center' );
+	}
+
+	public function render_traffic(): void {
+		$this->render_view( 'page-traffic' );
 	}
 
 	public function render_llms_editor(): void {

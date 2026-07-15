@@ -18,6 +18,7 @@ global $wpdb;
 $wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}geo_forge_scans`" );
 $wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}geo_forge_fixes`" );
 $wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}geo_forge_logs`" );
+$wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}geo_forge_traffic`" );
 
 // Options we own. Listed explicitly — `DELETE LIKE 'geo_forge_%'` is risky
 // because future extensions may share the prefix but not be uninstalled now.
@@ -33,6 +34,7 @@ $options = array(
 	'geo_forge_notify_threshold',
 	'geo_forge_log_min_level',
 	'geo_forge_log_retention_days',
+	'geo_forge_traffic_sample_rate',
 	'geo_forge_last_scan_result',
 	'geo_forge_last_scan_time',
 	'geo_forge_account_info',

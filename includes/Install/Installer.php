@@ -112,9 +112,26 @@ final class Installer {
     KEY request_id (request_id)
 ) {$charset_collate};";
 
+		$traffic_table = "CREATE TABLE {$wpdb->prefix}geo_forge_traffic (
+    id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    recorded_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    bot_family varchar(40) NOT NULL,
+    request_url varchar(500) NOT NULL,
+    response_status smallint NOT NULL DEFAULT 200,
+    remote_ip_hash varchar(64) NOT NULL,
+    request_method varchar(10) NOT NULL DEFAULT 'GET',
+    source varchar(20) NOT NULL,
+    response_size int DEFAULT NULL,
+    PRIMARY KEY  (id),
+    KEY recorded_at (recorded_at),
+    KEY bot_family (bot_family),
+    KEY source (source)
+) {$charset_collate};";
+
 		dbDelta( $scans_table );
 		dbDelta( $fixes_table );
 		dbDelta( $logs_table );
+		dbDelta( $traffic_table );
 
 		update_option( 'geo_forge_db_version', GEO_FORGE_VERSION );
 	}
@@ -134,6 +151,7 @@ final class Installer {
 			'geo_forge_notify_threshold'    => 50,
 			'geo_forge_log_min_level'       => 'warning',
 			'geo_forge_log_retention_days'  => 30,
+			'geo_forge_traffic_sample_rate' => 10,
 		);
 
 		foreach ( $defaults as $option_name => $default_value ) {

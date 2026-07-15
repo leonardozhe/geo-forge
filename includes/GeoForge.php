@@ -16,6 +16,7 @@ use GEO_Forge\Fixer\Actions\LlmsTxtFix;
 use GEO_Forge\Fixer\Actions\SecurityTxtFix;
 use GEO_Forge\Fixer\Fixer;
 use GEO_Forge\Log\ErrorCapture;
+use GEO_Forge\Traffic\Capture;
 use GEO_Forge\WellKnown\Router;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -64,6 +65,11 @@ final class GeoForge {
 
 		// Virtual routes for /.well-known/* and /llms.txt.
 		Router::register();
+
+		// AI traffic capture (well-known routes, markdown negotiation, known bots).
+		// Registered on every request including non-admin — Capture returns
+		// fast for non-matching requests.
+		Capture::register();
 
 		// Fixer engine — register built-in fix actions.
 		$this->boot_fixer();
