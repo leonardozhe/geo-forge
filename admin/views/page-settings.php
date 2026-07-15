@@ -19,7 +19,7 @@ $form_action = 'geo_forge_save_settings';
 $nonce_field = 'geo_forge_settings_nonce';
 
 $api_key  = (string) get_option( 'geo_forge_api_key', '' );
-$api_base = (string) get_option( 'geo_forge_api_base', 'http://178.156.215.110:3100' );
+$api_base = (string) get_option( 'geo_forge_api_base', 'https://geokami.com' );
 
 ?>
 <div class="geo-forge-wrap">
@@ -93,7 +93,7 @@ $api_base = (string) get_option( 'geo_forge_api_base', 'http://178.156.215.110:3
 						class="pure-input-1"
 					/>
 					<span class="pure-form-message">
-						<?php esc_html_e( 'Default: http://178.156.215.110:3100. Only change this if you are using a self-hosted GEO KAMI instance.', 'geo-forge' ); ?>
+						<?php esc_html_e( 'Default: https://geokami.com. Only change this if you are using a self-hosted GEO KAMI instance.', 'geo-forge' ); ?>
 					</span>
 				</div>
 
