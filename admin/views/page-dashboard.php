@@ -65,20 +65,35 @@ $check_models = array(
 ?>
 <div class="geo-forge-wrap">
 
-<div class="gf-header"><div style="display:flex;align-items:center;justify-content:space-between;">
-	<div><h1>Dashboard <span class="gf-subtitle">GEO Forge</span></h1><?php if($lt):?><span class="gf-muted">Last scan: <?php echo esc_html($lt);?></span><?php endif;?></div>
-	<div style="display:flex;align-items:center;gap:10px;">
+<div class="gf-header" style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;">
+	<div>
+		<h1>Dashboard <span class="gf-subtitle">GEO Forge</span></h1>
+		<?php if($lt):?><span class="gf-muted">Last scan: <?php echo esc_html($lt);?></span><?php endif;?>
+	</div>
+	<div style="display:flex;align-items:center;gap:12px;">
 		<?php if($hk&&$acct):?>
-			<span class="gf-badge" style="background:#4338ca;color:#fff;"><?php echo esc_html($plan['label']??$plan['tier']??'Free');?></span>
-			<span style="font-size:12px;font-weight:600;color:#1e293b;"><?php echo esc_html(number_format((int)($pts['balance']??0)));?> pts</span>
-			<?php $exp=$sub['currentPeriodEnd']??'';if($exp)echo'<span style="font-size:11px;color:#94a3b8;">Exp. '.esc_html(substr($exp,0,10)).'</span>';?>
-		<?php elseif($hk):?><span class="gf-badge gf-badge-green">🔗 Connected</span>
-		<?php else:?><a href="<?php echo esc_url(admin_url('admin.php?page=geo-forge-settings'));?>" class="gf-btn">Add API Key</a>
+		<div style="display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;">
+			<span style="font-size:12px;font-weight:600;color:#4338ca;"><?php echo esc_html($plan['label']??$plan['tier']??'Free');?></span>
+			<span style="color:#cbd5e1;">|</span>
+			<span style="font-size:12px;font-weight:600;color:#1e293b;"><?php echo esc_html(number_format((int)($pts['balance']??0)));?></span>
+			<span style="font-size:11px;color:#94a3b8;">pts</span>
+			<?php $exp=$sub['currentPeriodEnd']??'';if($exp):?>
+			<span style="color:#cbd5e1;">|</span>
+			<span style="font-size:11px;color:#94a3b8;">Exp. <?php echo esc_html(substr($exp,0,10));?></span>
+			<?php endif;?>
+		</div>
+		<button type="button" id="geo-forge-scan-btn" class="gf-btn gf-btn-primary" style="padding:8px 20px;font-size:14px;">Scan Now</button>
+		<?php elseif($hk):?>
+		<div style="display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;">
+			<span class="gf-badge gf-badge-green">🔗 Connected</span>
+		</div>
+		<button type="button" id="geo-forge-scan-btn" class="gf-btn gf-btn-primary" style="padding:8px 20px;font-size:14px;">Scan Now</button>
+		<?php else:?>
+		<a href="<?php echo esc_url(admin_url('admin.php?page=geo-forge-settings'));?>" class="gf-btn gf-btn-primary" style="padding:8px 20px;font-size:14px;">Add API Key</a>
 		<?php endif;?>
-		<?php if($hk):?><button type="button" id="geo-forge-scan-btn" class="gf-btn gf-btn-primary">Scan Now</button><?php endif;?>
 		<span id="geo-forge-scan-status" style="font-size:12px;"></span>
 	</div>
-</div></div>
+</div>
 
 <div class="gf-grid gf-grid-3" style="margin-bottom:12px;">
 	<div class="gf-card" style="padding:24px;">
