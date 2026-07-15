@@ -1,6 +1,6 @@
 <?php
 /**
- * Traffic — AI agent engagement stats.
+ * Traffic — AI agent engagement stats (Pico CSS)
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
@@ -34,47 +34,47 @@ foreach($summary['by_family'] as $e) $families[] = ['name'=>BotFamily::tryFrom($
 usort($families,fn($a,$b)=>$b['count']<=>$a['count']);
 ?>
 <div class="geo-forge-wrap">
-	<div class="geo-forge-header" style="margin-bottom:14px;">
-		<h1>GEO Forge <span class="geo-forge-subtitle">Traffic</span></h1>
+	<div class="geo-forge-header">
+		<h1>Traffic <span class="geo-forge-subtitle">AI agent engagement</span></h1>
 		<p class="geo-forge-muted">See how AI agents interact with your store since installing GEO Forge.</p>
 	</div>
 
 	<!-- Value metrics -->
-	<div class="pure-g geo-forge-stats">
-		<div class="pure-u-1-3"><div class="geo-forge-card">
-			<h3>AI Bots Served</h3>
+	<div class="geo-forge-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+		<div><div class="geo-forge-card">
+			<h4>AI Bots Served</h4>
 			<p class="geo-forge-stat"><?php echo esc_html((string)$unique_bots);?></p>
 			<p class="geo-forge-muted">unique bot families in last 24h</p>
 		</div></div>
-		<div class="pure-u-1-3"><div class="geo-forge-card">
-			<h3>Successful Queries</h3>
+		<div><div class="geo-forge-card">
+			<h4>Successful Queries</h4>
 			<p class="geo-forge-stat"><?php echo esc_html((string)$total_hits);?></p>
 			<p class="geo-forge-muted">responses served, <?php echo$success_rate;?>% success rate</p>
 		</div></div>
-		<div class="pure-u-1-3"><div class="geo-forge-card">
-			<h3>All-Time Total</h3>
+		<div><div class="geo-forge-card">
+			<h4>All-Time Total</h4>
 			<p class="geo-forge-stat"><?php echo esc_html((string)$all_time);?></p>
 			<p class="geo-forge-muted">AI requests handled since install</p>
 		</div></div>
 	</div>
 
 	<!-- Source breakdown + top bots -->
-	<div class="pure-g geo-forge-stats">
-		<div class="pure-u-1-2"><div class="geo-forge-card">
+	<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+		<div><div class="geo-forge-card">
 			<h2>Traffic Sources</h2>
-			<table class="pure-table" style="margin-top:8px;">
+			<table style="margin-top:8px;">
 				<tr><td>Well-known routes</td><td style="text-align:right;"><strong><?php echo$by_source['well_known'];?></strong></td><td class="geo-forge-muted">llms.txt, security.txt</td></tr>
 				<tr><td>Markdown requests</td><td style="text-align:right;"><strong><?php echo$by_source['markdown'];?></strong></td><td class="geo-forge-muted">Accept: text/markdown</td></tr>
 				<tr><td>Bot crawls</td><td style="text-align:right;"><strong><?php echo$by_source['bot_ua'];?></strong></td><td class="geo-forge-muted">GPTBot, ClaudeBot, etc.</td></tr>
-				<tr style="border-top:2px solid #e2e8f0;"><td>Total</td><td style="text-align:right;"><strong><?php echo array_sum($by_source);?></strong></td><td></td></tr>
+				<tr style="border-top:2px solid var(--pico-muted-border-color);"><td>Total</td><td style="text-align:right;"><strong><?php echo array_sum($by_source);?></strong></td><td></td></tr>
 			</table>
 		</div></div>
-		<div class="pure-u-1-2"><div class="geo-forge-card">
+		<div><div class="geo-forge-card">
 			<h2>Top Bot Families (24h)</h2>
 			<?php if(empty($families)):?>
 				<p class="geo-forge-muted" style="margin-top:8px;">No traffic recorded yet. AI bots will appear here once they start crawling your store.</p>
 			<?php else:?>
-				<table class="pure-table" style="margin-top:8px;">
+				<table style="margin-top:8px;">
 					<?php foreach(array_slice($families,0,8) as $f):?>
 					<tr><td><?php echo esc_html($f['name']);?></td><td style="text-align:right;"><strong><?php echo$f['count'];?></strong></td></tr>
 					<?php endforeach;?>
@@ -95,21 +95,21 @@ usort($families,fn($a,$b)=>$b['count']<=>$a['count']);
 	<!-- Filter + recent table -->
 	<div class="geo-forge-card">
 		<h2>Recent Activity</h2>
-		<form method="get" class="pure-form geo-forge-filter">
+		<form method="get" style="display:flex;gap:8px;margin:10px 0;">
 			<input type="hidden" name="page" value="geo-forge-traffic"/>
-			<select name="family" onchange="this.form.submit()" style="font-size:12px;"><option value="">All bots</option>
+			<select name="family" onchange="this.form.submit()"><option value="">All bots</option>
 				<?php foreach(BotFamily::cases() as $fam):?><option value="<?php echo esc_attr($fam->value);?>" <?php selected($filter_family?->value,$fam->value);?>><?php echo esc_html($fam->label());?></option><?php endforeach;?>
 			</select>
-			<select name="source" onchange="this.form.submit()" style="font-size:12px;"><option value="">All sources</option>
+			<select name="source" onchange="this.form.submit()"><option value="">All sources</option>
 				<option value="bot_ua" <?php selected($filter_source,'bot_ua');?>>Bot Crawl</option>
 				<option value="well_known" <?php selected($filter_source,'well_known');?>>Well-known</option>
 				<option value="markdown" <?php selected($filter_source,'markdown');?>>Markdown</option>
 			</select>
 		</form>
-		<table class="pure-table" style="margin-top:10px;"><thead><tr><th>Time</th><th>Bot</th><th>Source</th><th>URL</th><th>Status</th></tr></thead><tbody>
+		<table style="margin-top:10px;"><thead><tr><th>Time</th><th>Bot</th><th>Source</th><th>URL</th><th>Status</th></tr></thead><tbody>
 		<?php if(empty($rows)):?><tr><td colspan="5" class="geo-forge-muted">No traffic yet. AI agents will start appearing after your site is scanned and optimized.</td></tr>
 		<?php else: foreach(array_slice($rows,0,50) as $row): $fam=BotFamily::tryFrom((string)$row['bot_family']); $ok=((int)$row['response_status'])<400;?>
-			<tr><td style="font-size:10px;white-space:nowrap;"><?php echo esc_html($row['recorded_at']);?></td><td><?php echo esc_html($fam?$fam->label():$row['bot_family']);?></td><td style="font-size:11px;"><?php echo esc_html($row['source']);?></td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;"><?php echo esc_html($row['request_url']);?></td><td><span style="color:<?php echo$ok?'#16a34a':'#dc2626';?>;"><?php echo$ok?'✅':'❌';?> <?php echo(int)$row['response_status'];?></span></td></tr>
+			<tr><td style="font-size:11px;white-space:nowrap;"><?php echo esc_html($row['recorded_at']);?></td><td><?php echo esc_html($fam?$fam->label():$row['bot_family']);?></td><td style="font-size:12px;"><?php echo esc_html($row['source']);?></td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;"><?php echo esc_html($row['request_url']);?></td><td><span style="color:<?php echo$ok?'#16a34a':'#dc2626';?>;"><?php echo$ok?'✅':'❌';?> <?php echo(int)$row['response_status'];?></span></td></tr>
 		<?php endforeach; endif;?></tbody></table>
 	</div>
 </div>

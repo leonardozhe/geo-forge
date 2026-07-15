@@ -1,6 +1,6 @@
 <?php
 /**
- * Fix Center / Optimizations view — unified compact design.
+ * Fix Center / Optimizations view (Pico CSS)
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
@@ -18,8 +18,8 @@ foreach($fixes as $f){
 }
 ?>
 <div class="geo-forge-wrap">
-	<div class="geo-forge-header" style="margin-bottom:14px;">
-		<h1>GEO Forge <span class="geo-forge-subtitle">Optimizations</span></h1>
+	<div class="geo-forge-header">
+		<h1>Optimizations <span class="geo-forge-subtitle">Auto-fixes for AI readiness</span></h1>
 		<p class="geo-forge-muted">Apply auto-fixes to improve your AI readiness score. Each fix is reversible.</p>
 	</div>
 
@@ -30,20 +30,20 @@ foreach($fixes as $f){
 	<?php else: foreach($grouped as $group_label=>$items): ?>
 		<div class="geo-forge-card">
 			<h2><?php echo esc_html($group_label); ?> <span class="geo-forge-badge geo-forge-badge-info"><?php echo count($items);?></span></h2>
-			<table class="pure-table">
+			<table>
 				<thead><tr><th>Fix</th><th>Risk</th><th>Status</th><th>Applied</th><th></th></tr></thead>
 				<tbody>
 					<?php foreach($items as $fix):
 						$id=esc_attr($fix['id']); $applied=in_array($fix['status'],['applied','verified']); ?>
 					<tr data-fix-id="<?php echo$id;?>">
-						<td><strong style="font-size:13px;"><?php echo esc_html($fix['label']);?></strong><br><span class="geo-forge-muted"><?php echo esc_html($fix['description']);?></span></td>
-						<td><span style="color:<?php echo esc_attr($risk_color($fix['risk_level']));?>;font-weight:600;font-size:11px;"><?php echo ucfirst($fix['risk_level']);?></span></td>
+						<td><strong style="font-size:14px;"><?php echo esc_html($fix['label']);?></strong><br><span class="geo-forge-muted"><?php echo esc_html($fix['description']);?></span></td>
+						<td><span style="color:<?php echo esc_attr($risk_color($fix['risk_level']));?>;font-weight:600;font-size:12px;"><?php echo ucfirst($fix['risk_level']);?></span></td>
 						<td><?php echo $status_icon($fix['status']).' '.ucfirst($fix['status']);?></td>
 						<td class="geo-forge-muted"><?php echo $fix['applied_at']??'—';?></td>
 						<td style="white-space:nowrap;">
-							<button class="pure-button pure-button-primary geo-forge-fix-apply" data-fix="<?php echo$id;?>" <?php disabled($applied);?>>Apply</button>
-							<button class="pure-button geo-forge-fix-verify" data-fix="<?php echo$id;?>" <?php disabled(!$applied);?>>Verify</button>
-							<button class="pure-button geo-forge-fix-rollback" data-fix="<?php echo$id;?>" <?php disabled(!$applied);?>>Undo</button>
+							<button class="button primary geo-forge-fix-apply" data-fix="<?php echo$id;?>" <?php disabled($applied);?>>Apply</button>
+							<button class="button geo-forge-fix-verify" data-fix="<?php echo$id;?>" <?php disabled(!$applied);?>>Verify</button>
+							<button class="button geo-forge-fix-rollback" data-fix="<?php echo$id;?>" <?php disabled(!$applied);?>>Undo</button>
 						</td>
 					</tr>
 					<?php endforeach; ?>
