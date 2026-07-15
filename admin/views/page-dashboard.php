@@ -8,7 +8,22 @@ $fx  = GeoForge::fixer();
 $lk  = $sc->get_last_scan();
 $lt  = (string) get_option( 'geo_forge_last_scan_time', '' );
 $hk  = (bool) Installer::get_setting( 'api_key', '' );
-$sc0 = $lk['total_score'] ?? null;
+
+// Fetch account info server-side
+$acct = null;
+if ( $hk ) {
+	try {
+		$api  = new \GEO_Forge\Api\Client();
+		$resp = $api->get_account();
+		$acct = $resp['success'] ?? false ? $resp : null;
+	} catch ( \Throwable $e ) {
+		$acct = null;
+	}
+}
+$plan  = $acct['plan'] ?? array();
+$pts   = $acct['points'] ?? array();
+$sub   = $acct['subscription'] ?? array();
+$sc0   = $lk['total_score'] ?? null;
 
 $gr_label = function ( int $s ): string {
 	if ( $s >= 90 ) { return 'S'; } if ( $s >= 75 ) { return 'A'; }
@@ -51,7 +66,30 @@ $check_models = array(
 );
 ?>
 <div class="geo-forge-wrap">
-<div class="gf-header"><div style="display:flex;align-items:center;justify-content:space-between;"><div><h1>Dashboard <span class="gf-subtitle">GEO Forge</span></h1><?php if ( $lt ) : ?><span class="gf-muted">Last scan: <?php echo esc_html( $lt ); ?></span><?php endif; ?></div><div id="gf-account-info" style="display:flex;align-items:center;gap:8px;"><?php if ( $hk ) : ?><span class="gf-badge gf-badge-green">🔗 Connected</span><?php else : ?><a href="<?php echo esc_url( admin_url( 'admin.php?page=geo-forge-settings' ) ); ?>" class="gf-btn">Add API Key</a><?php endif; ?></div></div></div>
+<div class="gf-header"><div style="display:flex;align-items:center;justify-content:space-between;">
+	<div><h1>Dashboard <span class="gf-subtitle">GEO Forge</span></h1><?php if ( $lt ) : ?><span class="gf-muted">Last scan: <?php echo esc_html( $lt ); ?></span><?php endif; ?></div>
+	<div style="display:flex;align-items:center;gap:10px;">
+		<?php if ( $hk && $acct ) : ?>
+			<span class="gf-badge" style="background:#4338ca;color:#fff;font-size:11px;"><?php echo esc_html( $plan['label'] ?? $plan['tier'] ?? 'Free' ); ?></span>
+			<span style="font-size:12px;font-weight:600;color:#1e293b;"><?php echo esc_html( number_format( (int) ( $pts['balance'] ?? 0 ) ) ); ?> pts</span>
+			<?php
+				$exp = $sub['currentPeriodEnd'] ?? '';
+				if ( $exp ) {
+					$exp_short = substr( $exp, 0, 10 );
+					echo '<span style="font-size:11px;color:#94a3b8;">Exp. ' . esc_html( $exp_short ) . '</span>';
+				}
+			?>
+		<?php elseif ( $hk ) : ?>
+			<span class="gf-badge gf-badge-green">🔗 Connected</span>
+		<?php else : ?>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=geo-forge-settings' ) ); ?>" class="gf-btn">Add API Key</a>
+		<?php endif; ?>
+		<?php if ( $hk ) : ?>
+			<button type="button" id="geo-forge-scan-btn" class="gf-btn gf-btn-primary">Scan Now</button>
+		<?php endif; ?>
+		<span id="geo-forge-scan-status" style="font-size:12px;"></span>
+	</div>
+</div></div>
 
 <div class="gf-grid gf-grid-3" style="margin-bottom:12px;">
 	<div class="gf-card" style="padding:24px;">
