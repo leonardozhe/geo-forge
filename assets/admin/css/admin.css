@@ -1,40 +1,63 @@
 /* ==========================================================================
-   GEO Forge — Admin styles.
-   Milestone 0: bare minimum. Dashboard card grid + muted text.
-   Extended in later milestones.
+   GEO Forge Admin Styles — Pure.css Integration
    ========================================================================== */
 
+/* Layout */
 .geo-forge-wrap {
 	max-width: 1200px;
+	margin: 20px 0;
 }
 
-.geo-forge-grid {
-	display: grid;
-	grid-template-columns: repeat( auto-fit, minmax( 200px, 1fr ) );
-	gap: 16px;
-	margin: 16px 0;
+/* Header */
+.geo-forge-header {
+	margin-bottom: 20px;
 }
 
-.geo-forge-card {
-	background: #fff;
-	border: 1px solid #c3c4c7;
-	border-radius: 4px;
-	padding: 16px 20px;
-	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
-}
-
-.geo-forge-card h2,
-.geo-forge-card h3 {
+.geo-forge-header h1 {
 	margin: 0 0 8px;
-	font-size: 14px;
+	font-size: 28px;
 	font-weight: 600;
 	color: #1d2327;
 }
 
+.geo-forge-subtitle {
+	font-size: 18px;
+	font-weight: 400;
+	color: #646970;
+	margin-left: 8px;
+}
+
+/* Stats Grid */
+.geo-forge-stats {
+	margin-bottom: 20px;
+}
+
+.geo-forge-stats > div {
+	padding: 8px;
+}
+
+/* Cards */
+.geo-forge-card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 20px;
+	margin-bottom: 20px;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.geo-forge-card h3 {
+	margin: 0 0 12px;
+	font-size: 16px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+/* Stats */
 .geo-forge-stat {
-	font-size: 32px;
+	font-size: 36px;
 	font-weight: 700;
-	line-height: 1;
+	line-height: 1.2;
 	margin: 8px 0;
 	color: #1d2327;
 }
@@ -42,68 +65,125 @@
 .geo-forge-muted {
 	color: #646970;
 	font-size: 13px;
-	margin: 0;
+	margin: 4px 0 0;
 }
 
-/* Header API status indicators. */
-.geo-forge-api-ok {
-	font-size: 14px;
-	margin-left: 8px;
-}
-.geo-forge-api-missing {
+/* Badges */
+.geo-forge-badge {
+	display: inline-block;
+	padding: 4px 10px;
+	border-radius: 3px;
 	font-size: 12px;
+	font-weight: 500;
 	margin-left: 8px;
-	font-weight: normal;
-	color: #d63638;
 }
 
-/* Category breakdown table + progress bars. */
-.geo-forge-category-table {
-	margin-top: 8px;
+.geo-forge-badge-success {
+	background: #d4edda;
+	color: #155724;
 }
+
+.geo-forge-badge-warning {
+	background: #fff3cd;
+	color: #856404;
+}
+
+.geo-forge-badge-info {
+	background: #d1ecf1;
+	color: #0c5460;
+}
+
+/* Progress Bars */
 .geo-forge-bar {
 	height: 8px;
-	background: #f0f0f1;
+	background: #e0e0e0;
 	border-radius: 4px;
 	overflow: hidden;
-}
-.geo-forge-bar-fill {
-	height: 100%;
-	border-radius: 4px;
-	transition: width 0.4s ease;
+	margin: 4px 0;
 }
 
-/* Actions row (Scan Now button). */
+.geo-forge-bar-fill {
+	height: 100%;
+	transition: width 0.3s ease;
+	border-radius: 4px;
+}
+
+/* Buttons */
 .geo-forge-actions {
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	margin-top: 16px;
 }
 
-/* ==========================================================================
-   Log page.
-   ========================================================================== */
+/* Tables */
+.geo-forge-category-table,
+.geo-forge-fix-table,
+.geo-forge-log-table,
+.geo-forge-traffic-table {
+	width: 100%;
+	margin: 16px 0;
+}
 
-.geo-forge-log-filter {
-	margin: 12px 0;
+.geo-forge-fix-table td:first-child {
+	width: 30%;
+}
+
+.geo-forge-fix-risk {
+	font-weight: 600;
+}
+
+/* Chart */
+.geo-forge-chart {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.geo-forge-chart td {
+	padding: 6px 4px;
+	vertical-align: bottom;
+}
+
+.geo-forge-chart-label {
+	width: 120px;
+	font-size: 12px;
+	white-space: nowrap;
+	color: #1d2327;
+}
+
+.geo-forge-chart-bars {
 	display: flex;
-	align-items: center;
-	gap: 8px;
+	align-items: flex-end;
+	gap: 2px;
+	height: 80px;
 }
 
-.geo-forge-log-actions {
-	margin: 12px 0;
+.geo-forge-chart-bar {
+	flex: 1;
+	background: #2271b1;
+	border-radius: 2px 2px 0 0;
+	min-height: 2px;
+}
+
+.geo-forge-chart-total {
+	width: 60px;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	font-size: 12px;
+	color: #1d2327;
+}
+
+.geo-forge-chart-axis td {
+	padding-top: 4px;
+	border-top: 1px solid #dcdcde;
+}
+
+.geo-forge-chart-axis-labels {
 	display: flex;
-	align-items: center;
-	gap: 12px;
+	font-size: 10px;
+	color: #646970;
 }
 
-.geo-forge-log-table td,
-.geo-forge-log-table th {
-	vertical-align: top;
-}
-
+/* Log Badges */
 .geo-forge-log-badge {
 	display: inline-block;
 	padding: 2px 8px;
@@ -113,6 +193,7 @@
 	text-transform: uppercase;
 	color: #fff;
 }
+
 .geo-forge-log-debug    { background: #646970; }
 .geo-forge-log-info     { background: #2271b1; }
 .geo-forge-log-warning  { background: #dba600; color: #1d2327; }
@@ -122,6 +203,7 @@
 .geo-forge-log-row.geo-forge-log-critical td {
 	background: #fcf0f0;
 }
+
 .geo-forge-log-row.geo-forge-log-error td {
 	background: #fcf6f0;
 }
@@ -137,6 +219,7 @@
 	margin-top: 4px;
 	font-size: 11px;
 }
+
 .geo-forge-log-context pre {
 	background: #f6f7f7;
 	border: 1px solid #dcdcde;
@@ -147,10 +230,18 @@
 	font-size: 11px;
 }
 
-/* ==========================================================================
-   llms.txt editor.
-   ========================================================================== */
+.geo-forge-log-filter {
+	margin-bottom: 16px;
+}
 
+.geo-forge-log-actions {
+	margin: 16px 0;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+/* Editor */
 .geo-forge-editor {
 	width: 100%;
 	font-family: Consolas, Monaco, "Courier New", monospace;
@@ -169,58 +260,121 @@
 	display: flex;
 	align-items: center;
 	gap: 12px;
+	margin-bottom: 12px;
 }
 
-/* ==========================================================================
-   Traffic page.
-   ========================================================================== */
-
-.geo-forge-chart {
-	width: 100%;
-	border-collapse: collapse;
-}
-.geo-forge-chart td {
-	padding: 4px 6px;
-	vertical-align: bottom;
-}
-.geo-forge-chart-label {
-	width: 120px;
-	font-size: 12px;
-	white-space: nowrap;
-	color: #1d2327;
-}
-.geo-forge-chart-bars {
-	display: flex;
-	align-items: flex-end;
-	gap: 2px;
-	height: 80px;
-}
-.geo-forge-chart-bar {
-	flex: 1;
-	background: #2271b1;
-	border-radius: 2px 2px 0 0;
-	min-height: 2px;
-}
-.geo-forge-chart-total {
-	width: 60px;
-	text-align: right;
-	font-variant-numeric: tabular-nums;
-	font-size: 12px;
-	color: #1d2327;
-}
-.geo-forge-chart-axis td {
-	padding-top: 4px;
-	border-top: 1px solid #dcdcde;
-}
-.geo-forge-chart-axis-labels {
-	display: flex;
-	font-size: 10px;
-	color: #646970;
-}
-
+/* Traffic URL cell */
 .geo-forge-traffic-table .geo-forge-url-cell {
 	max-width: 400px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+/* Promo Box */
+.geo-forge-promo {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: #fff;
+	border: none;
+}
+
+.geo-forge-promo h3 {
+	color: #fff;
+	margin-bottom: 16px;
+}
+
+.geo-forge-promo p {
+	color: rgba(255, 255, 255, 0.9);
+	margin-bottom: 16px;
+}
+
+.geo-forge-promo-features {
+	margin: 20px 0;
+}
+
+.geo-forge-promo-item {
+	background: rgba(255, 255, 255, 0.1);
+	padding: 16px;
+	border-radius: 6px;
+	margin: 8px 0;
+}
+
+.geo-forge-promo-item strong {
+	display: block;
+	margin-bottom: 4px;
+	color: #fff;
+}
+
+.geo-forge-promo-item p {
+	margin: 0;
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.85);
+}
+
+.geo-forge-promo-cta {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 20px;
+}
+
+.geo-forge-promo-cta .pure-button-primary {
+	background: #fff;
+	color: #667eea;
+}
+
+.geo-forge-promo-cta .pure-button-primary:hover {
+	background: rgba(255, 255, 255, 0.9);
+}
+
+.geo-forge-promo-cta .pure-button {
+	background: rgba(255, 255, 255, 0.2);
+	color: #fff;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.geo-forge-promo-cta .pure-button:hover {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+.geo-forge-promo-cta .geo-forge-muted {
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 12px;
+}
+
+/* Steps List */
+.geo-forge-steps {
+	background: rgba(255, 255, 255, 0.1);
+	padding: 16px 20px;
+	border-radius: 6px;
+	margin: 16px 0;
+}
+
+.geo-forge-steps li {
+	margin: 8px 0;
+	color: rgba(255, 255, 255, 0.9);
+}
+
+.geo-forge-steps a {
+	color: #fff;
+	text-decoration: underline;
+}
+
+/* Notice */
+.geo-forge-notice {
+	padding: 12px 16px;
+	margin: 16px 0;
+	border-radius: 4px;
+}
+
+.geo-forge-notice-error {
+	background: #fef0f1;
+	border-left: 4px solid #d63638;
+	color: #d63638;
+}
+
+.geo-forge-notice-success {
+	background: #f0f6e6;
+	border-left: 4px solid #00a32a;
+	color: #00a32a;
 }

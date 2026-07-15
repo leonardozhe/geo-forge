@@ -130,10 +130,27 @@ final class Admin {
 			return;
 		}
 
+		// Pure.css framework
+		wp_enqueue_style(
+			'pure-css',
+			'https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css',
+			array(),
+			'3.0.0'
+		);
+
+		// Pure.css responsive grids
+		wp_enqueue_style(
+			'pure-css-grids-responsive',
+			'https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/grids-responsive-min.css',
+			array(),
+			'3.0.0'
+		);
+
+		// Our custom styles
 		wp_enqueue_style(
 			'geo-forge-admin',
 			GEO_FORGE_URL . 'assets/admin/css/admin.css',
-			array(),
+			array( 'pure-css', 'pure-css-grids-responsive' ),
 			GEO_FORGE_VERSION
 		);
 

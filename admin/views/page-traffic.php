@@ -49,42 +49,61 @@ foreach ( $chart['series'] as $series ) {
 }
 
 ?>
-<div class="wrap geo-forge-wrap">
-	<h1><?php esc_html_e( 'GEO Forge — Traffic', 'geo-forge' ); ?></h1>
+<div class="geo-forge-wrap">
+	<div class="geo-forge-header">
+		<h1>
+			<?php esc_html_e( 'GEO Forge', 'geo-forge' ); ?>
+			<span class="geo-forge-subtitle"><?php esc_html_e( 'Traffic', 'geo-forge' ); ?></span>
+		</h1>
+		<p class="geo-forge-muted">
+			<?php esc_html_e( 'Records when AI agents crawl your store: which bot, what URL, what response. IP addresses are stored as SHA-256 hashes only — never in plaintext.', 'geo-forge' ); ?>
+		</p>
+	</div>
 
-	<p class="geo-forge-muted">
-		<?php esc_html_e( 'Records when AI agents crawl your store: which bot, what URL, what response. IP addresses are stored as SHA-256 hashes only — never in plaintext.', 'geo-forge' ); ?>
-	</p>
-
-	<div class="geo-forge-grid">
-		<div class="geo-forge-card">
-			<h3><?php esc_html_e( 'Last 24h Hits', 'geo-forge' ); ?></h3>
-			<p class="geo-forge-stat"><?php echo esc_html( (string) $summary['total_24h'] ); ?></p>
-			<p class="geo-forge-muted"><?php esc_html_e( 'AI agent requests recorded', 'geo-forge' ); ?></p>
+	<div class="pure-g geo-forge-stats">
+		<div class="pure-u-1 pure-u-md-1-3">
+			<div class="geo-forge-card">
+				<h3><?php esc_html_e( 'Last 24h Hits', 'geo-forge' ); ?></h3>
+				<p class="geo-forge-stat"><?php echo esc_html( (string) $summary['total_24h'] ); ?></p>
+				<p class="geo-forge-muted"><?php esc_html_e( 'AI agent requests recorded', 'geo-forge' ); ?></p>
+			</div>
 		</div>
 
-		<div class="geo-forge-card">
-			<h3><?php esc_html_e( 'Top Bot', 'geo-forge' ); ?></h3>
-			<p class="geo-forge-stat" style="font-size: 22px;">
-				<?php echo esc_html( $top_family ? $top_family->label() : '—' ); ?>
-			</p>
-			<p class="geo-forge-muted">
-				<?php
-				printf(
-					/* translators: %d: request count */
-					esc_html__( '%d hits in 24h', 'geo-forge' ),
-					$top_family_max
-				);
-				?>
-			</p>
+		<div class="pure-u-1 pure-u-md-1-3">
+			<div class="geo-forge-card">
+				<h3><?php esc_html_e( 'Top Bot', 'geo-forge' ); ?></h3>
+				<p class="geo-forge-stat" style="font-size: 22px;">
+					<?php echo esc_html( $top_family ? $top_family->label() : '—' ); ?>
+				</p>
+				<p class="geo-forge-muted">
+					<?php
+					printf(
+						/* translators: %d: request count */
+						esc_html__( '%d hits in 24h', 'geo-forge' ),
+						$top_family_max
+					);
+					?>
+				</p>
+			</div>
 		</div>
 
+		<div class="pure-u-1 pure-u-md-1-3">
+			<div class="geo-forge-card">
+				<h3><?php esc_html_e( 'Sample Rate', 'geo-forge' ); ?></h3>
+				<p class="geo-forge-stat">1/<?php echo esc_html( (string) (int) get_option( 'geo_forge_traffic_sample_rate', 10 ) ); ?></p>
+				<p class="geo-forge-muted"><?php esc_html_e( 'for regular bot traffic (well-known + markdown = 100%)', 'geo-forge' ); ?></p>
+			</div>
+		</div>
+	</div>
+
+	<div class="pure-u-1 pure-u-md-1-3">
 		<div class="geo-forge-card">
 			<h3><?php esc_html_e( 'Sample Rate', 'geo-forge' ); ?></h3>
 			<p class="geo-forge-stat">1/<?php echo esc_html( (string) (int) get_option( 'geo_forge_traffic_sample_rate', 10 ) ); ?></p>
 			<p class="geo-forge-muted"><?php esc_html_e( 'for regular bot traffic (well-known + markdown = 100%)', 'geo-forge' ); ?></p>
 		</div>
 	</div>
+</div>
 
 	<div class="geo-forge-card">
 		<h3><?php esc_html_e( 'Trend (last 14 days)', 'geo-forge' ); ?></h3>
@@ -127,26 +146,31 @@ foreach ( $chart['series'] as $series ) {
 		<?php endif; ?>
 	</div>
 
-	<form method="get" class="geo-forge-log-filter">
+	<form method="get" class="pure-form pure-form-aligned geo-forge-log-filter">
 		<input type="hidden" name="page" value="geo-forge-traffic" />
-		<label for="geo-forge-family"><?php esc_html_e( 'Bot family:', 'geo-forge' ); ?></label>
-		<select id="geo-forge-family" name="family" onchange="this.form.submit()">
-			<option value=""><?php esc_html_e( 'All', 'geo-forge' ); ?></option>
-			<?php foreach ( BotFamily::cases() as $fam ) : ?>
-				<option value="<?php echo esc_attr( $fam->value ); ?>" <?php selected( $filter_family?->value, $fam->value ); ?>>
-					<?php echo esc_html( $fam->label() ); ?>
-				</option>
-			<?php endforeach; ?>
-		</select>
+		<fieldset>
+			<div class="pure-control-group">
+				<label for="geo-forge-family"><?php esc_html_e( 'Bot family:', 'geo-forge' ); ?></label>
+				<select id="geo-forge-family" name="family" onchange="this.form.submit()" class="pure-input-1-4">
+					<option value=""><?php esc_html_e( 'All', 'geo-forge' ); ?></option>
+					<?php foreach ( BotFamily::cases() as $fam ) : ?>
+						<option value="<?php echo esc_attr( $fam->value ); ?>" <?php selected( $filter_family?->value, $fam->value ); ?>>
+							<?php echo esc_html( $fam->label() ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			</div>
 
-		<label for="geo-forge-source"><?php esc_html_e( 'Source:', 'geo-forge' ); ?></label>
-		<select id="geo-forge-source" name="source" onchange="this.form.submit()">
-			<option value=""><?php esc_html_e( 'All', 'geo-forge' ); ?></option>
-			<option value="bot_ua" <?php selected( $filter_source, 'bot_ua' ); ?>><?php esc_html_e( 'Bot User-Agent', 'geo-forge' ); ?></option>
-			<option value="well_known" <?php selected( $filter_source, 'well_known' ); ?>><?php esc_html_e( 'Well-known route', 'geo-forge' ); ?></option>
-			<option value="markdown" <?php selected( $filter_source, 'markdown' ); ?>><?php esc_html_e( 'Markdown negotiation', 'geo-forge' ); ?></option>
-		</select>
-		<noscript><button type="submit" class="button"><?php esc_html_e( 'Filter', 'geo-forge' ); ?></button></noscript>
+			<div class="pure-control-group">
+				<label for="geo-forge-source"><?php esc_html_e( 'Source:', 'geo-forge' ); ?></label>
+				<select id="geo-forge-source" name="source" onchange="this.form.submit()" class="pure-input-1-4">
+					<option value=""><?php esc_html_e( 'All', 'geo-forge' ); ?></option>
+					<option value="bot_ua" <?php selected( $filter_source, 'bot_ua' ); ?>><?php esc_html_e( 'Bot User-Agent', 'geo-forge' ); ?></option>
+					<option value="well_known" <?php selected( $filter_source, 'well_known' ); ?>><?php esc_html_e( 'Well-known route', 'geo-forge' ); ?></option>
+					<option value="markdown" <?php selected( $filter_source, 'markdown' ); ?>><?php esc_html_e( 'Markdown negotiation', 'geo-forge' ); ?></option>
+				</select>
+			</div>
+		</fieldset>
 	</form>
 
 	<?php if ( empty( $rows ) ) : ?>
@@ -154,7 +178,7 @@ foreach ( $chart['series'] as $series ) {
 			<p class="geo-forge-muted"><?php esc_html_e( 'No traffic matches this filter.', 'geo-forge' ); ?></p>
 		</div>
 	<?php else : ?>
-		<table class="widefat striped geo-forge-traffic-table">
+		<table class="pure-table pure-table-horizontal pure-table-striped geo-forge-traffic-table">
 			<thead>
 				<tr>
 					<th style="width:140px;"><?php esc_html_e( 'Time (UTC)', 'geo-forge' ); ?></th>

@@ -33,62 +33,76 @@ $categories    = is_array( $last['category_scores'] ?? null ) ? $last['category_
 $checks        = is_array( $last['checks_result'] ?? null ) ? $last['checks_result'] : array();
 $suggestions   = is_array( $last['suggestions'] ?? null ) ? $last['suggestions'] : array();
 $issue_count   = count( array_filter( $checks, fn( $c ) => ( $c['status'] ?? '' ) !== 'pass' ) );
-$fixable_count = 0; // Populated after Fixer lands in Milestone 3.
+$fixable_count = 0;
 
 ?>
-<div class="wrap geo-forge-wrap">
-	<h1>
-		<?php esc_html_e( 'GEO Forge — Dashboard', 'geo-forge' ); ?>
-		<?php if ( $has_key ) : ?>
-			<span class="geo-forge-api-ok" title="<?php esc_attr_e( 'API key configured', 'geo-forge' ); ?>">🔗</span>
-		<?php else : ?>
-			<a class="geo-forge-api-missing" href="<?php echo esc_url( admin_url( 'admin.php?page=geo-forge-settings' ) ); ?>">
-				<?php esc_html_e( '⚠ API key missing', 'geo-forge' ); ?>
-			</a>
-		<?php endif; ?>
-	</h1>
+<div class="geo-forge-wrap">
+	<div class="geo-forge-header">
+		<h1>
+			<?php esc_html_e( 'GEO Forge', 'geo-forge' ); ?>
+			<span class="geo-forge-subtitle"><?php esc_html_e( 'Dashboard', 'geo-forge' ); ?></span>
+		</h1>
+		<div class="geo-forge-header-meta">
+			<?php if ( $has_key ) : ?>
+				<span class="geo-forge-badge geo-forge-badge-success" title="<?php esc_attr_e( 'API key configured', 'geo-forge' ); ?>">
+					🔗 <?php esc_html_e( 'Connected', 'geo-forge' ); ?>
+				</span>
+			<?php else : ?>
+				<a class="geo-forge-badge geo-forge-badge-warning" href="<?php echo esc_url( admin_url( 'admin.php?page=geo-forge-settings' ) ); ?>">
+					⚠ <?php esc_html_e( 'API key missing', 'geo-forge' ); ?>
+				</a>
+			<?php endif; ?>
+			<?php if ( $last_time ) : ?>
+				<span class="geo-forge-muted">
+					<?php
+					printf(
+						/* translators: %s: last scan time */
+						esc_html__( 'Last scan: %s', 'geo-forge' ),
+						'<time>' . esc_html( $last_time ) . '</time>'
+					);
+					?>
+				</span>
+			<?php endif; ?>
+		</div>
+	</div>
 
-	<?php if ( $last_time ) : ?>
-		<p class="geo-forge-muted">
-			<?php
-			printf(
-				/* translators: %s: last scan time */
-				esc_html__( 'Last scan: %s', 'geo-forge' ),
-				'<time>' . esc_html( $last_time ) . '</time>'
-			);
-			?>
-		</p>
-	<?php endif; ?>
-
-	<div class="geo-forge-grid">
-		<div class="geo-forge-card">
-			<h3><?php esc_html_e( 'AI Score', 'geo-forge' ); ?></h3>
-			<p class="geo-forge-stat" data-stat="score">
-				<?php echo null === $score ? '—' : esc_html( $grade_emoji . ' ' . $score ); ?>
-			</p>
-			<p class="geo-forge-muted">/ 100</p>
+	<div class="pure-g geo-forge-stats">
+		<div class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+			<div class="geo-forge-card">
+				<h3><?php esc_html_e( 'AI Score', 'geo-forge' ); ?></h3>
+				<p class="geo-forge-stat" data-stat="score">
+					<?php echo null === $score ? '—' : esc_html( $grade_emoji . ' ' . $score ); ?>
+				</p>
+				<p class="geo-forge-muted">/ 100</p>
+			</div>
 		</div>
 
-		<div class="geo-forge-card">
-			<h3><?php esc_html_e( 'Issues Found', 'geo-forge' ); ?></h3>
-			<p class="geo-forge-stat" data-stat="issues">
-				<?php echo null === $score ? '—' : esc_html( $issue_count ); ?>
-			</p>
-			<p class="geo-forge-muted"><?php esc_html_e( 'checks that did not pass', 'geo-forge' ); ?></p>
+		<div class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+			<div class="geo-forge-card">
+				<h3><?php esc_html_e( 'Issues Found', 'geo-forge' ); ?></h3>
+				<p class="geo-forge-stat" data-stat="issues">
+					<?php echo null === $score ? '—' : esc_html( $issue_count ); ?>
+				</p>
+				<p class="geo-forge-muted"><?php esc_html_e( 'checks that did not pass', 'geo-forge' ); ?></p>
+			</div>
 		</div>
 
-		<div class="geo-forge-card">
-			<h3><?php esc_html_e( 'Fixable Auto', 'geo-forge' ); ?></h3>
-			<p class="geo-forge-stat" data-stat="fixable"><?php echo esc_html( $fixable_count ?: '—' ); ?></p>
-			<p class="geo-forge-muted"><?php esc_html_e( 'available in Milestone 3', 'geo-forge' ); ?></p>
+		<div class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+			<div class="geo-forge-card">
+				<h3><?php esc_html_e( 'Fixable Auto', 'geo-forge' ); ?></h3>
+				<p class="geo-forge-stat" data-stat="fixable"><?php echo esc_html( $fixable_count ?: '—' ); ?></p>
+				<p class="geo-forge-muted"><?php esc_html_e( 'available fixes', 'geo-forge' ); ?></p>
+			</div>
 		</div>
 
-		<div class="geo-forge-card">
-			<h3><?php esc_html_e( 'Grade', 'geo-forge' ); ?></h3>
-			<p class="geo-forge-stat" data-stat="grade">
-				<?php echo esc_html( $grade_label ?: '—' ); ?>
-			</p>
-			<p class="geo-forge-muted"><?php esc_html_e( 'GEO KAMI letter grade', 'geo-forge' ); ?></p>
+		<div class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+			<div class="geo-forge-card">
+				<h3><?php esc_html_e( 'Grade', 'geo-forge' ); ?></h3>
+				<p class="geo-forge-stat" data-stat="grade">
+					<?php echo esc_html( $grade_label ?: '—' ); ?>
+				</p>
+				<p class="geo-forge-muted"><?php esc_html_e( 'GEO KAMI letter grade', 'geo-forge' ); ?></p>
+			</div>
 		</div>
 	</div>
 
@@ -97,7 +111,7 @@ $fixable_count = 0; // Populated after Fixer lands in Milestone 3.
 		<?php if ( empty( $categories ) ) : ?>
 			<p class="geo-forge-muted"><?php esc_html_e( 'Run a scan to see category scores.', 'geo-forge' ); ?></p>
 		<?php else : ?>
-			<table class="widefat striped geo-forge-category-table">
+			<table class="pure-table pure-table-horizontal geo-forge-category-table">
 				<tbody>
 					<?php foreach ( $categories as $cat ) :
 						$earned = (int) ( $cat['earned'] ?? 0 );
@@ -124,7 +138,7 @@ $fixable_count = 0; // Populated after Fixer lands in Milestone 3.
 	</div>
 
 	<div class="geo-forge-card geo-forge-actions">
-		<button type="button" id="geo-forge-scan-btn" class="button button-primary" <?php disabled( ! $has_key ); ?>>
+		<button type="button" id="geo-forge-scan-btn" class="pure-button pure-button-primary" <?php disabled( ! $has_key ); ?>>
 			<?php esc_html_e( 'Scan Now', 'geo-forge' ); ?>
 		</button>
 		<span id="geo-forge-scan-status" class="geo-forge-muted" aria-live="polite"></span>
@@ -141,7 +155,46 @@ $fixable_count = 0; // Populated after Fixer lands in Milestone 3.
 		<?php endif; ?>
 	</div>
 
-	<div id="geo-forge-error" class="notice notice-error" style="display:none;">
+	<div id="geo-forge-error" class="geo-forge-notice geo-forge-notice-error" style="display:none;">
 		<p></p>
 	</div>
+
+	<?php if ( ! $has_key ) : ?>
+		<div class="geo-forge-card geo-forge-promo">
+			<h3>🚀 <?php esc_html_e( 'Get Started with GEO KAMI', 'geo-forge' ); ?></h3>
+			<p>
+				<?php esc_html_e( 'GEO Forge uses the GEO KAMI Cloud API to scan your store against 22+ AI-readiness checks. Get your free API key to unlock AI agent optimization.', 'geo-forge' ); ?>
+			</p>
+			<div class="geo-forge-promo-features">
+				<div class="pure-g">
+					<div class="pure-u-1 pure-u-md-1-3">
+						<div class="geo-forge-promo-item">
+							<strong>🎁 <?php esc_html_e( 'Free Tier', 'geo-forge' ); ?></strong>
+							<p><?php esc_html_e( '100 points on signup', 'geo-forge' ); ?></p>
+						</div>
+					</div>
+					<div class="pure-u-1 pure-u-md-1-3">
+						<div class="geo-forge-promo-item">
+							<strong>🔍 <?php esc_html_e( '5 Free Scans', 'geo-forge' ); ?></strong>
+							<p><?php esc_html_e( 'Comprehensive AI readiness audit', 'geo-forge' ); ?></p>
+						</div>
+					</div>
+					<div class="pure-u-1 pure-u-md-1-3">
+						<div class="geo-forge-promo-item">
+							<strong>⚡ <?php esc_html_e( 'Auto-Fix', 'geo-forge' ); ?></strong>
+							<p><?php esc_html_e( 'One-click deployment of fixes', 'geo-forge' ); ?></p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="geo-forge-promo-cta">
+				<a href="https://geokami.com/register?ref=geo-forge" target="_blank" rel="noopener" class="pure-button pure-button-primary">
+					<?php esc_html_e( 'Get Free API Key', 'geo-forge' ); ?>
+				</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=geo-forge-settings' ) ); ?>" class="pure-button">
+					<?php esc_html_e( 'Enter API Key', 'geo-forge' ); ?>
+				</a>
+			</div>
+		</div>
+	<?php endif; ?>
 </div>
