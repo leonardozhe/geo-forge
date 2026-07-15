@@ -21,8 +21,9 @@
 
 /* Stats — unified 28px */
 .geo-forge-wrap .gf-stat{font-size:28px;font-weight:700;line-height:1.2;color:#1e293b}
-.geo-forge-wrap .gf-stat-label{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.geo-forge-wrap .gf-icon-lg{font-size:20px;vertical-align:-3px;margin-right:4px}
+.geo-forge-wrap .gf-stat-label{font-size:12px;color:#64748b;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.geo-forge-wrap .gf-stat-label svg{width:18px;height:18px;color:#64748b}
+.geo-forge-wrap .gf-icon-lg{display:inline-flex;align-items:center}
 
 /* Grade badge — inline */
 .geo-forge-wrap .gf-grade{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:8px;font-size:22px;font-weight:800;color:#fff}

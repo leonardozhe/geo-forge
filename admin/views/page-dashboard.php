@@ -1,7 +1,5 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 use GEO_Forge\GeoForge;
 use GEO_Forge\Install\Installer;
 
@@ -34,28 +32,50 @@ $ca  = is_array( $lk['category_scores'] ?? null ) ? $lk['category_scores'] : arr
 $ck  = is_array( $lk['checks_result'] ?? null ) ? $lk['checks_result'] : array();
 $ps  = count( array_filter( $ck, fn( $c ) => ( $c['status'] ?? '' ) === 'pass' ) );
 $fl  = count( $ck ) - $ps;
-$fc  = $fx ? count( $fx->list() ) : 5;
 
 global $wpdb;
-$ht   = $wpdb->get_results( "SELECT id, total_score, grade, grade_label, created_at FROM {$wpdb->prefix}geo_forge_scans ORDER BY created_at DESC LIMIT 30", ARRAY_A ) ?: array();
+$ht = $wpdb->get_results( "SELECT id, total_score, grade, grade_label, created_at FROM {$wpdb->prefix}geo_forge_scans ORDER BY created_at DESC LIMIT 30", ARRAY_A ) ?: array();
 
 $cat_names = array(
-	'ai-readability' => 'AI Readability',
-	'discoverability' => 'Discoverability',
-	'accessibility' => 'Content Accessibility',
-	'bot-control' => 'Bot Access Control',
-	'security' => 'Security & UX',
-	'protocol' => 'Protocol Discovery',
-	'commerce' => 'Commerce',
+	'ai-readability' => 'AI Readability', 'discoverability' => 'Discoverability',
+	'accessibility' => 'Content Accessibility', 'bot-control' => 'Bot Access Control',
+	'security' => 'Security & UX', 'protocol' => 'Protocol Discovery', 'commerce' => 'Commerce',
+);
+
+// Map checks to AI models that care about them
+$check_models = array(
+	'robots_txt'      => 'GPTBot, ClaudeBot, PerplexityBot',
+	'llms_txt_exists' => 'ChatGPT, Claude, Perplexity, all LLMs',
+	'llms_txt_quality'=> 'ChatGPT, Claude, Perplexity',
+	'security_txt'    => 'Security researchers, all agents',
+	'mcp_server_card' => 'Claude Desktop, all MCP clients',
+	'a2a_agent_card'  => 'Google A2A agents',
+	'json_ld'         => 'Google AI, ChatGPT, all search agents',
+	'review_rating'   => 'Google Shopping AI, Perplexity Shopping',
+	'basic_security'  => 'All web crawlers',
+	'hsts_config'     => 'All HTTPS clients',
+	'canonical'       => 'Google, all search engines',
+	'sitemap_xml'     => 'Google, Bing, all search engines',
+	'meta_tags'       => 'Google AI, ChatGPT, social agents',
+	'ai_bot_rules'    => 'GPTBot, ClaudeBot, all AI crawlers',
 );
 ?>
 <div class="geo-forge-wrap">
 <div class="gf-header"><div style="display:flex;align-items:center;justify-content:space-between;"><div><h1>Dashboard <span class="gf-subtitle">GEO Forge</span></h1><?php if ( $lt ) : ?><span class="gf-muted">Last scan: <?php echo esc_html( $lt ); ?></span><?php endif; ?></div><div><?php if ( $hk ) : ?><span class="gf-badge gf-badge-green">🔗 Connected</span><?php else : ?><a href="<?php echo esc_url( admin_url( 'admin.php?page=geo-forge-settings' ) ); ?>" class="gf-btn">Add API Key</a><?php endif; ?></div></div></div>
 
 <div class="gf-grid gf-grid-3" style="margin-bottom:12px;">
-	<div class="gf-card"><div class="gf-stat-label">📊 AI Score</div><div class="gf-stat"><?php echo null === $sc0 ? '—' : esc_html( $sc0 ); ?><span style="font-size:14px;color:#94a3b8;"> /100</span></div></div>
-	<div class="gf-card"><div class="gf-stat-label">📋 Status</div><div class="gf-stat" style="font-size:20px;"><?php echo null === $sc0 ? '—' : "<span style='color:#16a34a'>✅ $ps pass</span> · <span style='color:#dc2626'>❌ $fl fail</span>"; ?></div></div>
-	<div class="gf-card"><div class="gf-stat-label">🏆 Grade</div><div class="gf-grade" style="background:<?php echo $grc; ?>;display:inline-flex;margin-top:4px;"><?php echo $gr; ?></div></div>
+	<div class="gf-card">
+		<div class="gf-stat-label"><i data-lucide="bar-chart-2" style="width:18px;height:18px;"></i> AI Score</div>
+		<div class="gf-stat"><?php echo null === $sc0 ? '—' : esc_html( $sc0 ); ?><span style="font-size:14px;color:#94a3b8;"> /100</span></div>
+	</div>
+	<div class="gf-card">
+		<div class="gf-stat-label"><i data-lucide="check-circle-2" style="width:18px;height:18px;"></i> Status</div>
+		<div class="gf-stat" style="font-size:20px;"><?php echo null === $sc0 ? '—' : "<span style='color:#16a34a'>✅ $ps pass</span> · <span style='color:#dc2626'>❌ $fl fail</span>"; ?></div>
+	</div>
+	<div class="gf-card">
+		<div class="gf-stat-label"><i data-lucide="award" style="width:18px;height:18px;"></i> Grade</div>
+		<div class="gf-grade" style="background:<?php echo $grc; ?>;display:inline-flex;margin-top:4px;"><?php echo $gr; ?></div>
+	</div>
 </div>
 
 <?php if ( $sc0 ) : ?>
@@ -66,16 +86,20 @@ $cat_names = array(
 		<?php endforeach; ?></table>
 	</div>
 	<div class="gf-card"><div class="gf-card-title">Check Results <span class="gf-badge gf-badge-blue"><?php echo count( $ck ); ?></span></div>
-		<div style="max-height:360px;overflow-y:auto;padding-right:4px;"><?php foreach ( $ck as $ch ) : $st = $ch['status'] ?? 'fail'; $ic = $st === 'pass' ? '✅' : ( $st === 'warn' ? '⚠️' : '❌' ); $label = $ch['label'] ?? $ch['name'] ?? $ch['id'] ?? '?'; $rec = $ch['recommendation'] ?? ''; $goal = $ch['goal'] ?? ''; $res = $ch['result'] ?? ''; $effort = $ch['effort'] ?? ''; ?>
+		<div style="max-height:400px;overflow-y:auto;padding-right:4px;"><?php foreach ( $ck as $ch ) : $st = $ch['status'] ?? 'fail'; $ic = $st === 'pass' ? '✅' : ( $st === 'warn' ? '⚠️' : '❌' ); $label = $ch['label'] ?? $ch['name'] ?? $ch['id'] ?? '?'; $rec = $ch['recommendation'] ?? ''; $goal = $ch['goal'] ?? ''; $res = $ch['result'] ?? ''; $effort = $ch['effort'] ?? ''; $chid = $ch['id'] ?? ''; $chcat = $ch['category'] ?? ''; $cat_label = $cat_names[ $chcat ] ?? $chcat; $ai_models = $check_models[ $chid ] ?? ''; ?>
 		<div class="gf-check-item">
-			<span style="font-size:16px;flex-shrink:0;"><?php echo $ic; ?></span>
+			<span style="font-size:16px;flex-shrink:0;width:24px;"><?php echo $ic; ?></span>
 			<div style="flex:1;min-width:0;">
 				<div style="font-weight:600;"><?php echo esc_html( $label ); ?></div>
 				<?php if ( $goal ) : ?><div class="gf-check-meta">Goal: <?php echo esc_html( $goal ); ?></div><?php endif; ?>
 				<?php if ( $res && $st !== 'pass' ) : ?><div class="gf-check-meta">Result: <?php echo esc_html( $res ); ?></div><?php endif; ?>
 				<?php if ( $rec ) : ?><div class="gf-check-recommendation">💡 <?php echo esc_html( $rec ); ?><?php if ( $effort ) : ?> <span class="gf-muted">(≈<?php echo esc_html( $effort ); ?>)</span><?php endif; ?></div><?php endif; ?>
 			</div>
-			<span class="gf-check-score" style="flex-shrink:0;font-weight:600;font-size:12px;color:#64748b;text-align:right;min-width:36px;"><?php echo (int) ( $ch['score'] ?? 0 ); ?>/<?php echo (int) ( $ch['maxScore'] ?? 0 ); ?></span>
+			<div style="flex-shrink:0;text-align:right;min-width:80px;">
+				<div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px;"><?php echo esc_html( $cat_label ); ?></div>
+				<?php if ( $ai_models ) : ?><div style="font-size:10px;color:#64748b;margin-top:1px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?php echo esc_attr( $ai_models ); ?>"><?php echo esc_html( $ai_models ); ?></div><?php endif; ?>
+				<div style="font-weight:600;font-size:12px;color:#64748b;margin-top:2px;"><?php echo (int) ( $ch['score'] ?? 0 ); ?>/<?php echo (int) ( $ch['maxScore'] ?? 0 ); ?></div>
+			</div>
 		</div>
 		<?php endforeach; ?></div>
 	</div>
@@ -98,14 +122,11 @@ $cat_names = array(
 
 <?php if ( ! $hk ) : ?>
 <div class="gf-card gf-promo"><h2>🚀 Get Started with GEO KAMI</h2><p>Free tier: 100 points (5 scans). No credit card required.</p>
-<div class="gf-grid gf-grid-3" style="margin:12px 0;">
-	<div class="gf-card" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1);"><div class="gf-stat" style="font-size:22px;color:#fff;">🎁</div><div class="gf-muted" style="color:rgba(255,255,255,.8);">100 points</div></div>
-	<div class="gf-card" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1);"><div class="gf-stat" style="font-size:22px;color:#fff;">🔍</div><div class="gf-muted" style="color:rgba(255,255,255,.8);">5 scans</div></div>
-	<div class="gf-card" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1);"><div class="gf-stat" style="font-size:22px;color:#fff;">🔧</div><div class="gf-muted" style="color:rgba(255,255,255,.8);">Auto-fix</div></div>
-</div>
+<div class="gf-grid gf-grid-3" style="margin:12px 0;"><div class="gf-card" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1);"><div class="gf-stat" style="font-size:22px;color:#fff;">🎁</div><div class="gf-muted" style="color:rgba(255,255,255,.8);">100 points</div></div><div class="gf-card" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1);"><div class="gf-stat" style="font-size:22px;color:#fff;">🔍</div><div class="gf-muted" style="color:rgba(255,255,255,.8);">5 scans</div></div><div class="gf-card" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1);"><div class="gf-stat" style="font-size:22px;color:#fff;">🔧</div><div class="gf-muted" style="color:rgba(255,255,255,.8);">Auto-fix</div></div></div>
 <a href="https://geokami.com/register?ref=geo-forge" target="_blank" class="gf-btn gf-btn-primary" style="background:#fff!important;color:#4338ca!important;border-color:#fff!important;">Get Free API Key</a></div>
 <?php endif; ?>
 
 <!-- Detail dialog -->
 <div class="gf-detail-overlay" id="gf-detail-dialog"><div class="gf-detail-dialog"><button class="gf-detail-close" onclick="document.getElementById('gf-detail-dialog').classList.remove('open')">&times;</button><div id="gf-detail-content"></div></div></div>
 </div>
+<script>lucide.createIcons();</script>

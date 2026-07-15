@@ -121,6 +121,8 @@ final class Admin {
 	 * the styles load regardless of enqueue timing or path issues.
 	 */
 	public function inject_css(): void {
+		// Lucide icons
+		echo '<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>';
 		echo '<style id="geo-forge-styles">';
 		readfile( GEO_FORGE_DIR . 'assets/admin/css/admin.css' );
 		echo '</style>';
