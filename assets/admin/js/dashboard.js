@@ -1,6 +1,6 @@
 /**
  * GEO Forge — Dashboard JS
- * Scan + View Details
+ * Scan + View Details + Account info
  */
 (function () {
     'use strict';
@@ -29,10 +29,11 @@
         });
     }
 
-    // View Details — event delegation
-    document.addEventListener('click', function (e) {
-        var btn = e.target.closest('.gf-view-detail');
-        if (!btn) return;
+    // View Details — event delegation on document body
+    document.body.addEventListener('click', function (e) {
+        var target = e.target;
+        if (!target.classList.contains('gf-view-detail')) return;
+        var scanId = target.getAttribute('data-scan');
         var dialog = document.getElementById('gf-detail-dialog');
         var content = document.getElementById('gf-detail-content');
         if (!dialog || !content) return;
@@ -42,18 +43,13 @@
         .then(function (r) { return r.json(); })
         .then(function (b) {
             if (b && b.scan) {
-                var s = b.scan, ch = s.checks_result || [];
-                var h = '<h2>Scan Details</h2><p class="gf-muted">Score: <b>' + s.total_score + '</b> | ' + (s.created_at||'') + '</p><hr style="margin:12px 0">';
-                h += '<h3>Checks (' + ch.length + ')</h3>';
-                ch.forEach(function (x) {
-                    var st = x.status || 'fail', ic = st === 'pass' ? '✅' : (st === 'warn' ? '⚠️' : '❌');
-                    h += '<div class="gf-check-item"><span>' + ic + '</span><div style="flex:1"><div style="font-weight:600;">' + x.label + '</div>';
-                    if (x.goal) h += '<div class="gf-check-meta">Goal: ' + x.goal + '</div>';
-                    if (x.result && st !== 'pass') h += '<div class="gf-check-meta">Result: ' + x.result + '</div>';
-                    if (x.recommendation) h += '<div class="gf-check-recommendation">💡 ' + x.recommendation + (x.effort ? ' (≈' + x.effort + ')' : '') + '</div>';
-                    h += '</div><span style="font-size:11px;color:#94a3b8">' + (x.score||0) + '/' + (x.maxScore||0) + '</span></div>';
+                var s = b.scan, checks = s.checks_result || [];
+                var rows = '';
+                checks.forEach(function (x) {
+                    var ic = x.status === 'pass' ? '✅' : (x.status === 'warn' ? '⚠️' : '❌');
+                    rows += '<tr><td>' + ic + '</td><td style="font-size:12px;">' + (x.label||x.id||'?') + '</td><td style="font-size:11px;color:#64748b;">' + (x.category||'') + '</td><td style="font-size:12px;font-weight:600;">' + (x.score||0) + '/' + (x.maxScore||0) + '</td><td style="font-size:11px;color:#94a3b8;">' + (x.goal||'') + '</td></tr>';
                 });
-                content.innerHTML = h;
+                content.innerHTML = '<h2>Scan Details</h2><p class="gf-muted">Score: <b>' + s.total_score + '</b> | ' + (s.created_at||'') + '</p><hr style="margin:12px 0"><table><thead><tr><th></th><th>Check</th><th>Category</th><th>Score</th><th>Result</th></tr></thead><tbody>' + rows + '</tbody></table>';
             } else { content.innerHTML = '<p class="gf-muted">Details not available.</p>'; }
         })
         .catch(function () { content.innerHTML = '<p class="gf-muted">Failed to load.</p>'; });
@@ -62,17 +58,18 @@
 
     // Account info fetch
     var userUrl = root + 'account';
-    fetch(userUrl, { credentials: 'same-origin', headers: { 'X-WP-Nonce': nonce } })
-    .then(function (r) { return r.json(); })
-    .then(function (body) {
-        var el = document.getElementById('gf-account-info');
-        if (!el || !body || !body.success) return;
-        var d = body.data || {};
-        var html =
-            '<span class="gf-badge gf-badge-green" style="font-size:11px;">🔗 ' + (d.plan||'Free') + '</span>' +
-            '<span style="font-size:11px;color:#64748b;">' + (d.points!==undefined?d.points:'—') + ' pts</span>' +
-            (d.expires ? '<span style="font-size:11px;color:#94a3b8;">Expires ' + d.expires + '</span>' : '');
-        el.innerHTML = html;
-    })
-    .catch(function () {});
+    var accEl = document.getElementById('gf-account-info');
+    if (accEl) {
+        fetch(userUrl, { credentials: 'same-origin', headers: { 'X-WP-Nonce': nonce } })
+        .then(function (r) { return r.json(); })
+        .then(function (body) {
+            if (!body || !body.success || !body.data) return;
+            var d = body.data, plan = d.plan || {}, points = d.points || {}, sub = d.subscription || {};
+            accEl.innerHTML =
+                '<span class="gf-badge" style="background:#4338ca;color:#fff;">' + (plan.label||plan.tier||'Free') + '</span>' +
+                '<span style="font-size:12px;font-weight:600;color:#1e293b;">' + (points.balance!==undefined?points.balance:'—') + '</span>' +
+                '<span style="font-size:11px;color:#94a3b8;">' + (sub.currentPeriodEnd?'Exp. '+sub.currentPeriodEnd.substring(0,10):'') + '</span>';
+        })
+        .catch(function () {});
+    }
 })();
