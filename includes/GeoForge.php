@@ -12,6 +12,9 @@ namespace GEO_Forge;
 
 use GEO_Forge\Admin\Admin;
 use GEO_Forge\Api\RestController;
+use GEO_Forge\Fixer\Actions\LlmsTxtFix;
+use GEO_Forge\Fixer\Actions\SecurityTxtFix;
+use GEO_Forge\Fixer\Fixer;
 use GEO_Forge\Log\ErrorCapture;
 use GEO_Forge\WellKnown\Router;
 
@@ -62,10 +65,30 @@ final class GeoForge {
 		// Virtual routes for /.well-known/* and /llms.txt.
 		Router::register();
 
+		// Fixer engine — register built-in fix actions.
+		$this->boot_fixer();
+
 		if ( is_admin() ) {
 			$admin = new Admin();
 			$admin->register();
 		}
+	}
+
+	/**
+	 * Boot the Fixer and register built-in fix actions.
+	 * The Fixer instance is stored on the singleton so other code (REST, CLI)
+	 * can retrieve it via GeoForge::fixer().
+	 */
+	private ?Fixer $fixer = null;
+
+	private function boot_fixer(): void {
+		$this->fixer = new Fixer();
+		$this->fixer->register( new LlmsTxtFix() );
+		$this->fixer->register( new SecurityTxtFix() );
+	}
+
+	public static function fixer(): ?Fixer {
+		return self::$instance?->fixer;
 	}
 
 	public function load_textdomain(): void {

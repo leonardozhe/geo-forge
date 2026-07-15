@@ -28,6 +28,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Make sure the generators are autoloadable (their classes live alongside the router).
+class_exists( LlmsTxt::class );
+class_exists( SecurityTxt::class );
+
 class Router {
 
 	/** Query var we register to carry the route name through WP's rewrite layer. */
@@ -38,7 +42,8 @@ class Router {
 	 * Adding a new route: add entry here + a handler in dispatch().
 	 */
 	private const ROUTES = array(
-		'llms_txt' => '^llms\.txt/?$',
+		'llms_txt'     => '^llms\.txt/?$',
+		'security_txt' => '^\.well-known/security\.txt/?$',
 	);
 
 	/**
@@ -92,6 +97,11 @@ class Router {
 			case 'llms_txt':
 				$content      = LlmsTxt::serve();
 				$content_type = 'text/plain; charset=utf-8'; // llms.txt spec mandates text/plain
+				break;
+
+			case 'security_txt':
+				$content      = SecurityTxt::serve();
+				$content_type = 'text/plain; charset=utf-8';
 				break;
 		}
 

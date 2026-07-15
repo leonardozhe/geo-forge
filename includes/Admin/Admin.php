@@ -30,6 +30,12 @@ final class Admin {
 			'callback' => 'render_dashboard',
 		),
 		array(
+			'slug'     => 'geo-forge-fixes',
+			'title'    => 'Fix Center',
+			'view'     => 'page-fix-center',
+			'callback' => 'render_fix_center',
+		),
+		array(
 			'slug'     => 'geo-forge-llms',
 			'title'    => 'llms.txt',
 			'view'     => 'page-llms-editor',
@@ -79,6 +85,10 @@ final class Admin {
 
 	public function render_settings(): void {
 		$this->render_view( 'page-settings' );
+	}
+
+	public function render_fix_center(): void {
+		$this->render_view( 'page-fix-center' );
 	}
 
 	public function render_llms_editor(): void {
@@ -159,8 +169,19 @@ final class Admin {
 			wp_localize_script( 'geo-forge-llms-editor', 'GeoForgeLlms', $shared );
 		}
 
-		// Dashboard gets its own JS (only on the main dashboard page, not settings).
-		if ( ! str_contains( $hook, 'geo-forge-settings' ) && ! str_contains( $hook, 'geo-forge-logs' ) && ! str_contains( $hook, 'geo-forge-llms' ) && str_contains( $hook, 'geo-forge' ) ) {
+		if ( str_contains( $hook, 'geo-forge-fixes' ) ) {
+			wp_enqueue_script(
+				'geo-forge-fixer',
+				GEO_FORGE_URL . 'assets/admin/js/fix-center.js',
+				array(),
+				GEO_FORGE_VERSION,
+				true
+			);
+			wp_localize_script( 'geo-forge-fixer', 'GeoForgeFixer', $shared );
+		}
+
+		// Dashboard gets its own JS (only on the main dashboard page, not settings/fixes/etc).
+		if ( ! str_contains( $hook, 'geo-forge-settings' ) && ! str_contains( $hook, 'geo-forge-logs' ) && ! str_contains( $hook, 'geo-forge-llms' ) && ! str_contains( $hook, 'geo-forge-fixes' ) && str_contains( $hook, 'geo-forge' ) ) {
 			wp_enqueue_script(
 				'geo-forge-dashboard',
 				GEO_FORGE_URL . 'assets/admin/js/dashboard.js',

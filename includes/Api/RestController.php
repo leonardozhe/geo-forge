@@ -19,6 +19,8 @@
 namespace GEO_Forge\Api;
 
 use GEO_Forge\Api\ApiException;
+use GEO_Forge\Fixer\Fixer;
+use GEO_Forge\GeoForge;
 use GEO_Forge\Log\Level;
 use GEO_Forge\Log\Logger;
 use GEO_Forge\Scanner\Scanner;
@@ -130,6 +132,38 @@ class RestController {
 				'permission_callback' => array( $this, 'check_admin_permission' ),
 			)
 		);
+
+		// Fixer endpoints.
+		register_rest_route(
+			self::NAMESPACE,
+			'/fixes',
+			array(
+				'methods'             => 'READABLE',
+				'callback'            => array( $this, 'handle_list_fixes' ),
+				'permission_callback' => array( $this, 'check_admin_permission' ),
+			)
+		);
+
+		$fix_actions = array( 'apply', 'rollback', 'verify' );
+		foreach ( $fix_actions as $action ) {
+			register_rest_route(
+				self::NAMESPACE,
+				'/fixes/(?P<id>[a-z0-9_]+)/' . $action,
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'handle_fix_action' ),
+					'permission_callback' => array( $this, 'check_admin_permission' ),
+					'args'                => array(
+						'id' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+					),
+					'_action'             => $action, // smuggled to callback via route args
+				)
+			);
+		}
 	}
 
 	public function check_admin_permission(): bool {
@@ -302,6 +336,85 @@ class RestController {
 			'content' => $content,
 			'bytes'   => strlen( $content ),
 		), 200 );
+	}
+
+	/* =====================================================================
+	 * Fixer endpoints
+	 * ===================================================================== */
+
+	/**
+	 * GET /fixes — list all registered fixes with current status.
+	 */
+	public function handle_list_fixes(): \WP_REST_Response {
+		$fixer = GeoForge::fixer();
+		if ( null === $fixer ) {
+			return new \WP_REST_Response( array( 'success' => true, 'fixes' => array() ), 200 );
+		}
+
+		return new \WP_REST_Response( array(
+			'success' => true,
+			'fixes'   => array_values( $fixer->list() ),
+		), 200 );
+	}
+
+	/**
+	 * POST /fixes/{id}/apply|rollback|verify — dispatch the named action.
+	 *
+	 * The action name is smuggled in via the `_action` key in the route
+	 * registration array; we read it back from the route's registered args.
+	 */
+	public function handle_fix_action( \WP_REST_Request $request ): \WP_REST_Response {
+		$id     = (string) $request->get_param( 'id' );
+		$action = $this->resolve_action( $request );
+		$fixer  = GeoForge::fixer();
+
+		if ( null === $fixer ) {
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'error'   => array( 'code' => 'no_fixer', 'message' => __( 'Fixer not initialized.', 'geo-forge' ) ),
+			), 500 );
+		}
+
+		$result = match ( $action ) {
+			'apply'    => $fixer->apply( $id ),
+			'rollback' => $fixer->rollback( $id ),
+			'verify'   => $fixer->verify( $id ),
+			default    => array( 'success' => false, 'message' => __( 'Unknown action.', 'geo-forge' ) ),
+		};
+
+		if ( empty( $result['success'] ) ) {
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'error'   => array(
+					'code'    => 'fix_' . $action . '_failed',
+					'message' => $result['message'] ?? __( 'Action failed.', 'geo-forge' ),
+				),
+			), 400 );
+		}
+
+		// Refresh status and applied_at from the fix so the UI can update in place.
+		$fixes = $fixer->list();
+		$row   = $fixes[ $id ] ?? null;
+
+		$result['status']      = $row['status'] ?? 'pending';
+		$result['applied_at']  = $row['applied_at'] ?? null;
+
+		return new \WP_REST_Response( array_merge( array( 'success' => true ), $result ), 200 );
+	}
+
+	/**
+	 * Determine which fix action (apply/rollback/verify) the request maps to.
+	 * We encoded this in the route registration args as `_action`; fall back
+	 * to parsing the route path if that's missing.
+	 */
+	private function resolve_action( \WP_REST_Request $request ): string {
+		$route = $request->get_route();
+		foreach ( array( 'apply', 'rollback', 'verify' ) as $candidate ) {
+			if ( str_ends_with( (string) $route, '/' . $candidate ) ) {
+				return $candidate;
+			}
+		}
+		return 'apply';
 	}
 
 	/**
