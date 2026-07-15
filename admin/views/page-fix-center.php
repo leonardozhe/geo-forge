@@ -1,54 +1,31 @@
-<?php
-/**
- * Fix Center / Optimizations view (Pico CSS)
- */
-if ( ! defined( 'ABSPATH' ) ) exit;
-
-use GEO_Forge\GeoForge;
-$fixer = GeoForge::fixer();
-$fixes = $fixer ? $fixer->list() : array();
-
-$status_icon = fn($s) => match($s){'applied'=>'✅','verified'=>'✅✅','rolled_back'=>'⏪','failed'=>'❌',default=>'○'};
-$risk_color  = fn($r) => match($r){'none'=>'#16a34a','low'=>'#2563eb','medium'=>'#ca8a04','high'=>'#dc2626',default=>'#94a3b8'};
-
-$grouped = array();
-foreach($fixes as $f){
-	$label = $f['priority']===1&&in_array($f['risk_level'],['none','low'])?'P1 Critical':($f['priority']<=2?'P2 Warning':'P3 Optional');
-	$grouped[$label][]=$f;
-}
+<?php if(!defined('ABSPATH'))exit;use GEO_Forge\GeoForge;
+$fx=GeoForge::fixer();$fs=$fx?$fx->list():[];
+$si=fn($s)=>match($s){'applied'=>'✅','verified'=>'✅✅','rolled_back'=>'⏪','failed'=>'❌',default=>'○'};
+$rc=fn($r)=>match($r){'none'=>'#16a34a','low'=>'#2563eb','medium'=>'#ca8a04','high'=>'#dc2626',default=>'#94a3b8'};
+$gp=[];foreach($fs as $f){$l=$f['priority']===1&&in_array($f['risk_level'],['none','low'])?'P1 Critical':($f['priority']<=2?'P2 Warning':'P3 Optional');$gp[$l][]=$f;}
 ?>
 <div class="geo-forge-wrap">
-	<div class="geo-forge-header">
-		<h1>Optimizations <span class="geo-forge-subtitle">Auto-fixes for AI readiness</span></h1>
-		<p class="geo-forge-muted">Apply auto-fixes to improve your AI readiness score. Each fix is reversible.</p>
-	</div>
+<div class="gf-header"><h1>Optimizations <span class="gf-subtitle">Auto-fixes for AI readiness</span></h1><p class="gf-muted">Apply auto-fixes to improve your AI score. Each fix is reversible.</p></div>
+<div id="geo-forge-fix-status" class="gf-notice" style="display:none;"></div>
 
-	<div id="geo-forge-fix-status" class="geo-forge-notice" style="display:none;"><p></p></div>
-
-	<?php if(empty($grouped)): ?>
-		<div class="geo-forge-card"><p class="geo-forge-muted">No optimization actions registered.</p></div>
-	<?php else: foreach($grouped as $group_label=>$items): ?>
-		<div class="geo-forge-card">
-			<h2><?php echo esc_html($group_label); ?> <span class="geo-forge-badge geo-forge-badge-info"><?php echo count($items);?></span></h2>
-			<table>
-				<thead><tr><th>Fix</th><th>Risk</th><th>Status</th><th>Applied</th><th></th></tr></thead>
-				<tbody>
-					<?php foreach($items as $fix):
-						$id=esc_attr($fix['id']); $applied=in_array($fix['status'],['applied','verified']); ?>
-					<tr data-fix-id="<?php echo$id;?>">
-						<td><strong style="font-size:14px;"><?php echo esc_html($fix['label']);?></strong><br><span class="geo-forge-muted"><?php echo esc_html($fix['description']);?></span></td>
-						<td><span style="color:<?php echo esc_attr($risk_color($fix['risk_level']));?>;font-weight:600;font-size:12px;"><?php echo ucfirst($fix['risk_level']);?></span></td>
-						<td><?php echo $status_icon($fix['status']).' '.ucfirst($fix['status']);?></td>
-						<td class="geo-forge-muted"><?php echo $fix['applied_at']??'—';?></td>
-						<td style="white-space:nowrap;">
-							<button class="button primary geo-forge-fix-apply" data-fix="<?php echo$id;?>" <?php disabled($applied);?>>Apply</button>
-							<button class="button geo-forge-fix-verify" data-fix="<?php echo$id;?>" <?php disabled(!$applied);?>>Verify</button>
-							<button class="button geo-forge-fix-rollback" data-fix="<?php echo$id;?>" <?php disabled(!$applied);?>>Undo</button>
-						</td>
-					</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-		</div>
-	<?php endforeach; endif; ?>
+<?php if(empty($gp)):?>
+<div class="gf-card"><p class="gf-muted">No optimization actions registered.</p></div>
+<?php else:foreach($gp as $gl=>$it):?>
+<div class="gf-card">
+	<div class="gf-card-title"><?php echo esc_html($gl);?> <span class="gf-badge gf-badge-blue"><?php echo count($it);?></span></div>
+	<table class="striped"><thead><tr><th>Fix</th><th>Risk</th><th>Status</th><th>Applied</th><th></th></tr></thead><tbody>
+	<?php foreach($it as $fx2):$id=esc_attr($fx2['id']);$ap=in_array($fx2['status'],['applied','verified']);?>
+	<tr data-fix-id="<?php echo$id;?>">
+		<td><strong style="font-size:13px;"><?php echo esc_html($fx2['label']);?></strong><br><span class="gf-muted"><?php echo esc_html($fx2['description']);?></span></td>
+		<td><span style="color:<?php echo esc_attr($rc($fx2['risk_level']));?>;font-weight:600;font-size:12px;"><?php echo ucfirst($fx2['risk_level']);?></span></td>
+		<td><?php echo $si($fx2['status']).' '.ucfirst($fx2['status']);?></td>
+		<td class="gf-muted"><?php echo $fx2['applied_at']??'—';?></td>
+		<td style="white-space:nowrap;">
+			<button class="gf-btn gf-btn-primary geo-forge-fix-apply" data-fix="<?php echo$id;?>" <?php disabled($ap);?>>Apply</button>
+			<button class="gf-btn geo-forge-fix-verify" data-fix="<?php echo$id;?>" <?php disabled(!$ap);?>>Verify</button>
+			<button class="gf-btn geo-forge-fix-rollback" data-fix="<?php echo$id;?>" <?php disabled(!$ap);?>>Undo</button>
+		</td>
+	</tr>
+	<?php endforeach;?></tbody></table>
 </div>
+<?php endforeach;endif;?></div>
