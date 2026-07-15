@@ -92,8 +92,23 @@ final class Installer {
     KEY status (status)
 ) {$charset_collate};";
 
+		$logs_table = "CREATE TABLE {$wpdb->prefix}geo_forge_logs (
+    id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    level varchar(10) NOT NULL,
+    message varchar(500) NOT NULL,
+    context longtext,
+    source varchar(120) NOT NULL,
+    request_id varchar(16) NOT NULL,
+    created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY  (id),
+    KEY level (level),
+    KEY created_at (created_at),
+    KEY request_id (request_id)
+) {$charset_collate};";
+
 		dbDelta( $scans_table );
 		dbDelta( $fixes_table );
+		dbDelta( $logs_table );
 
 		update_option( 'geo_forge_db_version', GEO_FORGE_VERSION );
 	}
@@ -111,6 +126,8 @@ final class Installer {
 			'geo_forge_auto_fix_risk_level' => 'low',
 			'geo_forge_notify_score_drop'   => 'yes',
 			'geo_forge_notify_threshold'    => 50,
+			'geo_forge_log_min_level'       => 'warning',
+			'geo_forge_log_retention_days'  => 30,
 		);
 
 		foreach ( $defaults as $option_name => $default_value ) {

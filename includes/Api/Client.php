@@ -19,6 +19,8 @@
 
 namespace GEO_Forge\Api;
 
+use GEO_Forge\Log\Logger;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -100,12 +102,22 @@ class Client {
 
 	/**
 	 * GET /api/health — connectivity check. Returns true on 200.
+	 * Failures are logged at debug level — this is called frequently from
+	 * the admin Health Check button and we don't want to spam warnings
+	 * for transient blips.
 	 */
 	public function health_check(): bool {
 		try {
 			$this->request_json( 'GET', '/api/health' );
 			return true;
 		} catch ( ApiException $e ) {
+			Logger::debug(
+				'Health check failed.',
+				array(
+					'code'    => $e->getCodeEnum()->value,
+					'message' => $e->getMessage(),
+				)
+			);
 			return false;
 		}
 	}

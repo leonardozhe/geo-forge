@@ -8,6 +8,8 @@
  *   POST /geo-forge/v1/scan           — trigger a scan, returns the stored row
  *   GET  /geo-forge/v1/scan/last      — last scan row (cached)
  *   POST /geo-forge/v1/health-check   — test API connectivity, returns { ok: bool }
+ *   GET  /geo-forge/v1/logs           — recent log entries
+ *   POST /geo-forge/v1/logs/clear     — drop all log entries
  *
  * All endpoints require `manage_woocommerce` capability.
  *
@@ -17,6 +19,8 @@
 namespace GEO_Forge\Api;
 
 use GEO_Forge\Api\ApiException;
+use GEO_Forge\Log\Level;
+use GEO_Forge\Log\Logger;
 use GEO_Forge\Scanner\Scanner;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -57,6 +61,40 @@ class RestController {
 				'permission_callback' => array( $this, 'check_admin_permission' ),
 			)
 		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/logs',
+			array(
+				'methods'             => 'READABLE',
+				'callback'            => array( $this, 'handle_get_logs' ),
+				'permission_callback' => array( $this, 'check_admin_permission' ),
+				'args'                => array(
+					'limit' => array(
+						'type'              => 'integer',
+						'default'           => 100,
+						'minimum'           => 1,
+						'maximum'           => 1000,
+						'sanitize_callback' => 'absint',
+					),
+					'level' => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/logs/clear',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_clear_logs' ),
+				'permission_callback' => array( $this, 'check_admin_permission' ),
+			)
+		);
 	}
 
 	public function check_admin_permission(): bool {
@@ -68,14 +106,24 @@ class RestController {
 	 */
 	public function handle_trigger_scan(): \WP_REST_Response {
 		try {
+			Logger::info( 'Scan triggered via REST.' );
 			$scanner = new Scanner();
 			$row     = $scanner->run_scan();
+
+			Logger::info(
+				'Scan completed.',
+				array( 'score' => (int) ( $row['total_score'] ?? 0 ), 'grade' => $row['grade'] ?? '' )
+			);
 
 			return new \WP_REST_Response( array(
 				'success' => true,
 				'scan'    => $this->format_scan_row( $row ),
 			), 200 );
 		} catch ( ApiException $e ) {
+			Logger::error(
+				'Scan failed: ' . $e->getMessage(),
+				array( 'code' => $e->getCodeEnum()->value )
+			);
 			return new \WP_REST_Response( array(
 				'success' => false,
 				'error'   => array(
@@ -84,6 +132,7 @@ class RestController {
 				),
 			), $this->http_status_for( $e->getCodeEnum() ) );
 		} catch ( \RuntimeException $e ) {
+			Logger::error( 'Scan timed out: ' . $e->getMessage() );
 			return new \WP_REST_Response( array(
 				'success' => false,
 				'error'   => array(
@@ -140,6 +189,49 @@ class RestController {
 				'message' => __( 'Health check failed.', 'geo-forge' ),
 			),
 		), $ok ? 200 : 502 );
+	}
+
+	/**
+	 * GET /logs — recent log entries.
+	 */
+	public function handle_get_logs( \WP_REST_Request $request ): \WP_REST_Response {
+		$limit     = (int) $request->get_param( 'limit' );
+		$level_raw = (string) $request->get_param( 'level' );
+		$min_level = '' !== $level_raw ? Level::tryFrom( $level_raw ) : null;
+
+		$rows = Logger::recent( $limit, $min_level );
+
+		return new \WP_REST_Response( array(
+			'success' => true,
+			'count'   => count( $rows ),
+			'logs'    => $rows,
+		), 200 );
+	}
+
+	/**
+	 * POST /logs/clear — drop all log entries.
+	 */
+	public function handle_clear_logs(): \WP_REST_Response {
+		try {
+			Logger::clear();
+			Logger::info( 'Logs cleared via REST.', array( 'source' => 'RestController::handle_clear_logs' ) );
+
+			return new \WP_REST_Response( array(
+				'success' => true,
+				'message' => __( 'Logs cleared.', 'geo-forge' ),
+			), 200 );
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Failed to clear logs: ' . $e->getMessage(), array(
+				'exception' => get_class( $e ),
+			) );
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'error'   => array(
+					'code'    => 'clear_failed',
+					'message' => __( 'Could not clear logs.', 'geo-forge' ),
+				),
+			), 500 );
+		}
 	}
 
 	/**

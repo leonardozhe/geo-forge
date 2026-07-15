@@ -35,12 +35,6 @@ final class Admin {
 			'view'     => 'page-settings',
 			'callback' => 'render_settings',
 		),
-		array(
-			'slug'     => 'geo-forge-logs',
-			'title'    => 'Logs',
-			'view'     => 'page-logs',
-			'callback' => 'render_logs',
-		),
 	);
 
 	public function register(): void {
@@ -73,10 +67,6 @@ final class Admin {
 
 	public function render_settings(): void {
 		$this->render_view( 'page-settings' );
-	}
-
-	public function render_logs(): void {
-		$this->render_view( 'page-logs' );
 	}
 
 	/**
@@ -122,24 +112,8 @@ final class Admin {
 			wp_localize_script( 'geo-forge-settings', 'GeoForgeSettings', $shared );
 		}
 
-		if ( str_contains( $hook, 'geo-forge-logs' ) ) {
-			wp_enqueue_script(
-				'geo-forge-logs',
-				GEO_FORGE_URL . 'assets/admin/js/logs.js',
-				array(),
-				GEO_FORGE_VERSION,
-				true
-			);
-			wp_localize_script( 'geo-forge-logs', 'GeoForgeLogs', $shared + array(
-				'i18n' => $shared['i18n'] + array(
-					'confirmClear' => __( 'Clear all log entries? This cannot be undone.', 'geo-forge' ),
-					'cleared'      => __( 'Logs cleared.', 'geo-forge' ),
-				),
-			) );
-		}
-
 		// Dashboard gets its own JS (only on the main dashboard page, not settings).
-		if ( ! str_contains( $hook, 'geo-forge-settings' ) && ! str_contains( $hook, 'geo-forge-logs' ) && str_contains( $hook, 'geo-forge' ) ) {
+		if ( ! str_contains( $hook, 'geo-forge-settings' ) && str_contains( $hook, 'geo-forge' ) ) {
 			wp_enqueue_script(
 				'geo-forge-dashboard',
 				GEO_FORGE_URL . 'assets/admin/js/dashboard.js',

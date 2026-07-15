@@ -80,3 +80,69 @@
 	gap: 12px;
 	margin-top: 16px;
 }
+
+/* ==========================================================================
+   Log page.
+   ========================================================================== */
+
+.geo-forge-log-filter {
+	margin: 12px 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.geo-forge-log-actions {
+	margin: 12px 0;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.geo-forge-log-table td,
+.geo-forge-log-table th {
+	vertical-align: top;
+}
+
+.geo-forge-log-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	color: #fff;
+}
+.geo-forge-log-debug    { background: #646970; }
+.geo-forge-log-info     { background: #2271b1; }
+.geo-forge-log-warning  { background: #dba600; color: #1d2327; }
+.geo-forge-log-error    { background: #d63638; }
+.geo-forge-log-critical { background: #8b0000; }
+
+.geo-forge-log-row.geo-forge-log-critical td {
+	background: #fcf0f0;
+}
+.geo-forge-log-row.geo-forge-log-error td {
+	background: #fcf6f0;
+}
+
+.geo-forge-log-message {
+	font-family: Consolas, Monaco, monospace;
+	font-size: 12px;
+	word-break: break-word;
+	white-space: pre-wrap;
+}
+
+.geo-forge-log-context {
+	margin-top: 4px;
+	font-size: 11px;
+}
+.geo-forge-log-context pre {
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	padding: 8px;
+	border-radius: 3px;
+	overflow-x: auto;
+	max-width: 600px;
+	font-size: 11px;
+}

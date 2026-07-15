@@ -20,6 +20,7 @@ namespace GEO_Forge\Scanner;
 use GEO_Forge\Api\ApiException;
 use GEO_Forge\Api\Client;
 use GEO_Forge\Cache\TransientCache;
+use GEO_Forge\Log\Logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -45,6 +46,11 @@ class Scanner {
 	public function run_scan( int $max_wait_seconds = 120 ): array {
 		$site_info = $this->collect_site_info();
 
+		Logger::info(
+			'Starting scan.',
+			array( 'domain' => $site_info['domain'], 'max_wait_seconds' => $max_wait_seconds )
+		);
+
 		// 1. Start scan. We ask the API to block so one round trip suffices
 		//    for most scans. If the server ignores waitForResult, we fall back
 		//    to polling in step 3.
@@ -56,12 +62,15 @@ class Scanner {
 			if ( isset( $response['result'] ) && is_array( $response['result'] ) ) {
 				return $this->store_result( $response, $site_info );
 			}
+			Logger::warning( 'Scan response did not include a scanId.', array( 'response' => $response ) );
 			throw new ApiException(
 				\GEO_Forge\Api\ErrorCode::InvalidResponse,
 				__( 'Scan response did not include a scanId.', 'geo-forge' ),
 				array( 'response' => $response )
 			);
 		}
+
+		Logger::debug( 'Scan initiated, polling for result.', array( 'scan_id' => $scan_id ) );
 
 		// 2. Poll until complete (or timeout).
 		$result = $this->poll_until_complete( $scan_id, $max_wait_seconds );
@@ -93,6 +102,10 @@ class Scanner {
 			}
 
 			if ( 'failed' === $status ) {
+				Logger::error(
+					'Scan failed on GEO KAMI side.',
+					array( 'scan_id' => $scan_id )
+				);
 				throw new ApiException(
 					\GEO_Forge\Api\ErrorCode::Api,
 					__( 'Scan failed on GEO KAMI side.', 'geo-forge' ),
@@ -102,6 +115,15 @@ class Scanner {
 
 			sleep( $interval );
 		}
+
+		Logger::warning(
+			sprintf(
+				/* translators: %d: seconds */
+				__( 'Scan polling timed out after %d seconds.', 'geo-forge' ),
+				$max_wait_seconds
+			),
+			array( 'scan_id' => $scan_id )
+		);
 
 		throw new \RuntimeException(
 			sprintf(
@@ -140,6 +162,15 @@ class Scanner {
 		// Warm caches.
 		TransientCache::set( 'last_scan', $row );
 		update_option( 'geo_forge_last_scan_time', current_time( 'mysql' ) );
+
+		Logger::info(
+			'Scan completed and stored.',
+			array(
+				'scan_id'     => $row['scan_id'],
+				'total_score' => $row['total_score'],
+				'grade'       => $row['grade'],
+			)
+		);
 
 		/**
 		 * Fires after a scan result is persisted.

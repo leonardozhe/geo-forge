@@ -12,6 +12,7 @@ namespace GEO_Forge;
 
 use GEO_Forge\Admin\Admin;
 use GEO_Forge\Api\RestController;
+use GEO_Forge\Log\ErrorCapture;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -52,6 +53,10 @@ final class GeoForge {
 	private function register_hooks(): void {
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+
+		// Capture fatals in our own code. Registered early — runs on every request,
+		// including cron and REST. Cheap when there's no fatal.
+		ErrorCapture::register();
 
 		if ( is_admin() ) {
 			$admin = new Admin();
