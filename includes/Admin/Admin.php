@@ -70,12 +70,24 @@ final class Admin {
 	}
 
 	/**
-	 * Register submenu pages under WooCommerce.
+	 * Register top-level menu + submenu pages.
 	 */
 	public function register_menus(): void {
+		// Top-level menu.
+		add_menu_page(
+			$this->page_title( 'Dashboard' ),
+			'GEO Forge',
+			'manage_woocommerce',
+			'geo-forge',
+			array( $this, 'render_dashboard' ),
+			'dashicons-superhero-alt',
+			58
+		);
+
+		// Submenu pages.
 		foreach ( self::SUBPAGES as $page ) {
 			add_submenu_page(
-				'woocommerce',
+				'geo-forge',
 				$this->page_title( $page['title'] ),
 				$page['title'],
 				'manage_woocommerce',
