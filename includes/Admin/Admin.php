@@ -84,6 +84,45 @@ final class Admin {
 			array(),
 			GEO_FORGE_VERSION
 		);
+
+		// Shared data for any admin JS module: REST root + nonce + i18n strings.
+		$shared = array(
+			'restRoot'  => esc_url_raw( rest_url( 'geo-forge/v1/' ) ),
+			'restNonce' => wp_create_nonce( 'wp_rest' ),
+			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+			'i18n'      => array(
+				'scanning'    => __( 'Scanning… this takes ~15 seconds.', 'geo-forge' ),
+				'scanFailed'  => __( 'Scan failed.', 'geo-forge' ),
+				'checking'    => __( 'Checking…', 'geo-forge' ),
+				'ok'          => __( 'Connected.', 'geo-forge' ),
+				'failed'      => __( 'Connection failed — check your API key.', 'geo-forge' ),
+				'unknownError'=> __( 'An unknown error occurred.', 'geo-forge' ),
+			),
+		);
+
+		// Page-specific JS.
+		if ( str_contains( $hook, 'geo-forge-settings' ) ) {
+			wp_enqueue_script(
+				'geo-forge-settings',
+				GEO_FORGE_URL . 'assets/admin/js/settings.js',
+				array(),
+				GEO_FORGE_VERSION,
+				true
+			);
+			wp_localize_script( 'geo-forge-settings', 'GeoForgeSettings', $shared );
+		}
+
+		// Dashboard gets its own JS (only on the main dashboard page, not settings).
+		if ( ! str_contains( $hook, 'geo-forge-settings' ) && str_contains( $hook, 'geo-forge' ) ) {
+			wp_enqueue_script(
+				'geo-forge-dashboard',
+				GEO_FORGE_URL . 'assets/admin/js/dashboard.js',
+				array(),
+				GEO_FORGE_VERSION,
+				true
+			);
+			wp_localize_script( 'geo-forge-dashboard', 'GeoForgeDashboard', $shared );
+		}
 	}
 
 	/**

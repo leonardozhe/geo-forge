@@ -44,3 +44,39 @@
 	font-size: 13px;
 	margin: 0;
 }
+
+/* Header API status indicators. */
+.geo-forge-api-ok {
+	font-size: 14px;
+	margin-left: 8px;
+}
+.geo-forge-api-missing {
+	font-size: 12px;
+	margin-left: 8px;
+	font-weight: normal;
+	color: #d63638;
+}
+
+/* Category breakdown table + progress bars. */
+.geo-forge-category-table {
+	margin-top: 8px;
+}
+.geo-forge-bar {
+	height: 8px;
+	background: #f0f0f1;
+	border-radius: 4px;
+	overflow: hidden;
+}
+.geo-forge-bar-fill {
+	height: 100%;
+	border-radius: 4px;
+	transition: width 0.4s ease;
+}
+
+/* Actions row (Scan Now button). */
+.geo-forge-actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 16px;
+}

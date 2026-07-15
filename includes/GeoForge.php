@@ -11,6 +11,7 @@
 namespace GEO_Forge;
 
 use GEO_Forge\Admin\Admin;
+use GEO_Forge\Api\RestController;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -50,6 +51,7 @@ final class GeoForge {
 
 	private function register_hooks(): void {
 		add_action( 'init', array( $this, 'load_textdomain' ) );
+		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 
 		if ( is_admin() ) {
 			$admin = new Admin();
@@ -63,5 +65,9 @@ final class GeoForge {
 			false,
 			dirname( GEO_FORGE_BASENAME ) . '/languages/'
 		);
+	}
+
+	public function register_rest_routes(): void {
+		( new RestController() )->register_routes();
 	}
 }

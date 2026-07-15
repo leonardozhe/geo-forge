@@ -1,0 +1,226 @@
+<?php
+/**
+ * HTTP client for the GEO KAMI Cloud API.
+ *
+ * All remote calls go through here — nothing else in the plugin should
+ * use `wp_remote_*` directly. Keeps auth, retries, timeouts, and error
+ * mapping in one place.
+ *
+ * Endpoints mirrored from DESIGN.md §7:
+ *   POST /api/scan
+ *   GET  /api/scans/{id}
+ *   GET  /api/scans/{id}/status
+ *   POST /api/verify
+ *   GET  /api/health
+ *   GET  /api/account
+ *
+ * @package GEO_Forge
+ */
+
+namespace GEO_Forge\Api;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+class Client {
+
+	private string $api_base;
+	private string $api_key;
+	private int    $timeout;
+	private int    $max_retries;
+
+	public function __construct(
+		string $api_base = '',
+		string $api_key = '',
+		int $timeout = 30,
+		int $max_retries = 3
+	) {
+		$this->api_base    = '' !== $api_base ? untrailingslashit( $api_base ) : (string) get_option( 'geo_forge_api_base', 'https://api.geokami.com' );
+		$this->api_key     = $api_key ?: (string) get_option( 'geo_forge_api_key', '' );
+		$this->timeout     = $timeout;
+		$this->max_retries = $max_retries;
+	}
+
+	/**
+	 * POST /api/scan
+	 *
+	 * @param string $url             URL to scan (defaults to home_url()).
+	 * @param bool   $wait_for_result If true, server blocks until scan completes.
+	 * @return array{success:bool, scanId?:string, status:string, pointsCost?:int}
+	 *
+	 * @throws ApiException On network/auth/HTTP errors.
+	 */
+	public function initiate_scan( string $url = '', bool $wait_for_result = false ): array {
+		if ( '' === $url ) {
+			$url = home_url();
+		}
+
+		$query = $wait_for_result ? '?waitForResult=true' : '';
+
+		return $this->request_json( 'POST', '/api/scan' . $query, array(
+			'url'         => $url,
+			'waitForResult' => $wait_for_result,
+		) );
+	}
+
+	/**
+	 * GET /api/scans/{scan_id}
+	 *
+	 * @throws ApiException
+	 */
+	public function get_scan_result( string $scan_id ): array {
+		$scan_id = sanitize_text_field( $scan_id );
+		return $this->request_json( 'GET', '/api/scans/' . rawurlencode( $scan_id ) );
+	}
+
+	/**
+	 * GET /api/scans/{scan_id}/status  (lightweight — no full result payload)
+	 *
+	 * @throws ApiException
+	 */
+	public function get_scan_status( string $scan_id ): array {
+		$scan_id = sanitize_text_field( $scan_id );
+		return $this->request_json( 'GET', '/api/scans/' . rawurlencode( $scan_id ) . '/status' );
+	}
+
+	/**
+	 * POST /api/verify — quick verify of specific checks after a fix.
+	 *
+	 * @param string   $domain
+	 * @param string[] $check_ids
+	 * @throws ApiException
+	 */
+	public function verify_fixes( string $domain, array $check_ids ): array {
+		return $this->request_json( 'POST', '/api/verify', array(
+			'domain'   => $domain,
+			'checkIds' => array_values( array_map( 'sanitize_text_field', $check_ids ) ),
+		) );
+	}
+
+	/**
+	 * GET /api/health — connectivity check. Returns true on 200.
+	 */
+	public function health_check(): bool {
+		try {
+			$this->request_json( 'GET', '/api/health' );
+			return true;
+		} catch ( ApiException $e ) {
+			return false;
+		}
+	}
+
+	/**
+	 * GET /api/account — balance, plan, scans remaining.
+	 *
+	 * @throws ApiException
+	 */
+	public function get_account_info(): array {
+		return $this->request_json( 'GET', '/api/account' );
+	}
+
+	/**
+	 * Check whether an API key is configured (non-empty).
+	 * This is a local check only — it does not hit the API.
+	 */
+	public function has_api_key(): bool {
+		return '' !== $this->api_key;
+	}
+
+	/**
+	 * Execute an HTTP request with retry on transient failures.
+	 *
+	 * Retries only on: WP_Error (network) and 5xx responses.
+	 * 4xx responses are NOT retried — they are auth/config problems.
+	 *
+	 * @throws ApiException
+	 */
+	private function request_json( string $method, string $path, array $body = array() ): array {
+		if ( ! $this->has_api_key() && '/api/health' !== $path ) {
+			throw new ApiException( ErrorCode::Auth, __( 'GEO KAMI API key is not configured.', 'geo-forge' ) );
+		}
+
+		$url = $this->api_base . $path;
+
+		$args = array(
+			'method'      => $method,
+			'timeout'     => $this->timeout,
+			'redirection' => 0,
+			'headers'     => array(
+				'Authorization' => 'Bearer ' . $this->api_key,
+				'Accept'        => 'application/json',
+				'User-Agent'    => 'GEO-Forge/' . GEO_FORGE_VERSION . ' (+https://geokami.com)',
+			),
+		);
+
+		if ( 'POST' === $method && ! empty( $body ) ) {
+			$args['headers']['Content-Type'] = 'application/json';
+			$args['body']                    = wp_json_encode( $body );
+		}
+
+		$last_error = null;
+
+		for ( $attempt = 1; $attempt <= $this->max_retries; $attempt++ ) {
+			$response = wp_remote_request( $url, $args );
+
+			// Network / WP_Error — retry.
+			if ( is_wp_error( $response ) ) {
+				$last_error = new ApiException(
+					ErrorCode::Network,
+					$response->get_error_message(),
+					array( 'wp_error_code' => $response->get_error_code() )
+				);
+
+				if ( $attempt < $this->max_retries ) {
+					usleep( 200000 * $attempt ); // 200ms, 400ms, ...
+					continue;
+				}
+				throw $last_error;
+			}
+
+			$status = (int) wp_remote_retrieve_response_code( $response );
+
+			// 5xx — retry (server-side transient failure).
+			if ( $status >= 500 && $attempt < $this->max_retries ) {
+				usleep( 300000 * $attempt );
+				continue;
+			}
+
+			// Map status → ErrorCode. 2xx returns null (success).
+			$error_code = ErrorCode::from_http_status( $status );
+			if ( null !== $error_code ) {
+				throw new ApiException(
+					$error_code,
+					sprintf(
+						/* translators: 1: HTTP status, 2: response body */
+						__( 'GEO KAMI API error (HTTP %1$d): %2$s', 'geo-forge' ),
+						$status,
+						wp_trim_words( wp_remote_retrieve_body( $response ), 20, '...' )
+					),
+					array(
+						'status' => $status,
+						'body'   => wp_remote_retrieve_body( $response ),
+						'url'    => $url,
+					)
+				);
+			}
+
+			// 2xx — decode JSON.
+			$raw_body = wp_remote_retrieve_body( $response );
+			$decoded  = json_decode( $raw_body, true );
+
+			if ( ! is_array( $decoded ) ) {
+				throw new ApiException(
+					ErrorCode::InvalidResponse,
+					__( 'GEO KAMI returned a non-JSON response.', 'geo-forge' ),
+					array( 'raw_body' => $raw_body )
+				);
+			}
+
+			return $decoded;
+		}
+
+		// Unreachable in practice — loop always returns or throws.
+		throw $last_error ?? new ApiException( ErrorCode::Api, __( 'Unknown API failure.', 'geo-forge' ) );
+	}
+}
