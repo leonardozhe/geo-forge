@@ -12,13 +12,19 @@ namespace GEO_Forge;
 
 use GEO_Forge\Admin\Admin;
 use GEO_Forge\Api\RestController;
+use GEO_Forge\Fixer\Actions\ContentSignalsFix;
 use GEO_Forge\Fixer\Actions\LlmsTxtFix;
+use GEO_Forge\Fixer\Actions\RobotsTxtFix;
 use GEO_Forge\Fixer\Actions\SecurityTxtFix;
+use GEO_Forge\Fixer\Actions\StructuredDataFix;
 use GEO_Forge\Fixer\Fixer;
 use GEO_Forge\Log\ErrorCapture;
 use GEO_Forge\Traffic\Capture;
 use GEO_Forge\Updater\Updater;
+use GEO_Forge\WellKnown\ContentSignals;
+use GEO_Forge\WellKnown\RobotsTxt;
 use GEO_Forge\WellKnown\Router;
+use GEO_Forge\WellKnown\StructuredData;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -67,6 +73,11 @@ final class GeoForge {
 		// Virtual routes for /.well-known/* and /llms.txt.
 		Router::register();
 
+		// Well-known generators that hook into WP.
+		RobotsTxt::register();
+		ContentSignals::register();
+		StructuredData::register();
+
 		// AI traffic capture (well-known routes, markdown negotiation, known bots).
 		// Registered on every request including non-admin — Capture returns
 		// fast for non-matching requests.
@@ -95,6 +106,9 @@ final class GeoForge {
 		$this->fixer = new Fixer();
 		$this->fixer->register( new LlmsTxtFix() );
 		$this->fixer->register( new SecurityTxtFix() );
+		$this->fixer->register( new RobotsTxtFix() );
+		$this->fixer->register( new ContentSignalsFix() );
+		$this->fixer->register( new StructuredDataFix() );
 	}
 
 	public static function fixer(): ?Fixer {
