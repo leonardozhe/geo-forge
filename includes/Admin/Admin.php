@@ -57,6 +57,7 @@ final class Admin {
 
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'register_menus' ) );
+		add_action( 'admin_head', array( $this, 'inject_css' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 
 		// Wire the settings form handler (POST via admin-post.php).
@@ -116,21 +117,19 @@ final class Admin {
 	}
 
 	/**
-	 * Enqueue admin CSS/JS.
-	 * Loads on ALL admin pages. CSS is scoped to .geo-forge-wrap so it never
-	 * affects WordPress core UI. The admin.css is self-contained — no external
-	 * framework dependencies.
+	 * Inject CSS directly on every admin page. Using admin_head guarantees
+	 * the styles load regardless of enqueue timing or path issues.
+	 */
+	public function inject_css(): void {
+		echo '<style id="geo-forge-styles">';
+		readfile( GEO_FORGE_DIR . 'assets/admin/css/admin.css' );
+		echo '</style>';
+	}
+
+	/**
+	 * Enqueue JS. Only on our own pages.
 	 */
 	public function enqueue_assets( string $hook ): void {
-		// Load our CSS on every admin page. Scoped selectors prevent leakage.
-		wp_enqueue_style(
-			'geo-forge-admin',
-			GEO_FORGE_URL . 'assets/admin/css/admin.css',
-			array(),
-			GEO_FORGE_VERSION
-		);
-
-		// Only enqueue JS + shared data on our own pages.
 		if ( ! str_contains( $hook, 'geo-forge' ) ) {
 			return;
 		}
