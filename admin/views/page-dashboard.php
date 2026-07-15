@@ -168,7 +168,7 @@ $check_models = array(
 <div class="gf-card"><div class="gf-card-title">Score History <span class="gf-badge gf-badge-blue"><?php echo count($ht);?></span></div>
 <table><thead><tr><th>Time</th><th>Score</th><th>Grade</th><th>Change</th><th></th></tr></thead><tbody>
 <?php foreach($ht as $i=>$t):$pv=$i<count($ht)-1?$ht[$i+1]['total_score']:$t['total_score'];$up=$t['total_score']>$pv?'▲':($t['total_score']<$pv?'▼':'—');$cl=$t['total_score']>=80?'#16a34a':($t['total_score']>=50?'#ca8a04':'#dc2626');$lg=$gr_label($t['total_score']);?>
-<tr><td style="font-size:12px;"><?php echo esc_html(substr($t['created_at'],0,16));?></td><td style="font-weight:700;color:<?php echo$cl;?>;"><?php echo$t['total_score'];?></td><td><span class="gf-badge" style="color:#fff;background:<?php echo$gr_color($t['total_score']);?>;"><?php echo$lg;?></span></td><td style="font-size:12px;color:<?php echo$up==='▲'?'#16a34a':($up==='▼'?'#dc2626':'#94a3b8');?>;"><?php echo$up;?> <?php echo abs($t['total_score']-$pv);?></td><td><button class="gf-btn gf-view-detail" style="font-size:11px;padding:3px 8px;">View Details</button></td></tr>
+<tr><td style="font-size:12px;"><?php echo esc_html(substr($t['created_at'],0,16));?></td><td style="font-weight:700;color:<?php echo$cl;?>;font-size:28px;"><?php echo$t['total_score'];?></td><td style="font-size:28px;font-weight:800;color:<?php echo$gr_color($t['total_score']);?>;"><?php echo$lg;?></td><td style="font-size:12px;color:<?php echo$up==='▲'?'#16a34a':($up==='▼'?'#dc2626':'#94a3b8');?>;"><?php echo$up;?> <?php echo abs($t['total_score']-$pv);?></td><td><button class="gf-btn gf-view-detail" style="font-size:11px;padding:3px 8px;">View Details</button></td></tr>
 <?php endforeach;?></tbody></table></div>
 <?php endif;?>
 
