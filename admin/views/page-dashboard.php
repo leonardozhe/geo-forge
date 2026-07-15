@@ -5,12 +5,13 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 use GEO_Forge\GeoForge;
+use GEO_Forge\Install\Installer;
 
 $scanner    = new \GEO_Forge\Scanner\Scanner();
 $fixer      = GeoForge::fixer();
 $last       = $scanner->get_last_scan();
 $last_time  = (string) get_option( 'geo_forge_last_scan_time', '' );
-$has_key    = (bool) get_option( 'geo_forge_api_key', '' );
+$has_key    = (bool) Installer::get_setting( 'api_key', '' );
 
 $score       = $last['total_score'] ?? null;
 $grade_label = $last['grade_label'] ?? '';

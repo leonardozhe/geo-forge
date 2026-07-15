@@ -10,6 +10,8 @@
 
 namespace GEO_Forge\Admin;
 
+use GEO_Forge\Install\Installer;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -57,9 +59,9 @@ final class Settings {
 			return;
 		}
 
-		// 5. Persist. Empty key is allowed (user is clearing it).
-		update_option( 'geo_forge_api_key', $api_key );
-		update_option( 'geo_forge_api_base', '' !== $api_base ? $api_base : 'https://api.geokami.com' );
+		// 5. Persist to both settings table AND wp_options (backward compat).
+		Installer::set_setting( 'api_key', $api_key );
+		Installer::set_setting( 'api_base', '' !== $api_base ? $api_base : 'https://api.geokami.com' );
 
 		// 6. Done.
 		self::redirect_with_notice( 'updated', __( 'Settings saved.', 'geo-forge' ) );

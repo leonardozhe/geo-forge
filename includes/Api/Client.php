@@ -17,6 +17,7 @@
 
 namespace GEO_Forge\Api;
 
+use GEO_Forge\Install\Installer;
 use GEO_Forge\Log\Logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -36,8 +37,8 @@ class Client {
 		int $timeout = 30,
 		int $max_retries = 3
 	) {
-		$this->api_base    = '' !== $api_base ? untrailingslashit( $api_base ) : (string) get_option( 'geo_forge_api_base', 'https://api.geokami.com' );
-		$this->api_key     = $api_key ?: (string) get_option( 'geo_forge_api_key', '' );
+		$this->api_base    = '' !== $api_base ? untrailingslashit( $api_base ) : (string) Installer::get_setting( 'api_base', 'https://api.geokami.com' );
+		$this->api_key     = $api_key ?: (string) Installer::get_setting( 'api_key', '' );
 		$this->timeout     = $timeout;
 		$this->max_retries = $max_retries;
 	}

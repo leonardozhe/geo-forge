@@ -34,9 +34,9 @@ final class Installer {
 
 		self::create_tables();
 		self::seed_defaults();
+		self::migrate_settings_to_table();
 
 		// Rebuild WordPress's rewrite cache so our virtual routes work immediately.
-		// Called after rules have been registered by Router::register().
 		Router::flush_rules();
 	}
 
@@ -48,9 +48,6 @@ final class Installer {
 	public static function deactivate(): void {
 		wp_clear_scheduled_hook( 'geo_forge_daily_scan' );
 		wp_clear_scheduled_hook( 'geo_forge_weekly_report' );
-
-		// Flush rewrite rules so our routes are removed from WordPress's cache.
-		// We re-register first so the flush sees the rules to remove.
 		Router::flush_rules();
 	}
 
@@ -128,17 +125,95 @@ final class Installer {
     KEY source (source)
 ) {$charset_collate};";
 
+		$settings_table = "CREATE TABLE {$wpdb->prefix}geo_forge_settings (
+    id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    setting_key varchar(100) NOT NULL,
+    setting_value longtext NOT NULL,
+    updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY  (id),
+    UNIQUE KEY setting_key (setting_key)
+) {$charset_collate};";
+
 		dbDelta( $scans_table );
 		dbDelta( $fixes_table );
 		dbDelta( $logs_table );
 		dbDelta( $traffic_table );
+		dbDelta( $settings_table );
 
 		update_option( 'geo_forge_db_version', GEO_FORGE_VERSION );
+
+		// Migrate settings from wp_options to custom table for persistence
+		self::migrate_settings_to_table();
+	}
+
+	/**
+	 * Migrate plugin settings from wp_options to the custom settings table.
+	 * wp_options can be wiped on uninstall — our table persists.
+	 */
+	private static function migrate_settings_to_table(): void {
+		global $wpdb;
+		$table = $wpdb->prefix . 'geo_forge_settings';
+
+		$keys = array(
+			'api_key', 'api_base', 'auto_scan_enabled', 'scan_frequency',
+			'auto_fix_enabled', 'auto_fix_risk_level', 'notify_score_drop',
+			'notify_threshold', 'log_min_level', 'log_retention_days',
+			'traffic_sample_rate',
+		);
+
+		foreach ( $keys as $key ) {
+			$option_name = 'geo_forge_' . $key;
+			$value       = get_option( $option_name, null );
+
+			if ( null !== $value && false !== $value ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$wpdb->replace(
+					$table,
+					array(
+						'setting_key'   => $key,
+						'setting_value' => is_array( $value ) ? wp_json_encode( $value ) : (string) $value,
+					),
+					array( '%s', '%s' )
+				);
+			}
+		}
+	}
+
+	public static function get_setting( string $key, mixed $default = null ): mixed {
+		global $wpdb;
+		$table = $wpdb->prefix . 'geo_forge_settings';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$value = $wpdb->get_var(
+			$wpdb->prepare( "SELECT setting_value FROM {$table} WHERE setting_key = %s", $key )
+		);
+
+		if ( null === $value || false === $value ) {
+			return get_option( 'geo_forge_' . $key, $default );
+		}
+
+		$decoded = json_decode( $value, true );
+		return ( JSON_ERROR_NONE === json_last_error() && is_array( $decoded ) ) ? $decoded : $value;
+	}
+
+	public static function set_setting( string $key, mixed $value ): void {
+		global $wpdb;
+		$table = $wpdb->prefix . 'geo_forge_settings';
+
+		$db_value = is_array( $value ) ? wp_json_encode( $value ) : (string) $value;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->replace(
+			$table,
+			array( 'setting_key' => $key, 'setting_value' => $db_value ),
+			array( '%s', '%s' )
+		);
+
+		update_option( 'geo_forge_' . $key, is_array( $value ) ? $db_value : $value );
 	}
 
 	/**
 	 * Seed default option values on first install.
-	 * Existing values are preserved — `get_option()` returns false only if absent.
 	 */
 	private static function seed_defaults(): void {
 		$defaults = array(

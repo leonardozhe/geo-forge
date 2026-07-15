@@ -4,14 +4,15 @@
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+use GEO_Forge\Install\Installer;
 use GEO_Forge\WellKnown\LlmsTxt;
 use GEO_Forge\WellKnown\SecurityTxt;
 use GEO_Forge\WellKnown\RobotsTxt;
 
 $form_action = 'geo_forge_save_settings';
 $nonce_field = 'geo_forge_settings_nonce';
-$api_key  = (string) get_option( 'geo_forge_api_key', '' );
-$api_base = (string) get_option( 'geo_forge_api_base', 'https://api.geokami.com' );
+$api_key  = (string) Installer::get_setting( 'api_key', '' );
+$api_base = (string) Installer::get_setting( 'api_base', 'https://api.geokami.com' );
 
 $llms_content     = LlmsTxt::get_current();
 $security_content = SecurityTxt::get_current();
@@ -31,7 +32,7 @@ $live_url         = home_url('/llms.txt');
 
 	<!-- API Tab -->
 	<div class="geo-forge-tab-content active" id="tab-api">
-		<?php if ( ! get_option( 'geo_forge_api_key' ) ) : ?>
+		<?php if ( ! Installer::get_setting( 'api_key', '' ) ) : ?>
 		<div class="geo-forge-card geo-forge-promo">
 			<h2>🔑 Get Your GEO KAMI API Key</h2>
 			<p>Sign up for free and get 100 points (5 comprehensive scans).</p>
