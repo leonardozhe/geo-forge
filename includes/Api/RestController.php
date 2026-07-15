@@ -25,6 +25,8 @@ use GEO_Forge\Log\Level;
 use GEO_Forge\Log\Logger;
 use GEO_Forge\Scanner\Scanner;
 use GEO_Forge\WellKnown\LlmsTxt;
+use GEO_Forge\WellKnown\RobotsTxt;
+use GEO_Forge\WellKnown\SecurityTxt;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -129,6 +131,76 @@ class RestController {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'handle_regenerate_llms_txt' ),
+				'permission_callback' => array( $this, 'check_admin_permission' ),
+			)
+		);
+
+		// security.txt — save, get, regenerate
+		register_rest_route(
+			self::NAMESPACE,
+			'/well-known/security-txt',
+			array(
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'handle_save_security_txt' ),
+					'permission_callback' => array( $this, 'check_admin_permission' ),
+					'args'                => array(
+						'content' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_textarea_field',
+						),
+					),
+				),
+				array(
+					'methods'             => 'READABLE',
+					'callback'            => array( $this, 'handle_get_security_txt' ),
+					'permission_callback' => array( $this, 'check_admin_permission' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/well-known/security-txt/regenerate',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_regenerate_security_txt' ),
+				'permission_callback' => array( $this, 'check_admin_permission' ),
+			)
+		);
+
+		// AI bot rules (robots.txt) — save, get, regenerate
+		register_rest_route(
+			self::NAMESPACE,
+			'/well-known/robots-txt',
+			array(
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'handle_save_robots_txt' ),
+					'permission_callback' => array( $this, 'check_admin_permission' ),
+					'args'                => array(
+						'content' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_textarea_field',
+						),
+					),
+				),
+				array(
+					'methods'             => 'READABLE',
+					'callback'            => array( $this, 'handle_get_robots_txt' ),
+					'permission_callback' => array( $this, 'check_admin_permission' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/well-known/robots-txt/regenerate',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_regenerate_robots_txt' ),
 				'permission_callback' => array( $this, 'check_admin_permission' ),
 			)
 		);
@@ -364,6 +436,58 @@ class RestController {
 			'success' => true,
 			'content' => $content,
 			'bytes'   => strlen( $content ),
+		), 200 );
+	}
+
+	/* ---- security.txt handlers ---- */
+
+	public function handle_save_security_txt( \WP_REST_Request $request ): \WP_REST_Response {
+		$content = (string) $request->get_param( 'content' );
+		SecurityTxt::save( $content );
+		return new \WP_REST_Response( array(
+			'success' => true,
+			'bytes'   => strlen( $content ),
+		), 200 );
+	}
+
+	public function handle_get_security_txt(): \WP_REST_Response {
+		return new \WP_REST_Response( array(
+			'success' => true,
+			'content' => SecurityTxt::get_current(),
+		), 200 );
+	}
+
+	public function handle_regenerate_security_txt(): \WP_REST_Response {
+		$content = SecurityTxt::regenerate();
+		return new \WP_REST_Response( array(
+			'success' => true,
+			'content' => $content,
+		), 200 );
+	}
+
+	/* ---- robots.txt handlers ---- */
+
+	public function handle_save_robots_txt( \WP_REST_Request $request ): \WP_REST_Response {
+		$content = (string) $request->get_param( 'content' );
+		RobotsTxt::save( $content );
+		return new \WP_REST_Response( array(
+			'success' => true,
+			'bytes'   => strlen( $content ),
+		), 200 );
+	}
+
+	public function handle_get_robots_txt(): \WP_REST_Response {
+		return new \WP_REST_Response( array(
+			'success' => true,
+			'content' => RobotsTxt::get_current(),
+		), 200 );
+	}
+
+	public function handle_regenerate_robots_txt(): \WP_REST_Response {
+		$content = RobotsTxt::regenerate();
+		return new \WP_REST_Response( array(
+			'success' => true,
+			'content' => $content,
 		), 200 );
 	}
 

@@ -6,7 +6,7 @@ $gp=[];foreach($fs as $f){$l=$f['priority']===1&&in_array($f['risk_level'],['non
 ?>
 <div class="geo-forge-wrap">
 <div class="gf-header"><h1>Optimizations <span class="gf-subtitle">Fix now to improve your AI score</span></h1><p class="gf-muted">These optimizations can be applied immediately on your server. Each fix records a snapshot and can be rolled back.</p></div>
-<div id="geo-forge-fix-status" class="gf-notice" style="display:none;"></div>
+<div id="geo-forge-fix-status" class="gf-notice" style="display:none;"><p></p></div>
 
 <?php if(empty($gp)):?>
 <div class="gf-card"><p class="gf-muted">No optimization actions registered.</p></div>
@@ -19,7 +19,7 @@ $gp=[];foreach($fs as $f){$l=$f['priority']===1&&in_array($f['risk_level'],['non
 	<tr data-fix-id="<?php echo$id;?>">
 		<td><strong style="font-size:13px;"><?php echo esc_html($fx2['label']);?></strong><br><span class="gf-muted"><?php echo esc_html($fx2['description']);?></span></td>
 		<td><span style="color:<?php echo esc_attr($rc($fx2['risk_level']));?>;font-weight:600;font-size:12px;"><?php echo ucfirst($fx2['risk_level']);?></span></td>
-		<td><?php echo $si($fx2['status']).' '.ucfirst($fx2['status']);?></td>
+		<td class="geo-forge-fix-status-cell"><?php echo $si($fx2['status']).' '.ucfirst($fx2['status']);?></td>
 		<td class="gf-muted"><?php echo $fx2['applied_at']??'—';?></td>
 		<td style="white-space:nowrap;">
 			<button class="gf-btn gf-btn-primary geo-forge-fix-apply" data-fix="<?php echo$id;?>" <?php disabled($ap);?>>Apply</button>
