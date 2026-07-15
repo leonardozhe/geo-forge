@@ -150,7 +150,7 @@ class Fixer {
 	}
 
 	/**
-	 * Verify a fix against GEO KAMI — calls /verify with the fix's check IDs.
+	 * Verify a fix by running a new scan and checking if the score improved.
 	 *
 	 * @return array{success:bool, message:string, verified?:bool, new_score?:int}
 	 */
@@ -169,15 +169,20 @@ class Fixer {
 		}
 
 		try {
-			$response = ( new Client() )->verify_fixes( home_url(), $check_ids );
+			// Run a fresh scan to verify the fix
+			$client = new Client();
+			$response = $client->initiate_scan( home_url(), true );
 
 			$this->mark_status( $id, 'verified', 'verified_at' );
 
+			$new_score = (int) ( $response['result']['totalScore'] ?? 0 );
+
 			return array(
-				'success'  => true,
-				'message'  => __( 'Verification completed.', 'geo-forge' ),
-				'verified' => (bool) ( $response['success'] ?? false ),
-				'response' => $response,
+				'success'   => true,
+				'message'   => __( 'Verification completed.', 'geo-forge' ),
+				'verified'  => (bool) ( $response['success'] ?? false ),
+				'new_score' => $new_score,
+				'response'  => $response,
 			);
 		} catch ( ApiException $e ) {
 			Logger::warning(

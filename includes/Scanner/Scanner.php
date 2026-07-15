@@ -93,12 +93,11 @@ class Scanner {
 		$interval = 2; // seconds between polls
 
 		while ( time() < $deadline ) {
-			$status_response = $this->api->get_scan_status( $scan_id );
-			$status          = $status_response['status'] ?? '';
+			$response = $this->api->get_scan_result( $scan_id );
+			$status   = $response['status'] ?? '';
 
 			if ( 'completed' === $status ) {
-				// Fetch the full result.
-				return $this->api->get_scan_result( $scan_id );
+				return $response['result'] ?? $response;
 			}
 
 			if ( 'failed' === $status ) {
@@ -109,7 +108,7 @@ class Scanner {
 				throw new ApiException(
 					\GEO_Forge\Api\ErrorCode::Api,
 					__( 'Scan failed on GEO KAMI side.', 'geo-forge' ),
-					array( 'scan_id' => $scan_id, 'response' => $status_response )
+					array( 'scan_id' => $scan_id, 'response' => $response )
 				);
 			}
 

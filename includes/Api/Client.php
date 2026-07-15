@@ -6,13 +6,12 @@
  * use `wp_remote_*` directly. Keeps auth, retries, timeouts, and error
  * mapping in one place.
  *
- * Endpoints mirrored from API:
+ * Endpoints:
  *   POST /api/scan
  *   GET  /api/scans/{id}
- *   GET  /api/scans/{id}/status
- *   POST /api/verify
+ *   GET  /api/scans/history
+ *   GET  /api/scans/user
  *   GET  /api/health
- *   GET  /api/account
  *
  * @package GEO_Forge
  */
@@ -77,27 +76,23 @@ class Client {
 	}
 
 	/**
-	 * GET /api/scans/{scan_id}/status  (lightweight — no full result payload)
+	 * GET /api/scans/history - list all scans for current user
 	 *
 	 * @throws ApiException
 	 */
-	public function get_scan_status( string $scan_id ): array {
-		$scan_id = sanitize_text_field( $scan_id );
-		return $this->request_json( 'GET', '/api/scans/' . rawurlencode( $scan_id ) . '/status' );
+	public function get_scan_history(): array {
+		return $this->request_json( 'GET', '/api/scans/history' );
 	}
 
 	/**
-	 * POST /api/verify — quick verify of specific checks after a fix.
+	 * GET /api/scans/user - get user scans with pagination
 	 *
-	 * @param string   $domain
-	 * @param string[] $check_ids
+	 * @param int $page Page number (1-based)
+	 * @param int $limit Items per page
 	 * @throws ApiException
 	 */
-	public function verify_fixes( string $domain, array $check_ids ): array {
-		return $this->request_json( 'POST', '/api/verify', array(
-			'domain'   => $domain,
-			'checkIds' => array_values( array_map( 'sanitize_text_field', $check_ids ) ),
-		) );
+	public function get_user_scans( int $page = 1, int $limit = 20 ): array {
+		return $this->request_json( 'GET', '/api/scans/user?page=' . absint( $page ) . '&limit=' . absint( $limit ) );
 	}
 
 	/**
@@ -120,15 +115,6 @@ class Client {
 			);
 			return false;
 		}
-	}
-
-	/**
-	 * GET /api/account — balance, plan, scans remaining.
-	 *
-	 * @throws ApiException
-	 */
-	public function get_account_info(): array {
-		return $this->request_json( 'GET', '/api/account' );
 	}
 
 	/**

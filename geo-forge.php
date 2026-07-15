@@ -42,7 +42,7 @@ if ( version_compare( PHP_VERSION, '8.1.0', '<' ) ) {
  * Constants.
  * Kept minimal — only what other files genuinely need.
  */
-define( 'GEO_FORGE_VERSION', '1.0.10-dev' );
+define( 'GEO_FORGE_VERSION', '1.0.11-dev' );
 define( 'GEO_FORGE_FILE', __FILE__ );
 define( 'GEO_FORGE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GEO_FORGE_URL', plugin_dir_url( __FILE__ ) );
