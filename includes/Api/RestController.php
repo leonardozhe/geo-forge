@@ -233,7 +233,7 @@ class RestController {
 	}
 
 	/**
-	 * POST /health-check — verify API key + reachability.
+	 * POST /health-check — verify API key validity + reachability.
 	 */
 	public function handle_health_check(): \WP_REST_Response {
 		$client = new Client();
@@ -248,16 +248,34 @@ class RestController {
 			), 400 );
 		}
 
-		$ok = $client->health_check();
+		// Check connectivity first (no auth needed)
+		if ( ! $client->health_check() ) {
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'ok'      => false,
+				'error'   => array(
+					'code'    => ErrorCode::Api->value,
+					'message' => __( 'Cannot reach GEO KAMI API.', 'geo-forge' ),
+				),
+			), 502 );
+		}
+
+		// Now actually verify the API key
+		if ( ! $client->auth_check() ) {
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'ok'      => false,
+				'error'   => array(
+					'code'    => ErrorCode::Auth->value,
+					'message' => __( 'API key is invalid or expired. Please check your key at geokami.com.', 'geo-forge' ),
+				),
+			), 401 );
+		}
 
 		return new \WP_REST_Response( array(
-			'success' => $ok,
-			'ok'      => $ok,
-			'error'   => $ok ? null : array(
-				'code'    => ErrorCode::Api->value,
-				'message' => __( 'Health check failed.', 'geo-forge' ),
-			),
-		), $ok ? 200 : 502 );
+			'success' => true,
+			'ok'      => true,
+		), 200 );
 	}
 
 	/**

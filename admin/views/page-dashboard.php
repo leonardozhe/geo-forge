@@ -67,7 +67,7 @@ $fixable_count = 0;
 	</div>
 
 	<div class="pure-g geo-forge-stats">
-		<div class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+		<div class="pure-u-1-4">
 			<div class="geo-forge-card">
 				<h3><?php esc_html_e( 'AI Score', 'geo-forge' ); ?></h3>
 				<p class="geo-forge-stat" data-stat="score">
@@ -77,7 +77,7 @@ $fixable_count = 0;
 			</div>
 		</div>
 
-		<div class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+		<div class="pure-u-1-4">
 			<div class="geo-forge-card">
 				<h3><?php esc_html_e( 'Issues Found', 'geo-forge' ); ?></h3>
 				<p class="geo-forge-stat" data-stat="issues">
@@ -87,7 +87,7 @@ $fixable_count = 0;
 			</div>
 		</div>
 
-		<div class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+		<div class="pure-u-1-4">
 			<div class="geo-forge-card">
 				<h3><?php esc_html_e( 'Fixable Auto', 'geo-forge' ); ?></h3>
 				<p class="geo-forge-stat" data-stat="fixable"><?php echo esc_html( $fixable_count ?: '—' ); ?></p>
@@ -95,7 +95,7 @@ $fixable_count = 0;
 			</div>
 		</div>
 
-		<div class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-4">
+		<div class="pure-u-1-4">
 			<div class="geo-forge-card">
 				<h3><?php esc_html_e( 'Grade', 'geo-forge' ); ?></h3>
 				<p class="geo-forge-stat" data-stat="grade">

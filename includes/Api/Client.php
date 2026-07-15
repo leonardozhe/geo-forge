@@ -96,22 +96,30 @@ class Client {
 	}
 
 	/**
-	 * GET /api/health — connectivity check. Returns true on 200.
-	 * Failures are logged at debug level — this is called frequently from
-	 * the admin Health Check button and we don't want to spam warnings
-	 * for transient blips.
+	 * GET /api/health — basic connectivity check (no auth needed).
+	 * Use auth_check() to verify API key validity.
 	 */
 	public function health_check(): bool {
 		try {
 			$this->request_json( 'GET', '/api/health' );
 			return true;
 		} catch ( ApiException $e ) {
+			return false;
+		}
+	}
+
+	/**
+	 * Test whether the API key is valid by hitting an authenticated endpoint.
+	 * GET /api/scans/history returns 401 if the key is invalid.
+	 */
+	public function auth_check(): bool {
+		try {
+			$this->request_json( 'GET', '/api/scans/history' );
+			return true;
+		} catch ( ApiException $e ) {
 			Logger::debug(
-				'Health check failed.',
-				array(
-					'code'    => $e->getCodeEnum()->value,
-					'message' => $e->getMessage(),
-				)
+				'Auth check failed.',
+				array( 'code' => $e->getCodeEnum()->value, 'message' => $e->getMessage() )
 			);
 			return false;
 		}
