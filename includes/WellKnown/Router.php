@@ -22,7 +22,7 @@
 
 namespace GEO_Forge\WellKnown;
 
-use GEO_Forge\Log\PluginLogger;
+use GEO_Forge\Log\Logger as PluginLogger;
 use GEO_Forge\Traffic\BotFamily;
 use GEO_Forge\Traffic\Store;
 
