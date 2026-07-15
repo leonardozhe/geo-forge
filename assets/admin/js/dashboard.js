@@ -1,132 +1,46 @@
 /**
- * GEO Forge — Dashboard JS.
- *
- * Handles the "Scan Now" button: POSTs to the REST endpoint, polls for
- * the result (scan typically takes 10-15s on GEO KAMI's side), and
- * updates the stat tiles and category table in place.
- *
- * Reads config from window.GeoForgeDashboard (localized by Admin.php).
+ * GEO Forge — Dashboard JS
+ * Scan button -> POST /geo-forge/v1/scan -> auto-refresh on success.
  */
 (function () {
     'use strict';
-
     var cfg = window.GeoForgeDashboard || {};
-    var restRoot = cfg.restRoot || '';
-    var restNonce = cfg.restNonce || '';
-    var i18n = cfg.i18n || {};
+    var root = cfg.restRoot || '', nonce = cfg.restNonce || '';
 
     var btn = document.getElementById('geo-forge-scan-btn');
     var statusEl = document.getElementById('geo-forge-scan-status');
-    var errorBox = document.getElementById('geo-forge-error');
-
-    if (!btn) {
-        return;
-    }
-
-    function setBusy(isBusy) {
-        btn.disabled = isBusy;
-        statusEl.textContent = isBusy ? (i18n.scanning || 'Scanning…') : '';
-    }
-
-    function showError(message) {
-        if (!errorBox) return;
-        errorBox.querySelector('p').textContent = message;
-        errorBox.style.display = 'block';
-    }
-
-    function clearError() {
-        if (errorBox) errorBox.style.display = 'none';
-    }
-
-    function updateStat(selector, value) {
-        var el = document.querySelector('[data-stat="' + selector + '"]');
-        if (el) el.textContent = value;
-    }
-
-    function emojiForScore(score) {
-        if (score >= 80) return '🟢';
-        if (score >= 50) return '🟡';
-        if (score >= 25) return '🟠';
-        return '🔴';
-    }
-
-    function renderScan(scan) {
-        if (!scan) return;
-
-        var score = scan.total_score || 0;
-        updateStat('score', emojiForScore(score) + ' ' + score);
-        updateStat('grade', scan.grade_label || '—');
-
-        var checks = scan.checks_result || [];
-        var issues = checks.filter(function (c) { return c.status !== 'pass'; }).length;
-        updateStat('issues', String(issues));
-
-        // Rebuild category table.
-        var wrap = document.querySelector('.geo-forge-category-table');
-        if (!wrap) return;
-        var tbody = wrap.querySelector('tbody');
-        if (!tbody) return;
-
-        var html = '';
-        var cats = scan.category_scores || [];
-        cats.forEach(function (cat) {
-            var earned = cat.earned || 0;
-            var max = Math.max(1, cat.max || 1);
-            var pct = Math.round((earned / max) * 100);
-            var color = pct >= 80 ? '#00a32a' : (pct >= 50 ? '#dba600' : '#d63638');
-            var id = (cat.id || '').toString();
-            id = id.charAt(0).toUpperCase() + id.slice(1);
-
-            html += '<tr>' +
-                '<td style="width:40%;">' + escapeHtml(id) + '</td>' +
-                '<td><div class="geo-forge-bar"><div class="geo-forge-bar-fill" style="width:' + pct + '%;background:' + color + ';"></div></div></td>' +
-                '<td style="width:15%;text-align:right;">' + pct + '% <span class="geo-forge-muted">(' + earned + '/' + cat.max + ')</span></td>' +
-                '</tr>';
-        });
-        tbody.innerHTML = html;
-    }
-
-    function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, function (c) {
-            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
-        });
-    }
-
-    function restFetch(path, opts) {
-        opts = opts || {};
-        return fetch(restRoot + path, {
-            method: opts.method || 'GET',
-            credentials: 'same-origin',
-            headers: {
-                'X-WP-Nonce': restNonce,
-                'Content-Type': 'application/json'
-            }
-        }).then(function (r) {
-            return r.json().then(function (body) {
-                return { ok: r.ok, status: r.status, body: body };
-            });
-        });
-    }
+    if (!btn) return;
 
     btn.addEventListener('click', function () {
-        clearError();
-        setBusy(true);
+        btn.disabled = true;
+        statusEl.textContent = 'Scanning... please wait 15-90s';
+        statusEl.style.color = '#64748b';
+        var errBox = document.getElementById('geo-forge-error');
+        if (errBox) errBox.style.display = 'none';
 
-        restFetch('scan', { method: 'POST' })
-            .then(function (res) {
-                if (!res.ok || !res.body.success) {
-                    var err = (res.body && res.body.error) || {};
-                    throw new Error(err.message || (i18n.scanFailed || 'Scan failed.'));
-                }
-                return res.body.scan;
-            })
-            .then(function (scan) {
-                renderScan(scan);
-                setBusy(false);
-            })
-            .catch(function (err) {
-                setBusy(false);
-                showError(err.message || (i18n.unknownError || 'Unknown error.'));
-            });
+        fetch(root + 'scan', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'X-WP-Nonce': nonce, 'Content-Type': 'application/json' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (body) {
+            btn.disabled = false;
+            if (body && body.success) {
+                statusEl.textContent = '✅ Scan complete — refreshing...';
+                statusEl.style.color = '#16a34a';
+                setTimeout(function () { location.reload(); }, 800);
+            } else {
+                var msg = (body && body.error && body.error.message) || 'Scan failed.';
+                statusEl.textContent = '❌ ' + msg;
+                statusEl.style.color = '#dc2626';
+                if (errBox) { errBox.innerHTML = '<p>' + msg + '</p>'; errBox.style.display = 'block'; }
+            }
+        })
+        .catch(function () {
+            btn.disabled = false;
+            statusEl.textContent = '❌ Network error or timeout.';
+            statusEl.style.color = '#dc2626';
+        });
     });
 })();
