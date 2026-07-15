@@ -146,3 +146,27 @@
 	max-width: 600px;
 	font-size: 11px;
 }
+
+/* ==========================================================================
+   llms.txt editor.
+   ========================================================================== */
+
+.geo-forge-editor {
+	width: 100%;
+	font-family: Consolas, Monaco, "Courier New", monospace;
+	font-size: 13px;
+	line-height: 1.5;
+	margin-top: 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 3px;
+	padding: 12px;
+	background: #fff;
+	resize: vertical;
+	tab-size: 4;
+}
+
+.geo-forge-editor-actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}

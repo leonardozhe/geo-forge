@@ -22,6 +22,7 @@ use GEO_Forge\Api\ApiException;
 use GEO_Forge\Log\Level;
 use GEO_Forge\Log\Logger;
 use GEO_Forge\Scanner\Scanner;
+use GEO_Forge\WellKnown\LlmsTxt;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -92,6 +93,40 @@ class RestController {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'handle_clear_logs' ),
+				'permission_callback' => array( $this, 'check_admin_permission' ),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/well-known/llms-txt',
+			array(
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'handle_save_llms_txt' ),
+					'permission_callback' => array( $this, 'check_admin_permission' ),
+					'args'                => array(
+						'content' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_textarea_field',
+						),
+					),
+				),
+				array(
+					'methods'             => 'READABLE',
+					'callback'            => array( $this, 'handle_get_llms_txt' ),
+					'permission_callback' => array( $this, 'check_admin_permission' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/well-known/llms-txt/regenerate',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_regenerate_llms_txt' ),
 				'permission_callback' => array( $this, 'check_admin_permission' ),
 			)
 		);
@@ -232,6 +267,41 @@ class RestController {
 				),
 			), 500 );
 		}
+	}
+
+	/**
+	 * POST /well-known/llms-txt — save user-edited content.
+	 */
+	public function handle_save_llms_txt( \WP_REST_Request $request ): \WP_REST_Response {
+		$content = (string) $request->get_param( 'content' );
+		LlmsTxt::save( $content );
+
+		return new \WP_REST_Response( array(
+			'success' => true,
+			'bytes'   => strlen( $content ),
+		), 200 );
+	}
+
+	/**
+	 * GET /well-known/llms-txt — fetch current stored content (for the editor).
+	 */
+	public function handle_get_llms_txt(): \WP_REST_Response {
+		return new \WP_REST_Response( array(
+			'success' => true,
+			'content' => LlmsTxt::get_current(),
+		), 200 );
+	}
+
+	/**
+	 * POST /well-known/llms-txt/regenerate — rebuild from store data.
+	 */
+	public function handle_regenerate_llms_txt(): \WP_REST_Response {
+		$content = LlmsTxt::regenerate();
+		return new \WP_REST_Response( array(
+			'success' => true,
+			'content' => $content,
+			'bytes'   => strlen( $content ),
+		), 200 );
 	}
 
 	/**

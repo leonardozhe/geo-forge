@@ -13,6 +13,7 @@
 namespace GEO_Forge\Install;
 
 use GEO_Forge\GeoForge;
+use GEO_Forge\WellKnown\Router;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -33,6 +34,10 @@ final class Installer {
 
 		self::create_tables();
 		self::seed_defaults();
+
+		// Rebuild WordPress's rewrite cache so our virtual routes work immediately.
+		// Called after rules have been registered by Router::register().
+		Router::flush_rules();
 	}
 
 	/**
@@ -44,8 +49,9 @@ final class Installer {
 		wp_clear_scheduled_hook( 'geo_forge_daily_scan' );
 		wp_clear_scheduled_hook( 'geo_forge_weekly_report' );
 
-		// Flush rewrite rules so any routes we registered are removed from the cache.
-		flush_rewrite_rules();
+		// Flush rewrite rules so our routes are removed from WordPress's cache.
+		// We re-register first so the flush sees the rules to remove.
+		Router::flush_rules();
 	}
 
 	/**

@@ -13,6 +13,7 @@ namespace GEO_Forge;
 use GEO_Forge\Admin\Admin;
 use GEO_Forge\Api\RestController;
 use GEO_Forge\Log\ErrorCapture;
+use GEO_Forge\WellKnown\Router;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -57,6 +58,9 @@ final class GeoForge {
 		// Capture fatals in our own code. Registered early — runs on every request,
 		// including cron and REST. Cheap when there's no fatal.
 		ErrorCapture::register();
+
+		// Virtual routes for /.well-known/* and /llms.txt.
+		Router::register();
 
 		if ( is_admin() ) {
 			$admin = new Admin();

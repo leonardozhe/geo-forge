@@ -30,6 +30,12 @@ final class Admin {
 			'callback' => 'render_dashboard',
 		),
 		array(
+			'slug'     => 'geo-forge-llms',
+			'title'    => 'llms.txt',
+			'view'     => 'page-llms-editor',
+			'callback' => 'render_llms_editor',
+		),
+		array(
 			'slug'     => 'geo-forge-settings',
 			'title'    => 'Settings',
 			'view'     => 'page-settings',
@@ -73,6 +79,10 @@ final class Admin {
 
 	public function render_settings(): void {
 		$this->render_view( 'page-settings' );
+	}
+
+	public function render_llms_editor(): void {
+		$this->render_view( 'page-llms-editor' );
 	}
 
 	public function render_logs(): void {
@@ -138,8 +148,19 @@ final class Admin {
 			) );
 		}
 
+		if ( str_contains( $hook, 'geo-forge-llms' ) ) {
+			wp_enqueue_script(
+				'geo-forge-llms-editor',
+				GEO_FORGE_URL . 'assets/admin/js/llms-editor.js',
+				array(),
+				GEO_FORGE_VERSION,
+				true
+			);
+			wp_localize_script( 'geo-forge-llms-editor', 'GeoForgeLlms', $shared );
+		}
+
 		// Dashboard gets its own JS (only on the main dashboard page, not settings).
-		if ( ! str_contains( $hook, 'geo-forge-settings' ) && ! str_contains( $hook, 'geo-forge-logs' ) && str_contains( $hook, 'geo-forge' ) ) {
+		if ( ! str_contains( $hook, 'geo-forge-settings' ) && ! str_contains( $hook, 'geo-forge-logs' ) && ! str_contains( $hook, 'geo-forge-llms' ) && str_contains( $hook, 'geo-forge' ) ) {
 			wp_enqueue_script(
 				'geo-forge-dashboard',
 				GEO_FORGE_URL . 'assets/admin/js/dashboard.js',
