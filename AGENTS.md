@@ -161,3 +161,163 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+---
+
+## 🚀 Release Workflow (MUST FOLLOW)
+
+### Version Bump Process
+
+When releasing a new version, follow these steps **in order**:
+
+#### Step 1: Update Version Numbers
+
+Edit `geo-forge.php` and update **BOTH** version locations:
+
+```php
+// Line ~6: Plugin header
+ * Version:           1.0.XX-dev
+
+// Line ~45: PHP constant
+define( 'GEO_FORGE_VERSION', '1.0.XX-dev' );
+```
+
+**Both must match exactly.** Verify with:
+```bash
+grep "Version:" geo-forge.php
+grep "GEO_FORGE_VERSION" geo-forge.php
+```
+
+#### Step 2: Build WordPress-Standard ZIP
+
+The ZIP must have **exactly one top-level directory** named `geo-forge/`:
+
+```bash
+rm -f geo-forge.zip
+rm -rf /tmp/geo-forge-build
+mkdir -p /tmp/geo-forge-build/geo-forge
+
+# Copy essential files only (no dev files)
+cp geo-forge.php /tmp/geo-forge-build/geo-forge/
+cp readme.txt /tmp/geo-forge-build/geo-forge/
+cp LICENSE /tmp/geo-forge-build/geo-forge/
+cp uninstall.php /tmp/geo-forge-build/geo-forge/
+cp -r includes /tmp/geo-forge-build/geo-forge/
+cp -r admin /tmp/geo-forge-build/geo-forge/
+cp -r assets /tmp/geo-forge-build/geo-forge/
+
+# Create zip
+cd /tmp/geo-forge-build && zip -qr /path/to/geo-forge/geo-forge.zip geo-forge/
+cd /path/to/geo-forge
+```
+
+**Verify structure:**
+```bash
+unzip -l geo-forge.zip | head -20
+# Should show: geo-forge/geo-forge.php (NOT geo-forge-1.0.XX-dev/)
+```
+
+#### Step 3: Upload to R2
+
+```bash
+source /tmp/r2venv/bin/activate
+python3 << 'PYEOF'
+import boto3
+s3 = boto3.client(
+    's3',
+    endpoint_url='https://14d3fa0c981987777fd7e0fa37d8e52a.r2.cloudflarestorage.com',
+    aws_access_key_id='c38524e512da95573284d829e5130578',
+    aws_secret_access_key='8fa1d56f3b38563cd11c5dadb424f149a56a21c4d35fa7615ffbf3d2ccb8f369',
+    region_name='auto'
+)
+with open('geo-forge.zip', 'rb') as f:
+    s3.put_object(
+        Bucket='plugins-data',
+        Key='geo-forge/geo-forge-1.0.XX-dev.zip',  # Update version number!
+        Body=f.read(),
+        ContentType='application/zip'
+    )
+print('✅ Uploaded v1.0.XX-dev')
+PYEOF
+```
+
+#### Step 4: Update update.json
+
+```bash
+python3 << 'PYEOF'
+import boto3, json
+from datetime import datetime, timezone
+
+s3 = boto3.client(
+    's3',
+    endpoint_url='https://14d3fa0c981987777fd7e0fa37d8e52a.r2.cloudflarestorage.com',
+    aws_access_key_id='c38524e512da95573284d829e5130578',
+    aws_secret_access_key='8fa1d56f3b38563cd11c5dadb424f149a56a21c4d35fa7615ffbf3d2ccb8f369',
+    region_name='auto'
+)
+
+update_json = {
+    "name": "GEO Forge",
+    "slug": "geo-forge",
+    "plugin": "geo-forge/geo-forge.php",  # MUST match ZIP structure
+    "version": "1.0.XX-dev",              # Update version number!
+    "download_url": "https://update.geokami.com/geo-forge/geo-forge-1.0.XX-dev.zip",
+    "tested": "6.7",
+    "requires": "6.0",
+    "requires_php": "8.1",
+    "last_updated": datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
+    "sections": {
+        "description": "Forge your WooCommerce store for the AI era.",
+        "changelog": "<h4>1.0.XX-dev</h4><ul><li>Release notes here</li></ul>"
+    }
+}
+
+s3.put_object(
+    Bucket='plugins-data',
+    Key='geo-forge/update.json',
+    Body=json.dumps(update_json, indent=2),
+    ContentType='application/json',
+    CacheControl='max-age=300'
+)
+print('✅ update.json updated')
+PYEOF
+```
+
+### Release Checklist
+
+Before marking a release as complete, verify:
+
+- [ ] Version number updated in `geo-forge.php` (BOTH locations)
+- [ ] ZIP built with `geo-forge/` top-level directory (NOT versioned)
+- [ ] ZIP uploaded to R2 with correct filename
+- [ ] `update.json` uploaded with matching version number
+- [ ] `plugin` field in `update.json` is `geo-forge/geo-forge.php`
+- [ ] Tested installation on WordPress (version shows correctly)
+- [ ] Git commit made with version bump
+
+### Common Mistakes to Avoid
+
+❌ **Wrong:** Building zip with `geo-forge-1.0.18-dev/` top-level directory  
+✅ **Right:** Always use `geo-forge/` (no version in directory name)
+
+❌ **Wrong:** Updating version in header but not in constant  
+✅ **Right:** Update BOTH `Version:` header AND `GEO_FORGE_VERSION` constant
+
+❌ **Wrong:** `plugin` field in update.json as `geo-forge.php`  
+✅ **Right:** `plugin` field must be `geo-forge/geo-forge.php` (directory/file)
+
+❌ **Wrong:** Forgetting to upload update.json after zip  
+✅ **Right:** Always upload both zip AND update.json
+
+### R2 Credentials (Production)
+
+- **Endpoint:** `https://14d3fa0c981987777fd7e0fa37d8e52a.r2.cloudflarestorage.com`
+- **Access Key:** `c38524e512da95573284d829e5130578`
+- **Secret Key:** `8fa1d56f3b38563cd11c5dadb424f149a56a21c4d35fa7615ffbf3d2ccb8f369`
+- **Bucket:** `plugins-data`
+- **Key Pattern:** `geo-forge/geo-forge-{version}.zip`
+- **Update Manifest:** `geo-forge/update.json`
+
+**Public URLs:**
+- Plugin ZIP: `https://update.geokami.com/geo-forge/geo-forge-{version}.zip`
+- Update Manifest: `https://update.geokami.com/geo-forge/update.json`
