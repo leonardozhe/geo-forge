@@ -54,6 +54,7 @@ $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_cur
 </div>
 
 <div class="gf-tab-content" id="tab-content">
+	<div id="geo-forge-editor-status" class="gf-notice" style="display:none;"></div>
 	<div class="gf-card">
 		<div class="gf-card-title">llms.txt</div>
 		<div class="gf-muted" style="margin-bottom:8px;">Served at <code><?php echo esc_html($lu);?></code></div>
