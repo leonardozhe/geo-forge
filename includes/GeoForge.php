@@ -18,6 +18,7 @@ use GEO_Forge\Fixer\Actions\RobotsTxtFix;
 use GEO_Forge\Fixer\Actions\SecurityTxtFix;
 use GEO_Forge\Fixer\Actions\StructuredDataFix;
 use GEO_Forge\Fixer\Fixer;
+use GEO_Forge\Install\Installer;
 use GEO_Forge\Log\ErrorCapture;
 use GEO_Forge\Traffic\Capture;
 use GEO_Forge\Updater\Updater;
@@ -63,6 +64,13 @@ final class GeoForge {
 	}
 
 	private function register_hooks(): void {
+		// Check if database needs migration after plugin update.
+		// This ensures tables are created even if activation hook didn't fire.
+		$db_version = get_option( 'geo_forge_db_version', '0' );
+		if ( version_compare( $db_version, GEO_FORGE_VERSION, '<' ) ) {
+			Installer::activate();
+		}
+
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 
