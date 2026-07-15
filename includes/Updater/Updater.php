@@ -51,7 +51,7 @@ class Updater {
 	/** Default manifest URL. Override via `geo_forge_update_url` filter. */
 	private const DEFAULT_MANIFEST_URL = 'https://update.geokami.com/geo-forge/update.json';
 
-	private const CACHE_TTL = 12 * HOUR_IN_SECONDS;
+	private const CACHE_TTL = 6 * HOUR_IN_SECONDS;
 	private const CACHE_KEY = 'geo_forge_remote_update';
 
 	/**
@@ -98,7 +98,7 @@ class Updater {
 		}
 
 		$transient->response[ GEO_FORGE_BASENAME ] = (object) array(
-			'id'           => self::manifest_url(),
+			'id'           => self::cache_bust_url(),
 			'slug'         => 'geo-forge',
 			'plugin'       => GEO_FORGE_BASENAME,
 			'new_version'  => $remote_version,
@@ -176,7 +176,7 @@ class Updater {
 			return $cached;
 		}
 
-		$url = self::manifest_url();
+		$url = self::cache_bust_url();
 
 		$response = wp_remote_get(
 			$url,
@@ -227,5 +227,17 @@ class Updater {
 		 * @param string $url Full URL to update.json.
 		 */
 		return (string) apply_filters( 'geo_forge_update_url', self::DEFAULT_MANIFEST_URL );
+	}
+
+	/**
+	 * Build a cache-busting URL for the manifest. WordPress's update check
+	 * runs at most every 12 hours; we append the current hour so the CDN
+	 * cache is only valid for at most 1 hour (or whatever the CDN's TTL is).
+	 * This prevents stale update.json from being served across releases.
+	 */
+	private static function cache_bust_url(): string {
+		$url  = self::manifest_url();
+		$hour = gmdate( 'YmdH' ); // e.g. 2026071508
+		return add_query_arg( '_t', $hour, $url );
 	}
 }
