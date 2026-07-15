@@ -35,36 +35,36 @@ $cat_names = array(
 );
 $check_models = array(
 	'robots_txt'      => 'GPTBot, ClaudeBot, PerplexityBot',
-	'llms_txt_exists' => 'ChatGPT, Claude, Perplexity, all LLMs',
+	'llms_txt_exists' => 'ChatGPT, Claude, Perplexity',
 	'llms_txt_quality'=> 'ChatGPT, Claude, Perplexity',
-	'security_txt'    => 'Security researchers, all agents',
-	'mcp_server_card' => 'Claude Desktop, all MCP clients',
+	'security_txt'    => 'Security researchers',
+	'mcp_server_card' => 'Claude Desktop, MCP clients',
 	'a2a_agent_card'  => 'Google A2A agents',
-	'json_ld'         => 'Google AI, ChatGPT, all search agents',
-	'review_rating'   => 'Google Shopping AI, Perplexity Shopping',
+	'json_ld'         => 'Google AI, ChatGPT',
+	'review_rating'   => 'Google Shopping, Perplexity',
 	'basic_security'  => 'All web crawlers',
 	'hsts_config'     => 'All HTTPS clients',
-	'canonical'       => 'Google, all search engines',
-	'sitemap_xml'     => 'Google, Bing, all search engines',
-	'meta_tags'       => 'Google AI, ChatGPT, social agents',
-	'ai_bot_rules'    => 'GPTBot, ClaudeBot, all AI crawlers',
+	'canonical'       => 'Google, search engines',
+	'sitemap_xml'     => 'Google, Bing',
+	'meta_tags'       => 'Google AI, ChatGPT',
+	'ai_bot_rules'    => 'GPTBot, ClaudeBot',
 );
 ?>
 <div class="geo-forge-wrap">
 <div class="gf-header"><div style="display:flex;align-items:center;justify-content:space-between;"><div><h1>Dashboard <span class="gf-subtitle">GEO Forge</span></h1><?php if ( $lt ) : ?><span class="gf-muted">Last scan: <?php echo esc_html( $lt ); ?></span><?php endif; ?></div><div id="gf-account-info" style="display:flex;align-items:center;gap:8px;"><?php if ( $hk ) : ?><span class="gf-badge gf-badge-green">🔗 Connected</span><?php else : ?><a href="<?php echo esc_url( admin_url( 'admin.php?page=geo-forge-settings' ) ); ?>" class="gf-btn">Add API Key</a><?php endif; ?></div></div></div>
 
 <div class="gf-grid gf-grid-3" style="margin-bottom:12px;">
-	<div class="gf-card" style="padding:20px 24px;">
+	<div class="gf-card" style="padding:24px;">
 		<div class="gf-stat-label"><i data-lucide="bar-chart-2" style="width:18px;height:18px;display:inline-block;vertical-align:middle;"></i> AI Score</div>
-		<div class="gf-stat" style="text-align:left;"><?php echo null === $sc0 ? '—' : esc_html( $sc0 ); ?><span style="font-size:14px;color:#94a3b8;">/100</span></div>
+		<div class="gf-stat"><?php echo null === $sc0 ? '—' : esc_html( $sc0 ); ?><span style="font-size:14px;color:#94a3b8;">/100</span></div>
 	</div>
-	<div class="gf-card" style="padding:20px 24px;">
+	<div class="gf-card" style="padding:24px;">
 		<div class="gf-stat-label"><i data-lucide="check-circle-2" style="width:18px;height:18px;display:inline-block;vertical-align:middle;"></i> Status</div>
-		<div class="gf-stat" style="text-align:left;"><?php echo null === $sc0 ? '—' : "<span style='color:#16a34a'>$ps</span> <span style='font-size:14px;color:#94a3b8;font-weight:400;'>pass</span> · <span style='color:#dc2626'>$fl</span> <span style='font-size:14px;color:#94a3b8;font-weight:400;'>fail</span>"; ?></div>
+		<div class="gf-stat"><?php echo null === $sc0 ? '—' : "<span style='color:#16a34a'>$ps</span> <span style='font-size:14px;color:#94a3b8;font-weight:400;'>pass</span> · <span style='color:#dc2626'>$fl</span> <span style='font-size:14px;color:#94a3b8;font-weight:400;'>fail</span>"; ?></div>
 	</div>
-	<div class="gf-card" style="padding:20px 24px;">
+	<div class="gf-card" style="padding:24px;">
 		<div class="gf-stat-label"><i data-lucide="award" style="width:18px;height:18px;display:inline-block;vertical-align:middle;"></i> Grade</div>
-		<div class="gf-grade" style="background:<?php echo $grc; ?>;display:inline-flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;width:48px;height:48px;border-radius:8px;margin-top:4px;"><?php echo $gr; ?></div>
+		<div class="gf-stat" style="color:<?php echo $grc; ?>;font-size:48px;font-weight:800;"><?php echo $gr; ?></div>
 	</div>
 </div>
 
@@ -78,38 +78,40 @@ $check_models = array(
 	<div style="grid-column: span 2;"><div class="gf-card" style="padding:0;"><div class="gf-card-title" style="padding:20px 20px 0 20px;">Check Results <span class="gf-badge gf-badge-blue"><?php echo count( $ck ); ?></span></div>
 
 		<!-- Fixed header -->
-		<table style="min-width:700px;"><thead><tr>
-			<th style="width:6%;">Status</th>
-			<th style="width:34%;">Check</th>
-			<th style="width:14%;">Category</th>
-			<th style="width:24%;">AI Models</th>
-			<th style="width:22%;">Introduction</th>
+		<table style="min-width:720px;"><thead><tr>
+			<th style="width:5%;"></th>
+			<th style="width:28%;">Check</th>
+			<th style="width:12%;">Category</th>
+			<th style="width:20%;">AI Models</th>
+			<th style="width:35%;">Goal</th>
 		</tr></thead></table>
 
 		<!-- Scrollable body -->
 		<div style="max-height:340px;overflow-y:auto;padding-right:4px;">
-		<table style="min-width:700px;">
-		<colgroup><col style="width:6%;"><col style="width:34%;"><col style="width:14%;"><col style="width:24%;"><col style="width:22%;"></colgroup>
+		<table style="min-width:720px;">
+		<colgroup><col style="width:5%;"><col style="width:28%;"><col style="width:12%;"><col style="width:20%;"><col style="width:35%;"></colgroup>
 		<tbody>
-		<?php foreach ( $ck as $ch ) : $st = $ch['status'] ?? 'fail'; $label = $ch['label'] ?? $ch['name'] ?? $ch['id'] ?? '?'; $chid = $ch['id'] ?? ''; $chcat = $ch['category'] ?? ''; $cat_label = $cat_names[ $chcat ] ?? $chcat; $ai_models = $check_models[ $chid ] ?? '—'; $score_raw = $ch['score'] ?? 0; $max_raw = $ch['maxScore'] ?? 0; $score_pct = $max_raw > 0 ? round( $score_raw / $max_raw * 100 ) : 0; $score_cl = $score_pct >= 80 ? '#16a34a' : ( $score_pct >= 40 ? '#ca8a04' : '#dc2626' ); $rec = $ch['recommendation'] ?? ''; $goal = $ch['goal'] ?? ''; $res = $ch['result'] ?? ''; ?>
+		<?php foreach ( $ck as $ch ) : $st = $ch['status'] ?? 'fail'; $label = $ch['label'] ?? $ch['name'] ?? $ch['id'] ?? '?'; $chid = $ch['id'] ?? ''; $chcat = $ch['category'] ?? ''; $cat_label = $cat_names[ $chcat ] ?? $chcat; $ai_models = $check_models[ $chid ] ?? '—'; $score_raw = $ch['score'] ?? 0; $max_raw = $ch['maxScore'] ?? 0; $goal = $ch['goal'] ?? ''; $res = $ch['result'] ?? ''; $rec = $ch['recommendation'] ?? ''; ?>
 		<tr>
-			<td style="width:6%;text-align:center;font-size:14px;">
-				<?php echo $st === 'pass' ? '✅' : ( $st === 'warn' ? '⚠️' : '❌' ); ?>
+			<td style="width:5%;text-align:center;">
+				<?php if ( $st === 'pass' ) : ?><i data-lucide="circle-check" style="width:16px;height:16px;color:#16a34a;"></i>
+				<?php elseif ( $st === 'warn' ) : ?><i data-lucide="triangle-alert" style="width:16px;height:16px;color:#ca8a04;"></i>
+				<?php else : ?><i data-lucide="circle-x" style="width:16px;height:16px;color:#dc2626;"></i><?php endif; ?>
 			</td>
-			<td style="width:34%;">
+			<td style="width:28%;">
 				<div style="font-weight:600;font-size:12px;"><?php echo esc_html( $label ); ?></div>
+				<?php if ( $res ) : ?><div style="font-size:10px;color:#94a3b8;margin-top:1px;"><?php echo esc_html( $res ); ?></div><?php endif; ?>
 			</td>
-			<td style="width:14%;"><span style="font-size:11px;color:#64748b;"><?php echo esc_html( $cat_label ); ?></span></td>
-			<td style="width:24%;"><span style="font-size:10px;color:#94a3b8;"><?php echo esc_html( $ai_models ); ?></span></td>
-			<td style="width:22%;">
-				<?php if ( $goal ) : ?><div style="font-size:10px;color:#64748b;margin-bottom:2px;">🎯 <?php echo esc_html( $goal ); ?></div><?php endif; ?>
-				<?php if ( $st !== 'pass' && $rec ) : ?><div style="font-size:10px;color:#dc2626;margin-bottom:2px;">💡 <?php echo esc_html( $rec ); ?></div><?php endif; ?>
-				<div style="font-size:11px;font-weight:600;color:<?php echo $score_cl; ?>;"><?php echo (int) $score_raw; ?>/<?php echo (int) $max_raw; ?> <span style="font-size:10px;font-weight:400;color:#94a3b8;"> —
-				<?php
-					if ( 'pass' === $st ) { echo 'Passed'; }
-					elseif ( $score_pct >= 50 ) { echo 'Partial pass'; }
-					else { echo 'Failed'; }
-				?></span></div>
+			<td style="width:12%;"><span style="font-size:11px;color:#64748b;"><?php echo esc_html( $cat_label ); ?></span></td>
+			<td style="width:20%;"><span style="font-size:10px;color:#94a3b8;"><?php echo esc_html( $ai_models ); ?></span></td>
+			<td style="width:35%;">
+				<?php if ( $goal ) : ?><div style="font-size:11px;color:#475569;margin-bottom:3px;"><?php echo esc_html( $goal ); ?></div><?php endif; ?>
+				<?php if ( $rec ) : ?><div style="font-size:10px;color:#dc2626;margin-bottom:2px;">💡 <?php echo esc_html( $rec ); ?></div><?php endif; ?>
+				<div style="font-size:12px;font-weight:600;">
+					<span style="color:<?php echo $st === 'pass' ? '#16a34a' : '#dc2626'; ?>;"><?php echo (int) $score_raw; ?>/<?php echo (int) $max_raw; ?></span>
+					<span style="font-size:10px;font-weight:400;color:#94a3b8;margin-left:4px;">—
+					<?php echo $st === 'pass' ? 'Passed' : 'Failed'; ?></span>
+				</div>
 			</td>
 		</tr>
 		<?php endforeach; ?></tbody></table></div>
