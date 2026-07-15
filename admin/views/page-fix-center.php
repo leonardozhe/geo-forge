@@ -2,17 +2,18 @@
 $fx=GeoForge::fixer();$fs=$fx?$fx->list():[];
 $si=fn($s)=>match($s){'applied'=>'✅','verified'=>'✅✅','rolled_back'=>'⏪','failed'=>'❌',default=>'○'};
 $rc=fn($r)=>match($r){'none'=>'#16a34a','low'=>'#2563eb','medium'=>'#ca8a04','high'=>'#dc2626',default=>'#94a3b8'};
-$gp=[];foreach($fs as $f){$l=$f['priority']===1&&in_array($f['risk_level'],['none','low'])?'P1 Critical':($f['priority']<=2?'P2 Warning':'P3 Optional');$gp[$l][]=$f;}
+$gp=[];foreach($fs as $f){$l=$f['priority']===1&&in_array($f['risk_level'],['none','low'])?'Local Fixes (no risk)':($f['priority']<=2?'Server Config (low risk)':'Advanced (manual)');$gp[$l][]=$f;}
 ?>
 <div class="geo-forge-wrap">
-<div class="gf-header"><h1>Optimizations <span class="gf-subtitle">Fix now to improve your AI score</span></h1><p class="gf-muted">These optimizations can be applied immediately on your server. Each fix is reversible.</p></div>
+<div class="gf-header"><h1>Optimizations <span class="gf-subtitle">Fix now to improve your AI score</span></h1><p class="gf-muted">These optimizations can be applied immediately on your server. Each fix records a snapshot and can be rolled back.</p></div>
 <div id="geo-forge-fix-status" class="gf-notice" style="display:none;"></div>
 
 <?php if(empty($gp)):?>
 <div class="gf-card"><p class="gf-muted">No optimization actions registered.</p></div>
-<?php else:foreach($gp as $gl=>$it):?>
-<div class="gf-card">
+<?php else:foreach($gp as $gl=>$it):$is_p1=str_contains($gl,'no risk');?>
+<div class="gf-card<?php echo $is_p1?' gf-card-highlight':'';?>"<?php echo $is_p1?' style="border-color:#16a34a;border-left:3px solid #16a34a;"':'';?>>
 	<div class="gf-card-title"><?php echo esc_html($gl);?> <span class="gf-badge gf-badge-blue"><?php echo count($it);?></span></div>
+	<?php if($is_p1):?><p class="gf-muted" style="margin-bottom:8px;color:#16a34a;">✅ Zero risk — can be applied immediately without affecting your store.</p><?php endif;?>
 	<table class="striped"><thead><tr><th>Fix</th><th>Risk</th><th>Status</th><th>Applied</th><th></th></tr></thead><tbody>
 	<?php foreach($it as $fx2):$id=esc_attr($fx2['id']);$ap=in_array($fx2['status'],['applied','verified']);?>
 	<tr data-fix-id="<?php echo$id;?>">

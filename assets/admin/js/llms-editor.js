@@ -1,80 +1,71 @@
 /**
- * GEO Forge — llms.txt editor JS.
- *
- * Save + Regenerate buttons, both via REST.
+ * GEO Forge — Content Editor JS
+ * llms.txt, security.txt, robots.txt save + regenerate
  */
 (function () {
     'use strict';
+    var cfg = window.GeoForgeSettings || {};
+    var root = cfg.restRoot || '', nonce = cfg.restNonce || '';
 
-    var cfg = window.GeoForgeLlms || {};
-    var restRoot = cfg.restRoot || '';
-    var restNonce = cfg.restNonce || '';
+    function bindEditor(saveId, regenId, textareaId, endpoint) {
+        var saveBtn = document.getElementById(saveId);
+        var regenBtn = document.getElementById(regenId);
+        var ta = document.getElementById(textareaId);
+        if (!saveBtn || !ta) return;
 
-    var textarea = document.getElementById('geo-forge-llms-content');
-    var saveBtn = document.getElementById('geo-forge-save-llms');
-    var regenBtn = document.getElementById('geo-forge-regen-llms');
-    var statusEl = document.getElementById('geo-forge-editor-status');
-
-    if (!textarea || !saveBtn) return;
-
-    function showStatus(message, isError) {
-        statusEl.querySelector('p').textContent = message;
-        statusEl.className = 'notice ' + (isError ? 'notice-error' : 'notice-success');
-        statusEl.style.display = 'block';
-        setTimeout(function () { statusEl.style.display = 'none'; }, 4000);
-    }
-
-    function restFetch(path, opts) {
-        opts = opts || {};
-        return fetch(restRoot + path, {
-            method: opts.method || 'GET',
-            credentials: 'same-origin',
-            headers: {
-                'X-WP-Nonce': restNonce,
-                'Content-Type': 'application/json'
-            },
-            body: opts.body
-        }).then(function (r) {
-            return r.json().then(function (body) { return { ok: r.ok, body: body }; });
-        });
-    }
-
-    saveBtn.addEventListener('click', function () {
-        saveBtn.disabled = true;
-        restFetch('well-known/llms-txt', {
-            method: 'POST',
-            body: JSON.stringify({ content: textarea.value })
-        })
-            .then(function (res) {
-                if (res.ok && res.body.success) {
-                    showStatus('Saved.', false);
+        saveBtn.addEventListener('click', function () {
+            saveBtn.disabled = true;
+            fetch(root + 'well-known/' + endpoint, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'X-WP-Nonce': nonce, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: ta.value })
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (b) {
+                saveBtn.disabled = false;
+                if (b && b.success) {
+                    showToast('✅ Saved (' + (b.bytes || ta.value.length) + ' bytes)');
                 } else {
-                    var msg = (res.body && res.body.error && res.body.error.message) || 'Save failed.';
-                    showStatus(msg, true);
+                    showToast('❌ ' + ((b && b.error && b.error.message) || 'Save failed'));
                 }
             })
-            .catch(function () { showStatus('Network error.', true); })
-            .finally(function () { saveBtn.disabled = false; });
-    });
+            .catch(function () { saveBtn.disabled = false; showToast('❌ Network error'); });
+        });
 
-    if (regenBtn) {
-        regenBtn.addEventListener('click', function () {
-            if (!window.confirm('Regenerate llms.txt from current store data? Your edits will be overwritten.')) {
-                return;
-            }
-            regenBtn.disabled = true;
-            restFetch('well-known/llms-txt/regenerate', { method: 'POST' })
-                .then(function (res) {
-                    if (res.ok && res.body.success) {
-                        textarea.value = res.body.content || '';
-                        showStatus('Regenerated.', false);
+        if (regenBtn) {
+            regenBtn.addEventListener('click', function () {
+                regenBtn.disabled = true;
+                fetch(root + 'well-known/' + endpoint + '/regenerate', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'X-WP-Nonce': nonce, 'Content-Type': 'application/json' }
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (b) {
+                    regenBtn.disabled = false;
+                    if (b && b.success && b.content) {
+                        ta.value = b.content;
+                        showToast('✅ Regenerated (' + b.bytes + ' bytes)');
                     } else {
-                        var msg = (res.body && res.body.error && res.body.error.message) || 'Regenerate failed.';
-                        showStatus(msg, true);
+                        showToast('❌ Regeneration failed');
                     }
                 })
-                .catch(function () { showStatus('Network error.', true); })
-                .finally(function () { regenBtn.disabled = false; });
-        });
+                .catch(function () { regenBtn.disabled = false; showToast('❌ Network error'); });
+            });
+        }
     }
+
+    function showToast(msg) {
+        var el = document.getElementById('geo-forge-editor-status');
+        if (!el) return;
+        el.innerHTML = '<p>' + msg + '</p>';
+        el.className = 'gf-notice ' + (msg.indexOf('✅') >= 0 ? 'gf-notice-success' : 'gf-notice-error');
+        el.style.display = 'block';
+        setTimeout(function () { el.style.display = 'none'; }, 4000);
+    }
+
+    bindEditor('geo-forge-save-llms',    'geo-forge-regen-llms',    'geo-forge-llms-content',    'llms-txt');
+    bindEditor('geo-forge-save-security', 'geo-forge-regen-security', 'geo-forge-security-content', 'security-txt');
+    bindEditor('geo-forge-save-robots',   'geo-forge-regen-robots',   'geo-forge-robots-content',   'robots-txt');
 })();

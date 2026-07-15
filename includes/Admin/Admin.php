@@ -159,6 +159,15 @@ final class Admin {
 				true
 			);
 			wp_localize_script( 'geo-forge-settings', 'GeoForgeSettings', $shared );
+
+			wp_enqueue_script(
+				'geo-forge-llms-editor',
+				GEO_FORGE_URL . 'assets/admin/js/llms-editor.js',
+				array(),
+				GEO_FORGE_VERSION,
+				true
+			);
+			wp_localize_script( 'geo-forge-llms-editor', 'GeoForgeSettings', $shared );
 		}
 
 		if ( str_contains( $hook, 'geo-forge-logs' ) ) {
