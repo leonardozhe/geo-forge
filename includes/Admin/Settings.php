@@ -54,6 +54,7 @@ final class Settings {
 
 		if ( '' !== $api_base && ! filter_var( $api_base, FILTER_VALIDATE_URL ) ) {
 			self::redirect_with_notice( 'error', __( 'API base URL is not a valid URL.', 'geo-forge' ) );
+			return;
 		}
 
 		// 5. Persist. Empty key is allowed (user is clearing it).

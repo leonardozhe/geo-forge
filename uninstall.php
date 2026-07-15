@@ -35,6 +35,9 @@ $options = array(
 	'geo_forge_log_min_level',
 	'geo_forge_log_retention_days',
 	'geo_forge_traffic_sample_rate',
+	'geo_forge_llms_txt',
+	'geo_forge_security_txt',
+	'geo_forge_routes_version',
 	'geo_forge_last_scan_result',
 	'geo_forge_last_scan_time',
 	'geo_forge_account_info',
@@ -45,9 +48,11 @@ foreach ( $options as $option_name ) {
 	delete_option( $option_name );
 }
 
-// Transients we may have set (24h scan cache, 1h account cache).
+// Transients we may have set (24h scan cache, 1h account cache, updater cache).
 delete_transient( 'geo_forge_last_scan' );
 delete_transient( 'geo_forge_account_info' );
+delete_transient( 'geo_forge_remote_update' );
+delete_transient( 'geo_forge_settings_notice' );
 
 // Scheduled cron hooks.
 wp_clear_scheduled_hook( 'geo_forge_daily_scan' );

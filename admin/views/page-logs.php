@@ -77,7 +77,7 @@ $row_count    = count( $rows );
 			</thead>
 			<tbody>
 				<?php foreach ( $rows as $row ) :
-					$level      = Level::from( (string) $row['level'] );
+					$level      = Level::tryFrom( (string) $row['level'] ) ?? Level::Debug;
 					$context    = is_array( $row['context'] ) ? $row['context'] : array();
 					$ctx_json   = wp_json_encode( $context, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 				?>
