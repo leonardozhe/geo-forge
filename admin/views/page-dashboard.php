@@ -11,20 +11,13 @@ $hk  = (bool) Installer::get_setting( 'api_key', '' );
 $sc0 = $lk['total_score'] ?? null;
 
 $gr_label = function ( int $s ): string {
-	if ( $s >= 90 ) { return 'S'; }
-	if ( $s >= 75 ) { return 'A'; }
-	if ( $s >= 50 ) { return 'B'; }
-	if ( $s >= 25 ) { return 'C'; }
-	return 'D';
+	if ( $s >= 90 ) { return 'S'; } if ( $s >= 75 ) { return 'A'; }
+	if ( $s >= 50 ) { return 'B'; } if ( $s >= 25 ) { return 'C'; } return 'D';
 };
 $gr_color = function ( int $s ): string {
-	if ( $s >= 90 ) { return '#7c3aed'; }
-	if ( $s >= 75 ) { return '#16a34a'; }
-	if ( $s >= 50 ) { return '#2563eb'; }
-	if ( $s >= 25 ) { return '#ca8a04'; }
-	return '#dc2626';
+	if ( $s >= 90 ) { return '#7c3aed'; } if ( $s >= 75 ) { return '#16a34a'; }
+	if ( $s >= 50 ) { return '#2563eb'; } if ( $s >= 25 ) { return '#ca8a04'; } return '#dc2626';
 };
-
 $gr  = null !== $sc0 ? $gr_label( $sc0 ) : '—';
 $grc = null !== $sc0 ? $gr_color( $sc0 ) : '#94a3b8';
 $ca  = is_array( $lk['category_scores'] ?? null ) ? $lk['category_scores'] : array();
@@ -40,7 +33,6 @@ $cat_names = array(
 	'accessibility' => 'Content Accessibility', 'bot-control' => 'Bot Access Control',
 	'security' => 'Security & UX', 'protocol' => 'Protocol Discovery', 'commerce' => 'Commerce',
 );
-
 $check_models = array(
 	'robots_txt'      => 'GPTBot, ClaudeBot, PerplexityBot',
 	'llms_txt_exists' => 'ChatGPT, Claude, Perplexity, all LLMs',
@@ -83,20 +75,42 @@ $check_models = array(
 		<tr><td style="font-weight:500;font-size:12px;"><?php echo esc_html( $nm ); ?></td><td><div class="gf-bar"><div class="gf-bar-fill" style="width:<?php echo $p; ?>%;background:<?php echo $cl; ?>;"></div></div></td><td style="width:36px;text-align:right;font-weight:600;font-size:12px;color:<?php echo $cl; ?>;"><?php echo $p; ?>%</td></tr>
 		<?php endforeach; ?></table>
 	</div>
-	<div style="grid-column: span 2;"><div class="gf-card"><div class="gf-card-title">Check Results <span class="gf-badge gf-badge-blue"><?php echo count( $ck ); ?></span></div>
-		<div style="max-height:380px;overflow-y:auto;padding-right:4px;">
-		<table style="min-width:700px;"><thead><tr><th style="width:28px;"></th><th>Check</th><th style="width:90px;">Category</th><th style="width:72px;">Score</th><th>AI Models</th></tr></thead><tbody>
-		<?php foreach ( $ck as $ch ) : $st = $ch['status'] ?? 'fail'; $ic = $st === 'pass' ? '✅' : ( $st === 'warn' ? '⚠️' : '❌' ); $label = $ch['label'] ?? $ch['name'] ?? $ch['id'] ?? '?'; $chid = $ch['id'] ?? ''; $chcat = $ch['category'] ?? ''; $cat_label = $cat_names[ $chcat ] ?? $chcat; $ai_models = $check_models[ $chid ] ?? '—'; $score_raw = $ch['score'] ?? 0; $max_raw = $ch['maxScore'] ?? 0; $score_pct = $max_raw > 0 ? round( $score_raw / $max_raw * 100 ) : 0; $score_cl = $score_pct >= 80 ? '#16a34a' : ( $score_pct >= 40 ? '#ca8a04' : '#dc2626' ); $rec = $ch['recommendation'] ?? ''; $goal = $ch['goal'] ?? ''; ?>
+	<div style="grid-column: span 2;"><div class="gf-card" style="padding:0;"><div class="gf-card-title" style="padding:20px 20px 0 20px;">Check Results <span class="gf-badge gf-badge-blue"><?php echo count( $ck ); ?></span></div>
+
+		<!-- Fixed header -->
+		<table style="min-width:700px;"><thead><tr>
+			<th style="width:6%;">Status</th>
+			<th style="width:34%;">Check</th>
+			<th style="width:14%;">Category</th>
+			<th style="width:24%;">AI Models</th>
+			<th style="width:22%;">Introduction</th>
+		</tr></thead></table>
+
+		<!-- Scrollable body -->
+		<div style="max-height:340px;overflow-y:auto;padding-right:4px;">
+		<table style="min-width:700px;">
+		<colgroup><col style="width:6%;"><col style="width:34%;"><col style="width:14%;"><col style="width:24%;"><col style="width:22%;"></colgroup>
+		<tbody>
+		<?php foreach ( $ck as $ch ) : $st = $ch['status'] ?? 'fail'; $label = $ch['label'] ?? $ch['name'] ?? $ch['id'] ?? '?'; $chid = $ch['id'] ?? ''; $chcat = $ch['category'] ?? ''; $cat_label = $cat_names[ $chcat ] ?? $chcat; $ai_models = $check_models[ $chid ] ?? '—'; $score_raw = $ch['score'] ?? 0; $max_raw = $ch['maxScore'] ?? 0; $score_pct = $max_raw > 0 ? round( $score_raw / $max_raw * 100 ) : 0; $score_cl = $score_pct >= 80 ? '#16a34a' : ( $score_pct >= 40 ? '#ca8a04' : '#dc2626' ); $rec = $ch['recommendation'] ?? ''; $goal = $ch['goal'] ?? ''; $res = $ch['result'] ?? ''; ?>
 		<tr>
-			<td style="text-align:center;font-size:14px;"><?php echo $ic; ?></td>
-			<td>
-				<div style="font-weight:600;font-size:12px;"><?php echo esc_html( $label ); ?></div>
-				<?php if ( $goal ) : ?><div style="font-size:10px;color:#94a3b8;margin-top:1px;"><?php echo esc_html( $goal ); ?></div><?php endif; ?>
-				<?php if ( $rec ) : ?><div style="font-size:10px;color:#64748b;margin-top:2px;">💡 <?php echo esc_html( $rec ); ?></div><?php endif; ?>
+			<td style="width:6%;text-align:center;font-size:14px;">
+				<?php echo $st === 'pass' ? '✅' : ( $st === 'warn' ? '⚠️' : '❌' ); ?>
 			</td>
-			<td><span style="font-size:11px;color:#64748b;"><?php echo esc_html( $cat_label ); ?></span></td>
-			<td><span style="font-weight:600;font-size:12px;color:<?php echo $score_cl; ?>;"><?php echo (int) $score_raw; ?>/<?php echo (int) $max_raw; ?></span></td>
-			<td><span style="font-size:10px;color:#94a3b8;line-height:1.3;"><?php echo esc_html( $ai_models ); ?></span></td>
+			<td style="width:34%;">
+				<div style="font-weight:600;font-size:12px;"><?php echo esc_html( $label ); ?></div>
+			</td>
+			<td style="width:14%;"><span style="font-size:11px;color:#64748b;"><?php echo esc_html( $cat_label ); ?></span></td>
+			<td style="width:24%;"><span style="font-size:10px;color:#94a3b8;"><?php echo esc_html( $ai_models ); ?></span></td>
+			<td style="width:22%;">
+				<?php if ( $goal ) : ?><div style="font-size:10px;color:#64748b;margin-bottom:2px;">🎯 <?php echo esc_html( $goal ); ?></div><?php endif; ?>
+				<?php if ( $st !== 'pass' && $rec ) : ?><div style="font-size:10px;color:#dc2626;margin-bottom:2px;">💡 <?php echo esc_html( $rec ); ?></div><?php endif; ?>
+				<div style="font-size:11px;font-weight:600;color:<?php echo $score_cl; ?>;"><?php echo (int) $score_raw; ?>/<?php echo (int) $max_raw; ?> <span style="font-size:10px;font-weight:400;color:#94a3b8;"> —
+				<?php
+					if ( 'pass' === $st ) { echo 'Passed'; }
+					elseif ( $score_pct >= 50 ) { echo 'Partial pass'; }
+					else { echo 'Failed'; }
+				?></span></div>
+			</td>
 		</tr>
 		<?php endforeach; ?></tbody></table></div>
 	</div></div>
