@@ -70,14 +70,36 @@ class Store {
 			'response_size'   => $response_bytes,
 		);
 
+		$table = $wpdb->prefix . self::TABLE;
+
+		// Check if table exists
+		$table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) );
+		if ( ! $table_exists ) {
+			PluginLogger::error(
+				'Store::record: Traffic table does not exist.',
+				array( 'table' => $table )
+			);
+			return;
+		}
+
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$ok = $wpdb->insert( $wpdb->prefix . self::TABLE, $row );
+		$ok = $wpdb->insert( $table, $row );
 
 		if ( false === $ok ) {
 			// Traffic recording is best-effort — don't break the request.
+			PluginLogger::error(
+				'Store::record: Database insert failed.',
+				array(
+					'family' => $family,
+					'source' => $source,
+					'error'  => $wpdb->last_error,
+					'query'  => $wpdb->last_query,
+				)
+			);
+		} else {
 			PluginLogger::debug(
-				'Traffic insert failed.',
-				array( 'family' => $family, 'source' => $source )
+				'Store::record: Successfully inserted traffic record.',
+				array( 'family' => $family, 'source' => $source, 'insert_id' => $wpdb->insert_id )
 			);
 		}
 	}

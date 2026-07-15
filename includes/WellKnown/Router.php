@@ -159,25 +159,42 @@ class Router {
 	 */
 	private static function capture_traffic( string $route ): void {
 		if ( ! class_exists( Store::class ) || ! class_exists( BotFamily::class ) ) {
+			PluginLogger::debug( 'capture_traffic: Store or BotFamily class not found.' );
 			return;
 		}
 
-		$ip_hash = hash( 'sha256', ( defined( 'AUTH_KEY' ) ? AUTH_KEY : '' ) . '|' . ( $_SERVER['REMOTE_ADDR'] ?? '' ) );
-		$host    = $_SERVER['HTTP_HOST'] ?? '';
-		$uri     = $_SERVER['REQUEST_URI'] ?? '/';
-		$method  = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+		try {
+			$ip_hash = hash( 'sha256', ( defined( 'AUTH_KEY' ) ? AUTH_KEY : '' ) . '|' . ( $_SERVER['REMOTE_ADDR'] ?? '' ) );
+			$host    = $_SERVER['HTTP_HOST'] ?? '';
+			$uri     = $_SERVER['REQUEST_URI'] ?? '/';
+			$method  = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
-		// Detect bot family from UA.
-		$ua     = $_SERVER['HTTP_USER_AGENT'] ?? '';
-		$family = BotFamily::detect( $ua );
+			// Detect bot family from UA.
+			$ua     = $_SERVER['HTTP_USER_AGENT'] ?? '';
+			$family = BotFamily::detect( $ua );
 
-		Store::record(
-			$family,
-			'well_known',
-			( is_ssl() ? 'https' : 'http' ) . '://' . $host . $uri,
-			200,
-			$ip_hash,
-			(string) $method
-		);
+			$url = ( is_ssl() ? 'https' : 'http' ) . '://' . $host . $uri;
+
+			PluginLogger::debug(
+				'capture_traffic: Recording well-known route hit.',
+				array( 'route' => $route, 'family' => $family, 'url' => $url )
+			);
+
+			Store::record(
+				$family,
+				'well_known',
+				$url,
+				200,
+				$ip_hash,
+				(string) $method
+			);
+
+			PluginLogger::debug( 'capture_traffic: Successfully recorded.' );
+		} catch ( \Throwable $e ) {
+			PluginLogger::error(
+				'capture_traffic: Exception caught.',
+				array( 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString() )
+			);
+		}
 	}
 }

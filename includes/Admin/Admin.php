@@ -59,6 +59,7 @@ final class Admin {
 		add_action( 'admin_menu', array( $this, 'register_menus' ) );
 		add_action( 'admin_head', array( $this, 'inject_css' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+		add_action( 'wp_ajax_geo_forge_health_check', array( $this, 'ajax_health_check' ) );
 
 		// Wire the settings form handler (POST via admin-post.php).
 		Settings::register();
@@ -117,12 +118,35 @@ final class Admin {
 	}
 
 	/**
+	 * AJAX handler for health check.
+	 */
+	public function ajax_health_check(): void {
+		check_ajax_referer( 'geo-forge-ajax', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Insufficient permissions' );
+		}
+
+		try {
+			$api  = new \GEO_Forge\Api\Client();
+			$resp = $api->get_account();
+
+			if ( $resp['success'] ?? false ) {
+				wp_send_json_success( 'Connection verified' );
+			} else {
+				wp_send_json_error( 'Connection failed' );
+			}
+		} catch ( \Throwable $e ) {
+			wp_send_json_error( $e->getMessage() );
+		}
+	}
+
+	/**
 	 * Inject CSS directly on every admin page. Using admin_head guarantees
 	 * the styles load regardless of enqueue timing or path issues.
 	 */
 	public function inject_css(): void {
-		// Lucide icons
-		echo '<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>';
+		// Inline CSS only — NO external CDN dependencies
 		echo '<style id="geo-forge-styles">';
 		readfile( GEO_FORGE_DIR . 'assets/admin/css/admin.css' );
 		echo '</style>';
@@ -132,6 +156,13 @@ final class Admin {
 	 * Enqueue JS. Only on our own pages.
 	 */
 	public function enqueue_assets( string $hook ): void {
+		// Debug: log which page we're on
+		if ( isset( $_GET['geo_forge_debug_js'] ) ) {
+			add_action( 'admin_notices', function() use ( $hook ) {
+				echo '<div class="notice notice-info"><p><strong>GEO Forge JS Debug:</strong> Hook = ' . esc_html( $hook ) . '</p></div>';
+			} );
+		}
+
 		if ( ! str_contains( $hook, 'geo-forge' ) ) {
 			return;
 		}
@@ -140,6 +171,7 @@ final class Admin {
 		$shared = array(
 			'restRoot'  => esc_url_raw( rest_url( 'geo-forge/v1/' ) ),
 			'restNonce' => wp_create_nonce( 'wp_rest' ),
+			'ajaxNonce' => wp_create_nonce( 'geo-forge-ajax' ),
 			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
 			'i18n'      => array(
 				'scanning'    => __( 'Scanning… this takes 15–90 seconds. The result will appear here when done.', 'geo-forge' ),
@@ -161,15 +193,6 @@ final class Admin {
 				true
 			);
 			wp_localize_script( 'geo-forge-settings', 'GeoForgeSettings', $shared );
-
-			wp_enqueue_script(
-				'geo-forge-llms-editor',
-				GEO_FORGE_URL . 'assets/admin/js/llms-editor.js',
-				array(),
-				GEO_FORGE_VERSION,
-				true
-			);
-			wp_localize_script( 'geo-forge-llms-editor', 'GeoForgeSettings', $shared );
 		}
 
 		if ( str_contains( $hook, 'geo-forge-logs' ) ) {
@@ -188,17 +211,6 @@ final class Admin {
 			) );
 		}
 
-		if ( str_contains( $hook, 'geo-forge-llms' ) ) {
-			wp_enqueue_script(
-				'geo-forge-llms-editor',
-				GEO_FORGE_URL . 'assets/admin/js/llms-editor.js',
-				array(),
-				GEO_FORGE_VERSION,
-				true
-			);
-			wp_localize_script( 'geo-forge-llms-editor', 'GeoForgeLlms', $shared );
-		}
-
 		if ( str_contains( $hook, 'geo-forge-fixes' ) ) {
 			wp_enqueue_script(
 				'geo-forge-fixer',
@@ -210,8 +222,8 @@ final class Admin {
 			wp_localize_script( 'geo-forge-fixer', 'GeoForgeFixer', $shared );
 		}
 
-		// Dashboard gets its own JS (only on the main dashboard page, not settings/fixes/etc).
-		if ( ! str_contains( $hook, 'geo-forge-settings' ) && ! str_contains( $hook, 'geo-forge-logs' ) && ! str_contains( $hook, 'geo-forge-llms' ) && ! str_contains( $hook, 'geo-forge-fixes' ) && str_contains( $hook, 'geo-forge' ) ) {
+		// Dashboard: the main page slug is 'geo-forge', hook is 'toplevel_page_geo-forge'
+		if ( 'toplevel_page_geo-forge' === $hook ) {
 			wp_enqueue_script(
 				'geo-forge-dashboard',
 				GEO_FORGE_URL . 'assets/admin/js/dashboard.js',

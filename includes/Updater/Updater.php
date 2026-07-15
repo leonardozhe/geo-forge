@@ -66,6 +66,36 @@ class Updater {
 		// Debug: visiting any admin page with ?geo_forge_refresh_update=1
 		// clears the cache so the next check pulls fresh data.
 		add_action( 'admin_init', array( self::class, 'maybe_refresh_cache' ) );
+
+		// Debug: visiting any admin page with ?geo_forge_check_update=1
+		// shows update system status in admin notices.
+		add_action( 'admin_init', array( self::class, 'debug_update_status' ) );
+	}
+
+	/**
+	 * Debug: show update system status.
+	 */
+	public static function debug_update_status(): void {
+		if ( ! isset( $_GET['geo_forge_check_update'] ) ) {
+			return;
+		}
+
+		$installed_version = GEO_FORGE_VERSION;
+		$manifest = self::fetch_manifest();
+		$remote_version = $manifest['version'] ?? 'unknown';
+		$has_update = version_compare( $remote_version, $installed_version, '>' );
+
+		add_action( 'admin_notices', function() use ( $installed_version, $remote_version, $has_update, $manifest ) {
+			echo '<div class="notice notice-info"><p>';
+			echo '<strong>GEO Forge Update Debug:</strong><br>';
+			echo 'Installed version: ' . esc_html( $installed_version ) . '<br>';
+			echo 'Remote version: ' . esc_html( $remote_version ) . '<br>';
+			echo 'Has update: ' . ( $has_update ? '✅ YES' : '❌ NO' ) . '<br>';
+			if ( $manifest ) {
+				echo 'Download URL: ' . esc_html( $manifest['download_url'] ?? 'N/A' );
+			}
+			echo '</p></div>';
+		} );
 	}
 
 	/**

@@ -1,11 +1,11 @@
 <?php if(!defined('ABSPATH'))exit;use GEO_Forge\Traffic\BotFamily;use GEO_Forge\Traffic\Store as TS;
-$ff=isset($_GET['family'])?BotFamily::tryFrom(sanitize_text_field(wp_unslash($_GET['family']))):null;
+$ff=isset($_GET['family'])?sanitize_text_field(wp_unslash($_GET['family'])):null;
 $fs=isset($_GET['source'])?sanitize_text_field(wp_unslash($_GET['source'])):null;
 if($fs&&!in_array($fs,['bot_ua','well_known','markdown']))$fs=null;
 $rw=TS::recent(100,$ff,$fs);$sm=TS::summary_24h();$ch=TS::chart_data(14);
 $th=$sm['total_24h'];$ub=count($sm['by_family']);
 $bs=['well_known'=>0,'markdown'=>0,'bot_ua'=>0];foreach($rw as $r)if(isset($bs[$r['source']]))$bs[$r['source']]++;
-$fm=[];foreach($sm['by_family'] as $e)$fm[]=['name'=>BotFamily::tryFrom($e['bot_family'])?->label()??$e['bot_family'],'count'=>(int)$e['n']];
+$fm=[];foreach($sm['by_family'] as $e)$fm[]=['name'=>BotFamily::label($e['bot_family']),'count'=>(int)$e['n']];
 usort($fm,fn($a,$b)=>$b['count']<=>$a['count']);
 $at=0;foreach($ch['series'] as $s)$at+=array_sum($s);
 ?>

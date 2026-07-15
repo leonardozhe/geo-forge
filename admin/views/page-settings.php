@@ -103,8 +103,13 @@ $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_cur
 </div>
 <script>
 (function(){
-document.querySelectorAll('.gf-tab').forEach(function(t){t.addEventListener('click',function(){document.querySelectorAll('.gf-tab').forEach(function(x){x.classList.remove('active');});t.classList.add('active');document.querySelectorAll('.gf-tab-content').forEach(function(c){c.classList.remove('active');});document.getElementById(t.dataset.tab).classList.add('active');});});
-function ed(id,r,ta,p){var s=document.getElementById(id),b=document.getElementById(r),a=document.getElementById(ta);if(!s||!a)return;s.addEventListener('click',function(){s.disabled=true;fetch(window.GeoForgeSettings.restRoot+'well-known/'+p,{method:'POST',credentials:'same-origin',headers:{'X-WP-Nonce':window.GeoForgeSettings.restNonce,'Content-Type':'application/json'},body:JSON.stringify({content:a.value})}).then(function(r){return r.json()}).then(function(b){showToast(b.success?'✅ Saved ('+(b.bytes||a.value.length)+' bytes)':'❌ '+(b.error?.message||'Save failed'))}).catch(function(){showToast('❌ Network error')}).finally(function(){s.disabled=false})});if(b)b.addEventListener('click',function(){b.disabled=true;fetch(window.GeoForgeSettings.restRoot+'well-known/'+p+'/regenerate',{method:'POST',credentials:'same-origin',headers:{'X-WP-Nonce':window.GeoForgeSettings.restNonce,'Content-Type':'application/json'}}).then(function(r){return r.json()}).then(function(b2){if(b2&&b2.success){a.value=b2.content;showToast('✅ Regenerated ('+b2.bytes+' bytes)')}else{showToast('❌ '+(b2.error?.message||'Regenerate failed'))}}).catch(function(){showToast('❌ Network error')}).finally(function(){b.disabled=false})})}
-ed('geo-forge-save-llms','geo-forge-regen-llms','geo-forge-llms-content','llms-txt');
+	document.querySelectorAll('.gf-tab').forEach(function(t){
+		t.addEventListener('click',function(){
+			document.querySelectorAll('.gf-tab').forEach(function(x){x.classList.remove('active');});
+			t.classList.add('active');
+			document.querySelectorAll('.gf-tab-content').forEach(function(c){c.classList.remove('active');});
+			document.getElementById(t.dataset.tab).classList.add('active');
+		});
+	});
 })();
 </script>

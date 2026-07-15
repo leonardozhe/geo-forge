@@ -99,7 +99,7 @@ class Capture {
 
 		// 3. Known AI bot by User-Agent.
 		$family = self::family_from_ua();
-		if ( BotFamily::Unknown !== $family && BotFamily::Other !== $family ) {
+		if ( 'unknown' !== $family && 'other' !== $family ) {
 			return array(
 				'family' => $family,
 				'source' => 'bot_ua',
@@ -112,23 +112,13 @@ class Capture {
 	/**
 	 * Match the current User-Agent against known bot patterns.
 	 */
-	private static function family_from_ua(): BotFamily {
+	private static function family_from_ua(): string {
 		$ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
 		if ( '' === $ua ) {
-			return BotFamily::Unknown;
+			return 'unknown';
 		}
 
-		foreach ( BotFamily::cases() as $family ) {
-			$pattern = $family->ua_pattern();
-			if ( null === $pattern ) {
-				continue;
-			}
-			if ( preg_match( $pattern, $ua ) ) {
-				return $family;
-			}
-		}
-
-		return BotFamily::Unknown;
+		return BotFamily::detect( $ua );
 	}
 
 	/**
