@@ -130,6 +130,14 @@ final class Admin {
 			return;
 		}
 
+		// Inter font (Stripi design system uses Sohne, we use Inter as open-source substitute)
+		wp_enqueue_style(
+			'inter-font',
+			'https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap',
+			array(),
+			null
+		);
+
 		// Pure.css framework
 		wp_enqueue_style(
 			'pure-css',
@@ -150,7 +158,7 @@ final class Admin {
 		wp_enqueue_style(
 			'geo-forge-admin',
 			GEO_FORGE_URL . 'assets/admin/css/admin.css',
-			array( 'pure-css', 'pure-css-grids-responsive' ),
+			array( 'inter-font', 'pure-css', 'pure-css-grids-responsive' ),
 			GEO_FORGE_VERSION
 		);
 
