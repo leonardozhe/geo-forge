@@ -5,7 +5,7 @@ $rc=fn($r)=>match($r){'none'=>'#16a34a','low'=>'#2563eb','medium'=>'#ca8a04','hi
 $gp=[];foreach($fs as $f){$l=$f['priority']===1&&in_array($f['risk_level'],['none','low'])?'P1 Critical':($f['priority']<=2?'P2 Warning':'P3 Optional');$gp[$l][]=$f;}
 ?>
 <div class="geo-forge-wrap">
-<div class="gf-header"><h1>Optimizations <span class="gf-subtitle">Auto-fixes for AI readiness</span></h1><p class="gf-muted">Apply auto-fixes to improve your AI score. Each fix is reversible.</p></div>
+<div class="gf-header"><h1>Optimizations <span class="gf-subtitle">Fix now to improve your AI score</span></h1><p class="gf-muted">These optimizations can be applied immediately on your server. Each fix is reversible.</p></div>
 <div id="geo-forge-fix-status" class="gf-notice" style="display:none;"></div>
 
 <?php if(empty($gp)):?>
