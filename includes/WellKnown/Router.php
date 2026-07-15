@@ -22,7 +22,9 @@
 
 namespace GEO_Forge\WellKnown;
 
-use GEO_Forge\Log\Logger;
+use GEO_Forge\Log\PluginLogger;
+use GEO_Forge\Traffic\BotFamily;
+use GEO_Forge\Traffic\Store;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -42,9 +44,12 @@ class Router {
 	 * Adding a new route: add entry here + a handler in dispatch().
 	 */
 	private const ROUTES = array(
-		'llms_txt'     => '^llms\.txt/?$',
-		'security_txt' => '^\.well-known/security\.txt/?$',
+		'llms_txt'      => '^llms\.txt/?$',
+		'security_txt'  => '^\.well-known/security\.txt/?$',
 	);
+
+	/** Tracks the current set of registered routes — used for flush-on-upgrade detection. */
+	private const ROUTES_VERSION = 2;
 
 	/**
 	 * Wire everything up. Called from GeoForge::register_hooks().
@@ -53,6 +58,7 @@ class Router {
 		add_action( 'init', array( self::class, 'register_rewrite_rules' ) );
 		add_filter( 'query_vars', array( self::class, 'register_query_vars' ) );
 		add_action( 'template_redirect', array( self::class, 'dispatch' ), 1 );
+		add_action( 'admin_init', array( self::class, 'maybe_flush_on_upgrade' ) );
 	}
 
 	/**
@@ -88,7 +94,11 @@ class Router {
 			return;
 		}
 
-		Logger::debug( 'Well-known route hit.', array( 'route' => $route ) );
+		PluginLogger::debug( 'Well-known route hit.', array( 'route' => $route ) );
+
+		// Log the hit to traffic (since Capture runs at priority 999 and never
+		// reaches well-known routes dispatched at priority 1).
+		self::capture_traffic( $route );
 
 		$content     = '';
 		$content_type = 'text/plain; charset=utf-8';
@@ -122,5 +132,58 @@ class Router {
 	public static function flush_rules(): void {
 		self::register_rewrite_rules();
 		flush_rewrite_rules();
+	}
+
+	/**
+	 * On admin init, check if the stored routes version is behind the current
+	 * code. If so, flush rewrite rules. This catches the case where a new
+	 * route (e.g. security.txt) is added in a plugin update — without a flush,
+	 * the new route would 404 until the user manually saves permalinks.
+	 */
+	public static function maybe_flush_on_upgrade(): void {
+		$stored = (int) get_option( 'geo_forge_routes_version', 0 );
+		if ( $stored < self::ROUTES_VERSION ) {
+			self::flush_rules();
+			update_option( 'geo_forge_routes_version', self::ROUTES_VERSION );
+			PluginLogger::info(
+				'Flushed rewrite rules on upgrade.',
+				array( 'old_version' => $stored, 'new_version' => self::ROUTES_VERSION )
+			);
+		}
+	}
+
+	/**
+	 * Record the well-known route hit for the Traffic module.
+	 * The Trap\Capture hook runs at priority 999 and will never see
+	 * requests dispatched here at priority 1 — so we log them directly.
+	 */
+	private static function capture_traffic( string $route ): void {
+		if ( ! class_exists( Store::class ) || ! class_exists( BotFamily::class ) ) {
+			return;
+		}
+
+		$ip_hash = hash( 'sha256', ( defined( 'AUTH_KEY' ) ? AUTH_KEY : '' ) . '|' . ( $_SERVER['REMOTE_ADDR'] ?? '' ) );
+		$host    = $_SERVER['HTTP_HOST'] ?? '';
+		$uri     = $_SERVER['REQUEST_URI'] ?? '/';
+		$method  = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+		// Detect bot family from UA.
+		$family = BotFamily::Unknown;
+		$ua     = $_SERVER['HTTP_USER_AGENT'] ?? '';
+		foreach ( BotFamily::cases() as $f ) {
+			if ( null !== $f->ua_pattern() && preg_match( $f->ua_pattern(), $ua ) ) {
+				$family = $f;
+				break;
+			}
+		}
+
+		Store::record(
+			$family,
+			'well_known',
+			( is_ssl() ? 'https' : 'http' ) . '://' . $host . $uri,
+			200,
+			$ip_hash,
+			(string) $method
+		);
 	}
 }
