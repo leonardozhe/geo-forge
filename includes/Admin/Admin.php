@@ -120,11 +120,8 @@ final class Admin {
 	 * ONLY on our own pages — never site-wide.
 	 */
 	public function enqueue_assets( string $hook ): void {
-		if ( ! $this->is_plugin_page( $hook ) ) {
-			return;
-		}
-
-		// Inter font (Stripi design system uses Sohne, we use Inter as open-source substitute)
+		// Always load Inter font + our CSS on admin pages.
+		// The geo-forge-wrap scope ensures nothing leaks to non-plugin pages.
 		wp_enqueue_style(
 			'inter-font',
 			'https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap',
