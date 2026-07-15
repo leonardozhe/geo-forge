@@ -1,211 +1,88 @@
 /* ==========================================================================
-   GEO Forge Admin Styles — Stripi-Inspired Design System
-   Based on Stripe's design language with indigo primary, deep navy text,
-   thin typography, and atmospheric gradients.
+   GEO Forge Admin — Compact & Clean
    ========================================================================== */
 
-/* === Typography === */
 .geo-forge-wrap {
 	font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 	font-feature-settings: "ss01", "tnum";
-	max-width: 1200px;
-	margin: 20px 0;
-}
-
-/* Display tiers with negative tracking */
-.geo-forge-header h1 {
-	font-size: 32px;
-	font-weight: 300;
-	line-height: 1.1;
-	letter-spacing: -0.64px;
-	color: #0d253d;
-	margin: 0 0 8px;
-}
-
-.geo-forge-subtitle {
-	font-size: 20px;
-	font-weight: 300;
-	letter-spacing: -0.2px;
-	color: #64748d;
-	margin-left: 8px;
-}
-
-.geo-forge-card h3 {
-	font-size: 22px;
-	font-weight: 300;
-	letter-spacing: -0.22px;
-	color: #0d253d;
-	margin: 0 0 12px;
-}
-
-/* === Colors === */
-:root {
-	--geo-primary: #533afd;
-	--geo-primary-deep: #4434d4;
-	--geo-primary-press: #2e2b8c;
-	--geo-primary-soft: #665efd;
-	--geo-ink: #0d253d;
-	--geo-ink-secondary: #273951;
-	--geo-ink-mute: #64748d;
-	--geo-canvas: #ffffff;
-	--geo-canvas-soft: #f6f9fc;
-	--geo-canvas-cream: #f5e9d4;
-	--geo-hairline: #e3e8ee;
-	--geo-ruby: #ea2261;
-	--geo-magenta: #f96bee;
-}
-
-/* === Buttons — Pill Shape === */
-.geo-forge-wrap .pure-button {
-	font-family: Inter, system-ui, sans-serif;
-	font-size: 16px;
-	font-weight: 400;
-	line-height: 1.0;
-	padding: 8px 16px;
-	border-radius: 9999px;
-	border: none;
-	transition: all 0.15s ease;
-}
-
-.geo-forge-wrap .pure-button-primary {
-	background: var(--geo-primary);
-	color: #fff;
-}
-
-.geo-forge-wrap .pure-button-primary:hover {
-	background: var(--geo-primary-deep);
-}
-
-.geo-forge-wrap .pure-button-primary:active {
-	background: var(--geo-primary-press);
-	transform: translateY(1px);
-}
-
-.geo-forge-wrap .pure-button:not(.pure-button-primary) {
-	background: var(--geo-canvas);
-	color: var(--geo-primary);
-	border: 1px solid var(--geo-primary);
-}
-
-.geo-forge-wrap .pure-button:not(.pure-button-primary):hover {
-	background: var(--geo-canvas-soft);
-}
-
-/* === Stats — Tabular Figures === */
-.geo-forge-stat {
-	font-size: 48px;
-	font-weight: 300;
-	line-height: 1.15;
-	letter-spacing: -0.96px;
-	font-feature-settings: "tnum", "ss01";
-	margin: 8px 0;
-	color: var(--geo-ink);
-}
-
-/* === Cards === */
-.geo-forge-card {
-	background: var(--geo-canvas);
-	border: 1px solid var(--geo-hairline);
-	border-radius: 12px;
-	padding: 32px;
-	margin-bottom: 24px;
-	box-shadow: rgba(0, 55, 112, 0.08) 0 1px 3px;
-}
-
-/* === Gradient Mesh Promotional Box === */
-.geo-forge-promo {
-	background: linear-gradient(
-		135deg,
-		#f5e9d4 0%,
-		#ffb380 20%,
-		#c9b8ff 40%,
-		#533afd 60%,
-		#ea2261 80%,
-		#f96bee 100%
-	);
-	background-size: 200% 200%;
-	animation: geo-gradient-shift 15s ease infinite;
-	color: #fff;
-	border: none;
-	position: relative;
-	overflow: hidden;
-}
-
-.geo-forge-promo::before {
-	content: '';
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: radial-gradient(circle at 20% 30%, rgba(255, 179, 128, 0.3) 0%, transparent 50%),
-				radial-gradient(circle at 80% 70%, rgba(249, 107, 238, 0.3) 0%, transparent 50%);
-	pointer-events: none;
-}
-
-@keyframes geo-gradient-shift {
-	0%, 100% { background-position: 0% 50%; }
-	50% { background-position: 100% 50%; }
-}
-
-.geo-forge-promo h3,
-.geo-forge-promo p,
-.geo-forge-promo-item strong {
-	color: #fff;
-}
-
-.geo-forge-promo-item {
-	background: rgba(255, 255, 255, 0.15);
-	backdrop-filter: blur(10px);
-	padding: 16px;
-	border-radius: 12px;
-	margin: 8px 0;
-	border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.geo-forge-promo-cta .pure-button-primary {
-	background: #fff;
-	color: var(--geo-primary);
-}
-
-.geo-forge-promo-cta .pure-button-primary:hover {
-	background: var(--geo-canvas-soft);
-}
-
-/* === Steps List === */
-.geo-forge-steps {
-	background: rgba(255, 255, 255, 0.15);
-	backdrop-filter: blur(10px);
-	padding: 20px 24px;
-	border-radius: 12px;
+	max-width: 1100px;
 	margin: 16px 0;
-	border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.geo-forge-steps li {
-	margin: 10px 0;
-	color: rgba(255, 255, 255, 0.95);
-	font-size: 15px;
-	font-weight: 300;
+/* Header */
+.geo-forge-header h1 {
+	font-size: 22px;
+	font-weight: 500;
+	color: #1e293b;
+	margin: 0 0 4px;
+}
+.geo-forge-subtitle {
+	font-size: 14px;
+	font-weight: 400;
+	color: #64748b;
+	margin-left: 6px;
 }
 
-.geo-forge-steps a {
+/* Cards — tighter */
+.geo-forge-card {
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 18px 20px;
+	margin-bottom: 14px;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.geo-forge-card h3 {
+	font-size: 13px;
+	font-weight: 600;
+	color: #475569;
+	margin: 0 0 6px;
+	text-transform: uppercase;
+	letter-spacing: 0.4px;
+}
+
+/* Stats — compact */
+.geo-forge-stats > div { padding: 5px; }
+.geo-forge-stat {
+	font-size: 28px;
+	font-weight: 600;
+	line-height: 1.2;
+	margin: 4px 0;
+	color: #0f172a;
+}
+
+/* Buttons — smaller */
+.geo-forge-wrap .pure-button {
+	font-size: 13px;
+	font-weight: 500;
+	padding: 5px 14px;
+	border-radius: 6px;
+	border: none;
+	transition: all 0.12s ease;
+}
+.geo-forge-wrap .pure-button-primary {
+	background: #533afd;
 	color: #fff;
-	text-decoration: underline;
-	text-underline-offset: 2px;
 }
+.geo-forge-wrap .pure-button-primary:hover { background: #4434d4; }
+.geo-forge-wrap .pure-button-primary:active { background: #2e2b8c; transform: translateY(1px); }
+.geo-forge-wrap .pure-button:not(.pure-button-primary) {
+	background: #fff;
+	color: #533afd;
+	border: 1px solid #533afd;
+}
+.geo-forge-wrap .pure-button:not(.pure-button-primary):hover { background: #f6f9fc; }
 
-/* === Tables === */
+/* Tables — tighter */
 .geo-forge-category-table,
 .geo-forge-fix-table,
 .geo-forge-log-table,
 .geo-forge-traffic-table {
 	width: 100%;
-	margin: 16px 0;
+	margin: 8px 0;
 	border-collapse: collapse;
-	font-feature-settings: "tnum", "ss01";
+	font-size: 13px;
 }
-
 .geo-forge-category-table td,
 .geo-forge-fix-table td,
 .geo-forge-log-table td,
@@ -214,252 +91,116 @@
 .geo-forge-fix-table th,
 .geo-forge-log-table th,
 .geo-forge-traffic-table th {
-	padding: 12px 16px;
+	padding: 7px 10px;
 	text-align: left;
-	border-bottom: 1px solid var(--geo-hairline);
+	border-bottom: 1px solid #e2e8f0;
 }
-
 .geo-forge-category-table th,
 .geo-forge-fix-table th,
 .geo-forge-log-table th,
 .geo-forge-traffic-table th {
-	font-size: 13px;
-	font-weight: 400;
-	color: var(--geo-ink-mute);
+	font-size: 11px;
+	font-weight: 600;
+	color: #94a3b8;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
-	background: var(--geo-canvas-soft);
+	background: #f8fafc;
 }
 
-.geo-forge-category-table tbody tr:hover,
-.geo-forge-fix-table tbody tr:hover,
-.geo-forge-log-table tbody tr:hover,
-.geo-forge-traffic-table tbody tr:hover {
-	background: var(--geo-canvas-soft);
-}
-
-/* === Badges === */
+/* Badges */
 .geo-forge-badge {
 	display: inline-block;
-	padding: 4px 10px;
-	border-radius: 9999px;
-	font-size: 11px;
-	font-weight: 400;
-	letter-spacing: 0.5px;
-	margin-left: 8px;
-	text-transform: uppercase;
-}
-
-.geo-forge-badge-success {
-	background: #d4edda;
-	color: #155724;
-}
-
-.geo-forge-badge-warning {
-	background: #fff3cd;
-	color: #856404;
-}
-
-.geo-forge-badge-info {
-	background: #d1ecf1;
-	color: #0c5460;
-}
-
-/* === Progress Bars === */
-.geo-forge-bar {
-	height: 8px;
-	background: var(--geo-hairline);
-	border-radius: 9999px;
-	overflow: hidden;
-	margin: 4px 0;
-}
-
-.geo-forge-bar-fill {
-	height: 100%;
-	transition: width 0.3s ease;
-	border-radius: 9999px;
-}
-
-/* === Log Badges === */
-.geo-forge-log-badge {
-	display: inline-block;
 	padding: 2px 8px;
-	border-radius: 9999px;
+	border-radius: 4px;
 	font-size: 11px;
-	font-weight: 400;
-	letter-spacing: 0.3px;
-	text-transform: uppercase;
-	color: #fff;
+	font-weight: 500;
+	margin-left: 6px;
 }
+.geo-forge-badge-success { background: #dcfce7; color: #166534; }
+.geo-forge-badge-warning { background: #fef9c3; color: #854d0e; }
+.geo-forge-badge-info    { background: #dbeafe; color: #1e40af; }
+.geo-forge-muted { color: #94a3b8; font-size: 12px; }
 
-.geo-forge-log-debug    { background: var(--geo-ink-mute); }
-.geo-forge-log-info     { background: var(--geo-primary); }
-.geo-forge-log-warning  { background: #dba600; color: var(--geo-ink); }
-.geo-forge-log-error    { background: var(--geo-ruby); }
-.geo-forge-log-critical { background: #8b0000; }
+/* Progress bars */
+.geo-forge-bar { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+.geo-forge-bar-fill { height: 100%; transition: width 0.3s ease; border-radius: 3px; }
 
-/* === Forms === */
+/* Log badges */
+.geo-forge-log-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; text-transform: uppercase; color: #fff; }
+.geo-forge-log-debug    { background: #94a3b8; }
+.geo-forge-log-info     { background: #533afd; }
+.geo-forge-log-warning  { background: #ca8a04; color: #1e293b; }
+.geo-forge-log-error    { background: #dc2626; }
+.geo-forge-log-critical { background: #7f1d1d; }
+
+/* Forms — tighter */
 .geo-forge-wrap .pure-form-stacked input[type="text"],
 .geo-forge-wrap .pure-form-stacked input[type="password"],
 .geo-forge-wrap .pure-form-stacked input[type="url"],
 .geo-forge-wrap .pure-form-stacked input[type="number"],
 .geo-forge-wrap .pure-form-stacked textarea,
 .geo-forge-wrap .pure-form-stacked select {
-	font-family: Inter, system-ui, sans-serif;
-	font-size: 15px;
-	font-weight: 300;
-	padding: 8px 12px;
-	border: 1px solid #a8c3de;
-	border-radius: 6px;
-	background: var(--geo-canvas);
-	color: var(--geo-ink);
-	transition: border-color 0.15s ease;
+	font-size: 13px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px;
 }
-
 .geo-forge-wrap .pure-form-stacked input:focus,
 .geo-forge-wrap .pure-form-stacked textarea:focus,
 .geo-forge-wrap .pure-form-stacked select:focus {
-	outline: none;
-	border-color: var(--geo-primary);
-	box-shadow: 0 0 0 3px rgba(83, 58, 253, 0.1);
+	outline: none; border-color: #533afd; box-shadow: 0 0 0 3px rgba(83,58,253,0.08);
 }
+.geo-forge-wrap .pure-form-message { font-size: 12px; color: #94a3b8; }
 
-.geo-forge-wrap .pure-form-message {
-	font-size: 13px;
-	font-weight: 300;
-	color: var(--geo-ink-mute);
-	margin-top: 6px;
-	display: block;
-}
-
-/* === Muted Text === */
-.geo-forge-muted {
-	color: var(--geo-ink-mute);
-	font-size: 13px;
-	font-weight: 300;
-	margin: 4px 0 0;
-}
-
-/* === Actions Row === */
+/* Actions row */
 .geo-forge-actions,
 .geo-forge-editor-actions,
-.geo-forge-promo-cta {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	margin-top: 16px;
-}
+.geo-forge-promo-cta { display: flex; align-items: center; gap: 8px; }
 
-/* === Chart === */
-.geo-forge-chart {
-	width: 100%;
-	border-collapse: collapse;
-	font-feature-settings: "tnum", "ss01";
-}
+/* Chart */
+.geo-forge-chart { width: 100%; border-collapse: collapse; font-feature-settings: "tnum"; }
+.geo-forge-chart td { padding: 3px; vertical-align: bottom; }
+.geo-forge-chart-label { width: 100px; font-size: 11px; font-weight: 500; color: #475569; }
+.geo-forge-chart-bars { display: flex; align-items: flex-end; gap: 1px; height: 50px; }
+.geo-forge-chart-bar { flex: 1; background: #533afd; border-radius: 1px 1px 0 0; min-height: 2px; }
+.geo-forge-chart-total { width: 40px; text-align: right; font-size: 11px; font-weight: 500; color: #475569; }
+.geo-forge-chart-axis-labels { display: flex; font-size: 9px; color: #94a3b8; }
 
-.geo-forge-chart td {
-	padding: 6px 4px;
-	vertical-align: bottom;
-}
+/* Editor */
+.geo-forge-editor { width: 100%; font-family: 'SF Mono', Monaco, Consolas, monospace; font-size: 12px; line-height: 1.5; margin-top: 8px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; resize: vertical; tab-size: 4; }
 
-.geo-forge-chart-label {
-	width: 120px;
-	font-size: 13px;
-	font-weight: 400;
-	white-space: nowrap;
-	color: var(--geo-ink);
-}
-
-.geo-forge-chart-bars {
-	display: flex;
-	align-items: flex-end;
-	gap: 2px;
-	height: 80px;
-}
-
-.geo-forge-chart-bar {
-	flex: 1;
-	background: var(--geo-primary);
-	border-radius: 2px 2px 0 0;
-	min-height: 2px;
-}
-
-.geo-forge-chart-total {
-	width: 60px;
-	text-align: right;
-	font-size: 13px;
-	font-weight: 300;
-	color: var(--geo-ink);
-}
-
-/* === Editor === */
-.geo-forge-editor {
-	width: 100%;
-	font-family: 'SF Mono', Monaco, Consolas, 'Courier New', monospace;
-	font-size: 13px;
-	line-height: 1.5;
-	margin-top: 12px;
-	border: 1px solid var(--geo-hairline);
-	border-radius: 6px;
-	padding: 12px;
-	background: var(--geo-canvas);
-	color: var(--geo-ink);
-	resize: vertical;
-	tab-size: 4;
-}
-
-/* === Filter Form === */
+/* Filter + log actions */
 .geo-forge-log-filter,
-.geo-forge-log-actions {
-	margin: 16px 0;
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
+.geo-forge-log-actions { margin: 10px 0; display: flex; align-items: center; gap: 8px; }
 
-/* === Notice === */
-.geo-forge-notice {
-	padding: 12px 16px;
-	margin: 16px 0;
-	border-radius: 6px;
-	font-size: 14px;
-	font-weight: 300;
-}
+/* Notices */
+.geo-forge-notice { padding: 8px 12px; margin: 10px 0; border-radius: 4px; font-size: 12px; }
+.geo-forge-notice-error  { background: #fef2f2; border-left: 3px solid #dc2626; color: #dc2626; }
+.geo-forge-notice-success{ background: #f0fdf4; border-left: 3px solid #16a34a; color: #16a34a; }
 
-.geo-forge-notice-error {
-	background: #fef0f1;
-	border-left: 4px solid var(--geo-ruby);
-	color: var(--geo-ruby);
+/* Promo box — gradient mesh */
+.geo-forge-promo {
+	background: linear-gradient(135deg, #f5e9d4 0%, #ffb380 20%, #c9b8ff 40%, #533afd 60%, #ea2261 80%, #f96bee 100%);
+	background-size: 200% 200%;
+	animation: geo-gradient-shift 15s ease infinite;
+	color: #fff; border: none; position: relative; overflow: hidden;
 }
-
-.geo-forge-notice-success {
-	background: #f0f6e6;
-	border-left: 4px solid #00a32a;
-	color: #00a32a;
+@keyframes geo-gradient-shift {
+	0%,100% { background-position: 0% 50%; }
+	50%     { background-position: 100% 50%; }
 }
+.geo-forge-promo h3 { color: #fff; font-size: 14px; text-transform: none; }
+.geo-forge-promo p  { color: rgba(255,255,255,0.9); font-size: 13px; }
+.geo-forge-promo-item { background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); }
+.geo-forge-promo-item strong { display: block; font-size: 14px; margin-bottom: 2px; color: #fff; }
+.geo-forge-promo-item p { font-size: 12px; margin: 0; color: rgba(255,255,255,0.8); }
+.geo-forge-promo-cta .pure-button-primary { background: #fff; color: #533afd; }
+.geo-forge-promo-cta .pure-button-primary:hover { background: #f8fafc; }
+.geo-forge-promo-cta .geo-forge-muted { color: rgba(255,255,255,0.7); font-size: 11px; }
+.geo-forge-steps { background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); padding: 12px 16px; border-radius: 8px; margin: 12px 0; border: 1px solid rgba(255,255,255,0.15); }
+.geo-forge-steps li { margin: 6px 0; color: rgba(255,255,255,0.95); font-size: 13px; }
+.geo-forge-steps a { color: #fff; }
 
-/* === Stats Grid === */
-.geo-forge-stats {
-	margin-bottom: 24px;
-}
-
-.geo-forge-stats > div {
-	padding: 8px;
-}
-
-/* === Responsive === */
+/* Responsive */
 @media (max-width: 768px) {
-	.geo-forge-header h1 {
-		font-size: 26px;
-		letter-spacing: -0.26px;
-	}
-
-	.geo-forge-stat {
-		font-size: 32px;
-		letter-spacing: -0.64px;
-	}
-
-	.geo-forge-card {
-		padding: 20px;
-	}
+	.geo-forge-header h1 { font-size: 20px; }
+	.geo-forge-stat { font-size: 24px; }
+	.geo-forge-card { padding: 14px 16px; }
 }
