@@ -250,17 +250,12 @@ final class Admin {
 	/**
 	 * Is the current admin screen one of ours?
 	 *
-	 * WP generates hook suffixes like:
-	 *   - `woocommerce_page_geo-forge`          (submenu page)
-	 *   - `toplevel_page_geo-forge`             (if it were top-level)
-	 *   - `woocommerce_page_geo-forge-settings` (sub-submenu)
+	 * With `manage_options` capability and `add_menu_page`:
+	 *   - `toplevel_page_geo-forge`         (Dashboard)
+	 *   - `geo-forge_page_geo-forge-fixes`  (Optimizations)
+	 *   - `geo-forge_page_geo-forge-*`      (other submenus)
 	 */
 	private function is_plugin_page( string $hook ): bool {
-		foreach ( self::SUBPAGES as $page ) {
-			if ( str_contains( $hook, $page['slug'] ) ) {
-				return true;
-			}
-		}
-		return false;
+		return str_contains( $hook, 'geo-forge' );
 	}
 }

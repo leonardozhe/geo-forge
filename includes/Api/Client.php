@@ -44,7 +44,7 @@ class Client {
 	}
 
 	/**
-	 * POST /api/scan
+	 * POST /scan
 	 *
 	 * @param string $url             URL to scan (defaults to home_url()).
 	 * @param bool   $wait_for_result If true, server blocks until scan completes.
@@ -60,8 +60,7 @@ class Client {
 		$query = $wait_for_result ? '?waitForResult=true' : '';
 
 		return $this->request_json( 'POST', '/scan' . $query, array(
-			'url'         => $url,
-			'waitForResult' => $wait_for_result,
+			'url' => $url,
 		) );
 	}
 
