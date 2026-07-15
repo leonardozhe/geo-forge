@@ -117,25 +117,23 @@ final class Admin {
 
 	/**
 	 * Enqueue admin CSS/JS.
-	 * ONLY on our own pages — never site-wide.
+	 * Loads on ALL admin pages. CSS is scoped to .geo-forge-wrap so it never
+	 * affects WordPress core UI. The admin.css is self-contained — no external
+	 * framework dependencies.
 	 */
 	public function enqueue_assets( string $hook ): void {
-		// Always load Inter font + our CSS on admin pages.
-		// The geo-forge-wrap scope ensures nothing leaks to non-plugin pages.
-		wp_enqueue_style(
-			'inter-font',
-			'https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap',
-			array(),
-			null
-		);
-
-		// Our custom styles (self-contained, no external CSS framework dependency)
+		// Load our CSS on every admin page. Scoped selectors prevent leakage.
 		wp_enqueue_style(
 			'geo-forge-admin',
 			GEO_FORGE_URL . 'assets/admin/css/admin.css',
-			array( 'inter-font' ),
+			array(),
 			GEO_FORGE_VERSION
 		);
+
+		// Only enqueue JS + shared data on our own pages.
+		if ( ! str_contains( $hook, 'geo-forge' ) ) {
+			return;
+		}
 
 		// Shared data for any admin JS module: REST root + nonce + i18n strings.
 		$shared = array(

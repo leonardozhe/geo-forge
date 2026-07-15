@@ -1,124 +1,67 @@
-/* ==========================================================================
-   GEO Forge Admin Styles
-   Design reference: Rank Math SEO, WooCommerce admin panels
-   Base font-size: 13px | Spacing grid: 4px | Primary: #4338ca
-
-   ALL RULES SCOPED TO .geo-forge-wrap — never affects WP core UI
-   ========================================================================== */
-
-.geo-forge-wrap { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; color: #1e293b; max-width: none; margin: 0; padding: 0; line-height: 1.5; }
-.geo-forge-wrap *, .geo-forge-wrap *::before, .geo-forge-wrap *::after { box-sizing: border-box; }
-
-/* --- Typography --- */
-.geo-forge-wrap h1 { font-size: 20px; font-weight: 600; color: #1e293b; margin: 0 0 4px; padding: 0; }
-.geo-forge-wrap h2 { font-size: 15px; font-weight: 600; color: #334155; margin: 0 0 8px; padding: 0; }
-.geo-forge-wrap h3 { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 6px; padding: 0; }
-.geo-forge-wrap p  { font-size: 13px; color: #475569; margin: 0 0 8px; padding: 0; }
-.geo-forge-wrap a  { color: #4338ca; text-decoration: none; }
-.geo-forge-wrap a:hover { text-decoration: underline; }
-.geo-forge-wrap code { font-size: 12px; background: #f1f5f9; padding: 1px 5px; border-radius: 3px; color: #334155; }
-.geo-forge-wrap .gf-muted { color: #94a3b8; font-size: 12px; }
-.geo-forge-wrap .gf-subtitle { font-size: 13px; color: #94a3b8; margin-left: 6px; font-weight: 400; }
-
-/* --- Layout --- */
-.geo-forge-wrap .gf-header { margin-bottom: 16px; }
-.geo-forge-wrap .gf-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 16px 20px; margin-bottom: 12px; }
-.geo-forge-wrap .gf-card-title { font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 12px; }
-
-/* --- Grid --- */
-.geo-forge-wrap .gf-grid { display: grid; gap: 12px; }
-.geo-forge-wrap .gf-grid-2 { grid-template-columns: repeat(2, 1fr); }
-.geo-forge-wrap .gf-grid-3 { grid-template-columns: repeat(3, 1fr); }
-.geo-forge-wrap .gf-grid-4 { grid-template-columns: repeat(4, 1fr); }
-
-/* --- Stat tiles --- */
-.geo-forge-wrap .gf-stat { font-size: 28px; font-weight: 700; line-height: 1.2; color: #1e293b; }
-.geo-forge-wrap .gf-stat-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-
-/* --- Tables --- */
-.geo-forge-wrap table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 0; }
-.geo-forge-wrap table td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: middle; }
-.geo-forge-wrap table th { padding: 8px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; background: #f8fafc; }
-.geo-forge-wrap table tr:last-child td { border-bottom: none; }
-.geo-forge-wrap table.striped tr:nth-child(even) td { background: #f8fafc; }
-
-/* --- Buttons --- */
-.geo-forge-wrap .gf-btn { display: inline-flex; align-items: center; font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 4px; cursor: pointer; border: 1px solid #cbd5e1; background: #fff; color: #334155; line-height: 1.5; text-decoration: none; transition: all 0.1s; }
-.geo-forge-wrap .gf-btn:hover { background: #f1f5f9; border-color: #94a3b8; text-decoration: none; color: #1e293b; }
-.geo-forge-wrap .gf-btn-primary { background: #4338ca; border-color: #4338ca; color: #fff; }
-.geo-forge-wrap .gf-btn-primary:hover { background: #3730a3; border-color: #3730a3; color: #fff; }
-.geo-forge-wrap .gf-btn-danger { background: #fff; border-color: #dc2626; color: #dc2626; }
-.geo-forge-wrap .gf-btn-danger:hover { background: #dc2626; color: #fff; }
-.geo-forge-wrap .gf-btn:disabled, .geo-forge-wrap .gf-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* --- Badges --- */
-.geo-forge-wrap .gf-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; line-height: 1.4; }
-.geo-forge-wrap .gf-badge-green { background: #dcfce7; color: #16a34a; }
-.geo-forge-wrap .gf-badge-red { background: #fef2f2; color: #dc2626; }
-.geo-forge-wrap .gf-badge-yellow { background: #fef9c3; color: #854d0e; }
-.geo-forge-wrap .gf-badge-blue { background: #dbeafe; color: #2563eb; }
-
-/* --- Notices --- */
-.geo-forge-wrap .gf-notice { padding: 10px 14px; margin-bottom: 12px; border-radius: 4px; font-size: 13px; line-height: 1.5; }
-.geo-forge-wrap .gf-notice-error { background: #fef2f2; border-left: 3px solid #dc2626; color: #991b1b; }
-.geo-forge-wrap .gf-notice-success { background: #f0fdf4; border-left: 3px solid #16a34a; color: #166534; }
-
-/* --- Forms --- */
-.geo-forge-wrap .gf-form-group { margin-bottom: 16px; }
-.geo-forge-wrap .gf-form-group label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 4px; }
-.geo-forge-wrap .gf-form-group input[type="text"],
-.geo-forge-wrap .gf-form-group input[type="password"],
-.geo-forge-wrap .gf-form-group input[type="url"],
-.geo-forge-wrap .gf-form-group textarea,
-.geo-forge-wrap .gf-form-group select { width: 100%; font-size: 13px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; color: #1e293b; line-height: 1.5; }
-.geo-forge-wrap .gf-form-group input:focus,
-.geo-forge-wrap .gf-form-group textarea:focus,
-.geo-forge-wrap .gf-form-group select:focus { outline: none; border-color: #4338ca; box-shadow: 0 0 0 2px rgba(67,56,202,0.1); }
-.geo-forge-wrap .gf-form-group .gf-hint { font-size: 12px; color: #94a3b8; margin-top: 4px; }
-.geo-forge-wrap .gf-form-inline { display: flex; align-items: center; gap: 8px; }
-
-/* --- Progress Bars --- */
-.geo-forge-wrap .gf-bar { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; min-width: 60px; }
-.geo-forge-wrap .gf-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
-
-/* --- Tabs --- */
-.geo-forge-wrap .gf-tabs { display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 16px; }
-.geo-forge-wrap .gf-tab { padding: 8px 16px; font-size: 13px; font-weight: 500; color: #64748b; cursor: pointer; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; background: none; transition: all 0.1s; }
-.geo-forge-wrap .gf-tab:hover { color: #334155; }
-.geo-forge-wrap .gf-tab.active { color: #4338ca; border-bottom-color: #4338ca; }
-.geo-forge-wrap .gf-tab-content { display: none; }
-.geo-forge-wrap .gf-tab-content.active { display: block; }
-
-/* --- Promo Box --- */
-.geo-forge-wrap .gf-promo { background: linear-gradient(135deg, #f5e9d4, #ffb380, #c9b8ff, #4338ca, #ea2261, #f96bee); background-size: 200% 200%; animation: gf-shift 15s ease infinite; color: #fff; border: none; padding: 20px 24px; }
-@keyframes gf-shift { 0%,100%{background-position:0 50%}50%{background-position:100% 50%} }
-.geo-forge-wrap .gf-promo h2, .geo-forge-wrap .gf-promo h3, .geo-forge-wrap .gf-promo p, .geo-forge-wrap .gf-promo li, .geo-forge-wrap .gf-promo strong { color: #fff; }
-.geo-forge-wrap .gf-promo .gf-btn-primary { background: #fff !important; color: #4338ca !important; border-color: #fff !important; }
-
-/* --- Log badges --- */
-.geo-forge-wrap .gf-log-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; color: #fff; }
-.geo-forge-wrap .gf-log-debug { background: #94a3b8; } .geo-forge-wrap .gf-log-info { background: #4338ca; }
-.geo-forge-wrap .gf-log-warning { background: #ca8a04; color: #1e293b; } .geo-forge-wrap .gf-log-error { background: #dc2626; }
-.geo-forge-wrap .gf-log-critical { background: #7f1d1d; }
-
-/* --- Editor --- */
-.geo-forge-wrap .gf-editor { width: 100%; font-family: Monaco, "Courier New", monospace; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 10px; line-height: 1.5; min-height: 200px; }
-
-/* --- Chart --- */
-.geo-forge-wrap .gf-chart-label { width: 90px; font-size: 11px; font-weight: 600; color: #64748b; }
-.geo-forge-wrap .gf-chart-bars { display: flex; align-items: flex-end; gap: 1px; height: 40px; }
-.geo-forge-wrap .gf-chart-bar { flex: 1; background: #4338ca; border-radius: 1px 1px 0 0; min-height: 2px; }
-
-/* --- Search / filter --- */
-.geo-forge-wrap .gf-filter { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-
-/* --- Check list --- */
-.geo-forge-wrap .gf-check-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-.geo-forge-wrap .gf-check-item:last-child { border-bottom: none; }
-.geo-forge-wrap .gf-check-pass { color: #16a34a; } .geo-forge-wrap .gf-check-fail { color: #dc2626; }
-
-/* --- Responsive --- */
-@media (max-width: 768px) {
-	.geo-forge-wrap .gf-grid-2, .geo-forge-wrap .gf-grid-3, .geo-forge-wrap .gf-grid-4 { grid-template-columns: 1fr; }
-	.geo-forge-wrap .gf-stat { font-size: 22px; }
-}
+/*  GEO Forge CSS  */
+.geo-forge-wrap{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:13px;color:#1e293b;max-width:none;margin:0;padding:0;line-height:1.5}
+.geo-forge-wrap *,.geo-forge-wrap *::before,.geo-forge-wrap *::after{box-sizing:border-box}
+.geo-forge-wrap h1{font-size:20px;font-weight:600;color:#1e293b;margin:0 0 4px}
+.geo-forge-wrap h2{font-size:14px;font-weight:600;color:#334155;margin:0 0 8px}
+.geo-forge-wrap h3{font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 6px}
+.geo-forge-wrap p{font-size:13px;color:#475569;margin:0 0 8px;line-height:1.5}
+.geo-forge-wrap a{color:#4338ca;text-decoration:none}
+.geo-forge-wrap a:hover{text-decoration:underline}
+.geo-forge-wrap code{font-size:12px;background:#f1f5f9;padding:1px 5px;border-radius:3px}
+.geo-forge-wrap .gf-muted{color:#94a3b8;font-size:12px}
+.geo-forge-wrap .gf-subtitle{font-size:13px;color:#94a3b8;margin-left:6px;font-weight:400}
+.geo-forge-wrap .gf-header{margin-bottom:16px}
+.geo-forge-wrap .gf-card{background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:20px;margin-bottom:12px}
+.geo-forge-wrap .gf-card-title{font-size:14px;font-weight:600;color:#1e293b;margin-bottom:12px}
+.geo-forge-wrap .gf-grid{display:grid;gap:12px}
+.geo-forge-wrap .gf-grid-2{grid-template-columns:repeat(2,1fr)}
+.geo-forge-wrap .gf-grid-3{grid-template-columns:repeat(3,1fr)}
+.geo-forge-wrap .gf-grid-4{grid-template-columns:repeat(4,1fr)}
+.geo-forge-wrap .gf-stat{font-size:28px;font-weight:700;line-height:1.2;color:#1e293b}
+.geo-forge-wrap .gf-stat-label{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.geo-forge-wrap table{width:100%;border-collapse:collapse;font-size:13px;margin:0}
+.geo-forge-wrap table td{padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:middle}
+.geo-forge-wrap table th{padding:8px 12px;text-align:left;border-bottom:2px solid #e2e8f0;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;background:#f8fafc}
+.geo-forge-wrap table.striped tr:nth-child(even) td{background:#f8fafc}
+.geo-forge-wrap .gf-btn{display:inline-flex;align-items:center;font-size:13px;font-weight:500;padding:6px 14px;border-radius:4px;cursor:pointer;border:1px solid #cbd5e1;background:#fff;color:#334155;line-height:1.5;text-decoration:none;transition:all .1s}
+.geo-forge-wrap .gf-btn:hover{background:#f1f5f9;border-color:#94a3b8;text-decoration:none;color:#1e293b}
+.geo-forge-wrap .gf-btn-primary{background:#4338ca;border-color:#4338ca;color:#fff}
+.geo-forge-wrap .gf-btn-primary:hover{background:#3730a3;border-color:#3730a3;color:#fff}
+.geo-forge-wrap .gf-btn:disabled,.geo-forge-wrap .gf-btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.geo-forge-wrap .gf-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:600;line-height:1.4}
+.geo-forge-wrap .gf-badge-green{background:#dcfce7;color:#16a34a}
+.geo-forge-wrap .gf-badge-red{background:#fef2f2;color:#dc2626}
+.geo-forge-wrap .gf-badge-yellow{background:#fef9c3;color:#854d0e}
+.geo-forge-wrap .gf-badge-blue{background:#dbeafe;color:#2563eb}
+.geo-forge-wrap .gf-notice{padding:10px 14px;margin-bottom:12px;border-radius:4px;font-size:13px;line-height:1.5}
+.geo-forge-wrap .gf-notice-error{background:#fef2f2;border-left:3px solid #dc2626;color:#991b1b}
+.geo-forge-wrap .gf-notice-success{background:#f0fdf4;border-left:3px solid #16a34a;color:#166534}
+.geo-forge-wrap .gf-form-group{margin-bottom:16px}
+.geo-forge-wrap .gf-form-group label{display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:4px}
+.geo-forge-wrap .gf-form-group input[type=text],.geo-forge-wrap .gf-form-group input[type=password],.geo-forge-wrap .gf-form-group input[type=url],.geo-forge-wrap .gf-form-group textarea,.geo-forge-wrap .gf-form-group select{width:100%;font-size:13px;padding:6px 10px;border:1px solid #cbd5e1;border-radius:4px;background:#fff;color:#1e293b}
+.geo-forge-wrap .gf-form-group input:focus,.geo-forge-wrap .gf-form-group textarea:focus,.geo-forge-wrap .gf-form-group select:focus{outline:none;border-color:#4338ca;box-shadow:0 0 0 2px rgba(67,56,202,.1)}
+.geo-forge-wrap .gf-form-group .gf-hint{font-size:12px;color:#94a3b8;margin-top:4px}
+.geo-forge-wrap .gf-form-inline{display:flex;align-items:center;gap:8px}
+.geo-forge-wrap .gf-bar{height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden;min-width:60px}
+.geo-forge-wrap .gf-bar-fill{height:100%;border-radius:4px;transition:width .3s ease}
+.geo-forge-wrap .gf-tabs{display:flex;border-bottom:2px solid #e2e8f0;margin-bottom:16px}
+.geo-forge-wrap .gf-tab{padding:8px 16px;font-size:13px;font-weight:500;color:#64748b;cursor:pointer;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;background:none;transition:all .1s}
+.geo-forge-wrap .gf-tab:hover{color:#334155}
+.geo-forge-wrap .gf-tab.active{color:#4338ca;border-bottom-color:#4338ca}
+.geo-forge-wrap .gf-tab-content{display:none}
+.geo-forge-wrap .gf-tab-content.active{display:block}
+.geo-forge-wrap .gf-promo{background:linear-gradient(135deg,#f5e9d4,#ffb380,#c9b8ff,#4338ca,#ea2261,#f96bee);background-size:200%200%;animation:gf-shift 15s ease infinite;color:#fff;border:none;padding:20px 24px}
+@keyframes gf-shift{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
+.geo-forge-wrap .gf-promo h2,.geo-forge-wrap .gf-promo h3,.geo-forge-wrap .gf-promo p,.geo-forge-wrap .gf-promo li,.geo-forge-wrap .gf-promo strong{color:#fff}
+.geo-forge-wrap .gf-promo .gf-btn-primary{background:#fff!important;color:#4338ca!important;border-color:#fff!important}
+.geo-forge-wrap .gf-log-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;text-transform:uppercase;color:#fff}
+.geo-forge-wrap .gf-log-debug{background:#94a3b8}.geo-forge-wrap .gf-log-info{background:#4338ca}.geo-forge-wrap .gf-log-warning{background:#ca8a04;color:#1e293b}.geo-forge-wrap .gf-log-error{background:#dc2626}.geo-forge-wrap .gf-log-critical{background:#7f1d1d}
+.geo-forge-wrap .gf-editor{width:100%;font-family:Monaco,"Courier New",monospace;font-size:12px;border:1px solid #cbd5e1;border-radius:4px;padding:10px;line-height:1.5;min-height:200px}
+.geo-forge-wrap .gf-chart-label{width:90px;font-size:11px;font-weight:600;color:#64748b}
+.geo-forge-wrap .gf-chart-bars{display:flex;align-items:flex-end;gap:1px;height:40px}
+.geo-forge-wrap .gf-chart-bar{flex:1;background:#4338ca;border-radius:1px 1px 0 0;min-height:2px}
+.geo-forge-wrap .gf-filter{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.geo-forge-wrap .gf-check-item{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+.geo-forge-wrap .gf-check-item:last-child{border-bottom:none}
+.geo-forge-wrap .gf-check-pass{color:#16a34a}.geo-forge-wrap .gf-check-fail{color:#dc2626}
+@media(max-width:768px){.geo-forge-wrap .gf-grid-2,.geo-forge-wrap .gf-grid-3,.geo-forge-wrap .gf-grid-4{grid-template-columns:1fr}.geo-forge-wrap .gf-stat{font-size:22px}}
