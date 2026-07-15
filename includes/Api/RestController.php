@@ -11,7 +11,7 @@
  *   GET  /geo-forge/v1/logs           — recent log entries
  *   POST /geo-forge/v1/logs/clear     — drop all log entries
  *
- * All endpoints require `manage_woocommerce` capability.
+ * All endpoints require `manage_options` capability.
  *
  * @package GEO_Forge
  */
@@ -167,7 +167,7 @@ class RestController {
 	}
 
 	public function check_admin_permission(): bool {
-		return current_user_can( 'manage_woocommerce' );
+		return current_user_can( 'manage_options' );
 	}
 
 	/**

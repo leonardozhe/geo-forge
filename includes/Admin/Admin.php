@@ -71,7 +71,7 @@ final class Admin {
 		add_menu_page(
 			$this->page_title( 'Dashboard' ),
 			'GEO Forge',
-			'manage_woocommerce',
+			'manage_options',
 			'geo-forge',
 			array( $this, 'render_dashboard' ),
 			'dashicons-superhero-alt',
@@ -84,7 +84,7 @@ final class Admin {
 				'geo-forge',
 				$this->page_title( $page['title'] ),
 				$page['title'],
-				'manage_woocommerce',
+				'manage_options',
 				$page['slug'],
 				array( $this, $page['callback'] )
 			);

@@ -155,7 +155,7 @@ class Updater {
 	 * Debug helper: clear the cached manifest if the refresh query param is set.
 	 */
 	public static function maybe_refresh_cache(): void {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 		if ( empty( $_GET['geo_forge_refresh_update'] ) ) {
