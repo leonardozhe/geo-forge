@@ -4,7 +4,10 @@
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+use GEO_Forge\GeoForge;
+
 $scanner  = new \GEO_Forge\Scanner\Scanner();
+$fixer    = GeoForge::fixer();
 $last     = $scanner->get_last_scan();
 $last_time = (string) get_option( 'geo_forge_last_scan_time', '' );
 $has_key   = (bool) get_option( 'geo_forge_api_key', '' );
@@ -14,7 +17,7 @@ $grade_emoji = match ( true ) { null === $score => '—', $score >= 80 => '🟢'
 $categories  = is_array( $last['category_scores'] ?? null ) ? $last['category_scores'] : array();
 $checks      = is_array( $last['checks_result'] ?? null ) ? $last['checks_result'] : array();
 $issue_count = count( array_filter( $checks, fn( $c ) => ( $c['status'] ?? '' ) !== 'pass' ) );
-$fixable     = 5; // 5 P1 fix actions
+$fixable = $fixer ? count( $fixer->list() ) : 5;
 ?>
 <div class="geo-forge-wrap">
 	<div class="geo-forge-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
