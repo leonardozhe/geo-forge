@@ -168,14 +168,8 @@ class Router {
 		$method  = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 		// Detect bot family from UA.
-		$family = BotFamily::Unknown;
 		$ua     = $_SERVER['HTTP_USER_AGENT'] ?? '';
-		foreach ( BotFamily::cases() as $f ) {
-			if ( null !== $f->ua_pattern() && preg_match( $f->ua_pattern(), $ua ) ) {
-				$family = $f;
-				break;
-			}
-		}
+		$family = BotFamily::detect( $ua );
 
 		Store::record(
 			$family,

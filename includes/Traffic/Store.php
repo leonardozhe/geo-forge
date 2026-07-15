@@ -35,7 +35,7 @@ class Store {
 	 * Record one traffic event. Cheap to call — the heavy work (DB write)
 	 * is skipped for sampled-out regular bot traffic.
 	 *
-	 * @param BotFamily $family         Detected bot family.
+	 * @param string    $family         Detected bot family (e.g. 'openai', 'anthropic', 'unknown').
 	 * @param string    $source         One of: 'bot_ua', 'well_known', 'markdown'.
 	 * @param string    $url            Requested URL.
 	 * @param int       $status         Response status code.
@@ -44,7 +44,7 @@ class Store {
 	 * @param int|null  $response_bytes Body size in bytes, if known.
 	 */
 	public static function record(
-		BotFamily $family,
+		string $family,
 		string $source,
 		string $url,
 		int $status,
@@ -61,7 +61,7 @@ class Store {
 
 		$row = array(
 			'recorded_at'     => current_time( 'mysql', true ),
-			'bot_family'      => $family->value,
+			'bot_family'      => $family,
 			'request_url'     => mb_substr( $url, 0, 500 ),
 			'response_status' => $status,
 			'remote_ip_hash'  => $ip_hash,
@@ -77,7 +77,7 @@ class Store {
 			// Traffic recording is best-effort — don't break the request.
 			PluginLogger::debug(
 				'Traffic insert failed.',
-				array( 'family' => $family->value, 'source' => $source )
+				array( 'family' => $family, 'source' => $source )
 			);
 		}
 	}
