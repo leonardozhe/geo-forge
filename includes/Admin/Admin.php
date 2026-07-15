@@ -42,12 +42,6 @@ final class Admin {
 			'callback' => 'render_traffic',
 		),
 		array(
-			'slug'     => 'geo-forge-llms',
-			'title'    => 'llms.txt',
-			'view'     => 'page-llms-editor',
-			'callback' => 'render_llms_editor',
-		),
-		array(
 			'slug'     => 'geo-forge-settings',
 			'title'    => 'Settings',
 			'view'     => 'page-settings',
@@ -168,7 +162,7 @@ final class Admin {
 			'restNonce' => wp_create_nonce( 'wp_rest' ),
 			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
 			'i18n'      => array(
-				'scanning'    => __( 'Scanning… this takes ~15 seconds.', 'geo-forge' ),
+				'scanning'    => __( 'Scanning… this takes 15–90 seconds. The result will appear here when done.', 'geo-forge' ),
 				'scanFailed'  => __( 'Scan failed.', 'geo-forge' ),
 				'checking'    => __( 'Checking…', 'geo-forge' ),
 				'ok'          => __( 'Connected.', 'geo-forge' ),

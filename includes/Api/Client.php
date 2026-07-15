@@ -7,11 +7,10 @@
  * mapping in one place.
  *
  * Endpoints:
- *   POST /api/scan
- *   GET  /api/scans/{id}
- *   GET  /api/scans/history
- *   GET  /api/scans/user
- *   GET  /api/health
+ *   POST /scan
+ *   GET  /scans/{id}
+ *   GET  /scans/history
+ *   GET  /health
  *
  * @package GEO_Forge
  */
@@ -59,7 +58,7 @@ class Client {
 
 		$query = $wait_for_result ? '?waitForResult=true' : '';
 
-		return $this->request_json( 'POST', '/api/scan' . $query, array(
+		return $this->request_json( 'POST', '/scan' . $query, array(
 			'url'         => $url,
 			'waitForResult' => $wait_for_result,
 		) );
@@ -72,7 +71,7 @@ class Client {
 	 */
 	public function get_scan_result( string $scan_id ): array {
 		$scan_id = sanitize_text_field( $scan_id );
-		return $this->request_json( 'GET', '/api/scans/' . rawurlencode( $scan_id ) );
+		return $this->request_json( 'GET', '/scans/' . rawurlencode( $scan_id ) );
 	}
 
 	/**
@@ -81,7 +80,7 @@ class Client {
 	 * @throws ApiException
 	 */
 	public function get_scan_history(): array {
-		return $this->request_json( 'GET', '/api/scans/history' );
+		return $this->request_json( 'GET', '/scans/history' );
 	}
 
 	/**
@@ -92,7 +91,7 @@ class Client {
 	 * @throws ApiException
 	 */
 	public function get_user_scans( int $page = 1, int $limit = 20 ): array {
-		return $this->request_json( 'GET', '/api/scans/user?page=' . absint( $page ) . '&limit=' . absint( $limit ) );
+		return $this->request_json( 'GET', '/scans/history?page=' . absint( $page ) . '&limit=' . absint( $limit ) );
 	}
 
 	/**
@@ -101,7 +100,7 @@ class Client {
 	 */
 	public function health_check(): bool {
 		try {
-			$this->request_json( 'GET', '/api/health' );
+			$this->request_json( 'GET', '/health' );
 			return true;
 		} catch ( ApiException $e ) {
 			return false;
@@ -114,7 +113,7 @@ class Client {
 	 */
 	public function auth_check(): bool {
 		try {
-			$this->request_json( 'GET', '/api/scans/history' );
+			$this->request_json( 'GET', '/scans/history' );
 			return true;
 		} catch ( ApiException $e ) {
 			Logger::debug(
@@ -142,7 +141,7 @@ class Client {
 	 * @throws ApiException
 	 */
 	private function request_json( string $method, string $path, array $body = array() ): array {
-		if ( ! $this->has_api_key() && '/api/health' !== $path ) {
+		if ( ! $this->has_api_key() && '/health' !== $path ) {
 			throw new ApiException( ErrorCode::Auth, __( 'GEO KAMI API key is not configured.', 'geo-forge' ) );
 		}
 
