@@ -1,0 +1,46 @@
+/* ==========================================================================
+   GEO Forge — Admin styles.
+   Milestone 0: bare minimum. Dashboard card grid + muted text.
+   Extended in later milestones.
+   ========================================================================== */
+
+.geo-forge-wrap {
+	max-width: 1200px;
+}
+
+.geo-forge-grid {
+	display: grid;
+	grid-template-columns: repeat( auto-fit, minmax( 200px, 1fr ) );
+	gap: 16px;
+	margin: 16px 0;
+}
+
+.geo-forge-card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 16px 20px;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.geo-forge-card h2,
+.geo-forge-card h3 {
+	margin: 0 0 8px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.geo-forge-stat {
+	font-size: 32px;
+	font-weight: 700;
+	line-height: 1;
+	margin: 8px 0;
+	color: #1d2327;
+}
+
+.geo-forge-muted {
+	color: #646970;
+	font-size: 13px;
+	margin: 0;
+}

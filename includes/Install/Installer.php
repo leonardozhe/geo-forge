@@ -1,0 +1,122 @@
+<?php
+/**
+ * Plugin activation / deactivation handler.
+ *
+ * - activate:   create custom tables, seed default options, schedule cron stubs.
+ * - deactivate: clear scheduled cron events; tables/options kept (non-destructive).
+ *
+ * Destructive cleanup (drop tables, delete options) lives in `uninstall.php`.
+ *
+ * @package GEO_Forge
+ */
+
+namespace GEO_Forge\Install;
+
+use GEO_Forge\GeoForge;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+final class Installer {
+
+	/**
+	 * Runs on plugin activation.
+	 *
+	 * Safe to call multiple times — `dbDelta()` is idempotent for unchanged schemas,
+	 * and default options are only written when absent.
+	 */
+	public static function activate(): void {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return;
+		}
+
+		self::create_tables();
+		self::seed_defaults();
+	}
+
+	/**
+	 * Runs on plugin deactivation.
+	 * Intentionally light — we do NOT drop tables or delete options here,
+	 * so re-activating is cheap and user settings persist across disable/enable.
+	 */
+	public static function deactivate(): void {
+		wp_clear_scheduled_hook( 'geo_forge_daily_scan' );
+		wp_clear_scheduled_hook( 'geo_forge_weekly_report' );
+
+		// Flush rewrite rules so any routes we registered are removed from the cache.
+		flush_rewrite_rules();
+	}
+
+	/**
+	 * Create (or upgrade) the plugin's custom tables.
+	 */
+	private static function create_tables(): void {
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+
+		global $wpdb;
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$scans_table = "CREATE TABLE {$wpdb->prefix}geo_forge_scans (
+    id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    scan_id varchar(36) NOT NULL,
+    total_score int NOT NULL DEFAULT 0,
+    grade varchar(10) NOT NULL,
+    grade_label varchar(50) NOT NULL,
+    category_scores longtext,
+    checks_result longtext,
+    suggestions longtext,
+    points_cost int NOT NULL DEFAULT 0,
+    scan_duration_ms int DEFAULT NULL,
+    completed_at datetime DEFAULT NULL,
+    created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY  (id),
+    UNIQUE KEY scan_id (scan_id),
+    KEY total_score (total_score),
+    KEY created_at (created_at)
+) {$charset_collate};";
+
+		$fixes_table = "CREATE TABLE {$wpdb->prefix}geo_forge_fixes (
+    id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    fix_id varchar(50) NOT NULL,
+    scan_id varchar(36) DEFAULT NULL,
+    status varchar(20) NOT NULL DEFAULT 'pending',
+    score_change int NOT NULL DEFAULT 0,
+    snapshot longtext,
+    error_message text,
+    applied_at datetime DEFAULT NULL,
+    verified_at datetime DEFAULT NULL,
+    created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY  (id),
+    KEY fix_id (fix_id),
+    KEY status (status)
+) {$charset_collate};";
+
+		dbDelta( $scans_table );
+		dbDelta( $fixes_table );
+
+		update_option( 'geo_forge_db_version', GEO_FORGE_VERSION );
+	}
+
+	/**
+	 * Seed default option values on first install.
+	 * Existing values are preserved — `get_option()` returns false only if absent.
+	 */
+	private static function seed_defaults(): void {
+		$defaults = array(
+			'geo_forge_api_base'            => 'https://api.geokami.com',
+			'geo_forge_auto_scan_enabled'   => 'yes',
+			'geo_forge_scan_frequency'      => 'daily',
+			'geo_forge_auto_fix_enabled'    => 'no',
+			'geo_forge_auto_fix_risk_level' => 'low',
+			'geo_forge_notify_score_drop'   => 'yes',
+			'geo_forge_notify_threshold'    => 50,
+		);
+
+		foreach ( $defaults as $option_name => $default_value ) {
+			if ( false === get_option( $option_name ) ) {
+				update_option( $option_name, $default_value );
+			}
+		}
+	}
+}

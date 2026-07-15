@@ -1,0 +1,78 @@
+# =============================================================================
+# GEO Forge — .gitignore
+# =============================================================================
+# Goal: no secrets, no env, no vendor, no IDE, no OS junk, no DB dumps.
+# When pushing to a remote, ALWAYS create as private:
+#   gh repo create --private
+# =============================================================================
+
+# --- Environment & secrets ---------------------------------------------------
+.env
+.env.*
+!.gitignore                  # (allow committing this file)
+*.pem
+*.key
+*.crt
+*.p12
+*-secret.php
+*-secrets.php
+wp-config.php
+wp-config-local.php
+
+# --- Dependencies / vendor ---------------------------------------------------
+/vendor/
+/node_modules/
+/.yarn/
+/.pnp.*
+
+# --- Logs --------------------------------------------------------------------
+*.log
+debug.log
+wp-content/debug.log
+/error_log
+
+# --- OS junk -----------------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.xml
+
+# --- IDE / editor ------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.buildpath
+nbproject/
+
+# --- Database dumps ----------------------------------------------------------
+*.sql
+*.sql.gz
+*.mysql
+
+# --- Build / dist artifacts --------------------------------------------------
+*.zip
+*.tar.gz
+/build/
+/dist/
+/release/
+
+# --- WordPress local dev (if anyone ever mounts WP here) ---------------------
+/wordpress/
+/wp-admin/
+/wp-includes/
+/wp-content/uploads/
+/wp-content/cache/
+
+# --- PHP internals -----------------------------------------------------------
+.phpunit.result.cache
+.phpunit.cache/
+composer.phar
+
+# --- macOS / Claude / misc ---------------------------------------------------
+.claude/settings.local.json
+*.bak
+*.tmp

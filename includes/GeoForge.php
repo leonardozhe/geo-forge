@@ -1,0 +1,67 @@
+<?php
+/**
+ * Main plugin controller.
+ *
+ * Boots every subsystem. Currently: Admin UI only.
+ * Future milestones add Scanner, Fixer, Monitor, WellKnown, etc.
+ *
+ * @package GEO_Forge
+ */
+
+namespace GEO_Forge;
+
+use GEO_Forge\Admin\Admin;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+final class GeoForge {
+
+	private static ?self $instance = null;
+
+	private function __construct() {
+		$this->register_hooks();
+	}
+
+	/** Not clonable. */
+	private function __clone() {}
+
+	/** Not unserializable. */
+	public function __wakeup() {
+		throw new \RuntimeException( 'GeoForge is a singleton.' );
+	}
+
+	public static function instance(): self {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	/**
+	 * Reset the singleton. Test-only.
+	 *
+	 * @internal
+	 */
+	public static function reset_for_tests(): void {
+		self::$instance = null;
+	}
+
+	private function register_hooks(): void {
+		add_action( 'init', array( $this, 'load_textdomain' ) );
+
+		if ( is_admin() ) {
+			$admin = new Admin();
+			$admin->register();
+		}
+	}
+
+	public function load_textdomain(): void {
+		load_plugin_textdomain(
+			'geo-forge',
+			false,
+			dirname( GEO_FORGE_BASENAME ) . '/languages/'
+		);
+	}
+}
