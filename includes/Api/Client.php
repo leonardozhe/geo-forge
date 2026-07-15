@@ -11,6 +11,7 @@
  *   GET  /scans/{id}
  *   GET  /scans/history
  *   GET  /health
+ *   GET  /account
  *
  * @package GEO_Forge
  */
@@ -122,6 +123,15 @@ class Client {
 			);
 			return false;
 		}
+	}
+
+	/**
+	 * GET /account — user plan, points balance, subscription status.
+	 *
+	 * @throws ApiException
+	 */
+	public function get_account(): array {
+		return $this->request_json( 'GET', '/account' );
 	}
 
 	/**

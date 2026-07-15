@@ -136,6 +136,17 @@ class RestController {
 		// Fixer endpoints.
 		register_rest_route(
 			self::NAMESPACE,
+			'/account',
+			array(
+				'methods'             => 'READABLE',
+				'callback'            => array( $this, 'handle_get_account' ),
+				'permission_callback' => array( $this, 'check_admin_permission' ),
+			)
+		);
+
+		// Fixer endpoints.
+		register_rest_route(
+			self::NAMESPACE,
 			'/fixes',
 			array(
 				'methods'             => 'READABLE',

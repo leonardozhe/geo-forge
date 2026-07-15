@@ -64,45 +64,41 @@ $check_models = array(
 <div class="gf-header"><div style="display:flex;align-items:center;justify-content:space-between;"><div><h1>Dashboard <span class="gf-subtitle">GEO Forge</span></h1><?php if ( $lt ) : ?><span class="gf-muted">Last scan: <?php echo esc_html( $lt ); ?></span><?php endif; ?></div><div><?php if ( $hk ) : ?><span class="gf-badge gf-badge-green">🔗 Connected</span><?php else : ?><a href="<?php echo esc_url( admin_url( 'admin.php?page=geo-forge-settings' ) ); ?>" class="gf-btn">Add API Key</a><?php endif; ?></div></div></div>
 
 <div class="gf-grid gf-grid-3" style="margin-bottom:12px;">
-	<div class="gf-card">
-		<div class="gf-stat-label"><i data-lucide="bar-chart-2" style="width:18px;height:18px;"></i> AI Score</div>
-		<div class="gf-stat"><?php echo null === $sc0 ? '—' : esc_html( $sc0 ); ?><span style="font-size:14px;color:#94a3b8;"> /100</span></div>
+	<div class="gf-card" style="text-align:center;">
+		<div class="gf-stat-label"><i data-lucide="bar-chart-2" style="width:18px;height:18px;display:inline-block;vertical-align:middle;"></i> AI Score</div>
+		<div class="gf-stat"><?php echo null === $sc0 ? '—' : esc_html( $sc0 ); ?><span style="font-size:14px;color:#94a3b8;">/100</span></div>
 	</div>
-	<div class="gf-card">
-		<div class="gf-stat-label"><i data-lucide="check-circle-2" style="width:18px;height:18px;"></i> Status</div>
-		<div class="gf-stat" style="font-size:20px;"><?php echo null === $sc0 ? '—' : "<span style='color:#16a34a'>✅ $ps pass</span> · <span style='color:#dc2626'>❌ $fl fail</span>"; ?></div>
+	<div class="gf-card" style="text-align:center;">
+		<div class="gf-stat-label"><i data-lucide="check-circle-2" style="width:18px;height:18px;display:inline-block;vertical-align:middle;"></i> Status</div>
+		<div class="gf-stat" style="font-size:28px;"><?php echo null === $sc0 ? '—' : "<span style='color:#16a34a'>$ps</span> <span style='font-size:14px;color:#94a3b8;'>pass</span> · <span style='color:#dc2626'>$fl</span> <span style='font-size:14px;color:#94a3b8;'>fail</span>"; ?></div>
 	</div>
-	<div class="gf-card">
-		<div class="gf-stat-label"><i data-lucide="award" style="width:18px;height:18px;"></i> Grade</div>
-		<div class="gf-grade" style="background:<?php echo $grc; ?>;display:inline-flex;margin-top:4px;"><?php echo $gr; ?></div>
+	<div class="gf-card" style="text-align:center;">
+		<div class="gf-stat-label"><i data-lucide="award" style="width:18px;height:18px;display:inline-block;vertical-align:middle;"></i> Grade</div>
+		<div class="gf-grade" style="background:<?php echo $grc; ?>;display:inline-flex;margin-top:4px;font-size:28px;width:48px;height:48px;"><?php echo $gr; ?></div>
 	</div>
 </div>
 
 <?php if ( $sc0 ) : ?>
-<div class="gf-grid gf-grid-2" style="margin-bottom:12px;">
-	<div class="gf-card"><div class="gf-card-title">Category Breakdown</div>
+<div class="gf-grid gf-grid-3" style="margin-bottom:12px;">
+	<div class="gf-card"><div class="gf-card-title">Category Breakdown <span class="gf-badge gf-badge-blue"><?php echo count( $ca ); ?></span></div>
 		<table><?php foreach ( $ca as $c ) : $e = (int) ( $c['earned'] ?? 0 ); $m = max( 1, (int) ( $c['max'] ?? 1 ) ); $p = round( $e / $m * 100 ); $cl = $p >= 80 ? '#16a34a' : ( $p >= 50 ? '#ca8a04' : '#dc2626' ); $nm = $cat_names[ $c['id'] ] ?? ucfirst( (string) ( $c['id'] ?? '' ) ); ?>
-		<tr><td style="width:180px;font-weight:500;"><?php echo esc_html( $nm ); ?></td><td><div class="gf-bar"><div class="gf-bar-fill" style="width:<?php echo $p; ?>%;background:<?php echo $cl; ?>;"></div></div></td><td style="width:48px;text-align:right;font-weight:600;color:<?php echo $cl; ?>;"><?php echo $p; ?>%</td></tr>
+		<tr><td style="font-weight:500;font-size:12px;"><?php echo esc_html( $nm ); ?></td><td><div class="gf-bar"><div class="gf-bar-fill" style="width:<?php echo $p; ?>%;background:<?php echo $cl; ?>;"></div></div></td><td style="width:36px;text-align:right;font-weight:600;font-size:12px;color:<?php echo $cl; ?>;"><?php echo $p; ?>%</td></tr>
 		<?php endforeach; ?></table>
 	</div>
-	<div class="gf-card"><div class="gf-card-title">Check Results <span class="gf-badge gf-badge-blue"><?php echo count( $ck ); ?></span></div>
-		<div style="max-height:400px;overflow-y:auto;padding-right:4px;"><?php foreach ( $ck as $ch ) : $st = $ch['status'] ?? 'fail'; $ic = $st === 'pass' ? '✅' : ( $st === 'warn' ? '⚠️' : '❌' ); $label = $ch['label'] ?? $ch['name'] ?? $ch['id'] ?? '?'; $rec = $ch['recommendation'] ?? ''; $goal = $ch['goal'] ?? ''; $res = $ch['result'] ?? ''; $effort = $ch['effort'] ?? ''; $chid = $ch['id'] ?? ''; $chcat = $ch['category'] ?? ''; $cat_label = $cat_names[ $chcat ] ?? $chcat; $ai_models = $check_models[ $chid ] ?? ''; ?>
-		<div class="gf-check-item">
-			<span style="font-size:16px;flex-shrink:0;width:24px;"><?php echo $ic; ?></span>
-			<div style="flex:1;min-width:0;">
-				<div style="font-weight:600;"><?php echo esc_html( $label ); ?></div>
-				<?php if ( $goal ) : ?><div class="gf-check-meta">Goal: <?php echo esc_html( $goal ); ?></div><?php endif; ?>
-				<?php if ( $res && $st !== 'pass' ) : ?><div class="gf-check-meta">Result: <?php echo esc_html( $res ); ?></div><?php endif; ?>
-				<?php if ( $rec ) : ?><div class="gf-check-recommendation">💡 <?php echo esc_html( $rec ); ?><?php if ( $effort ) : ?> <span class="gf-muted">(≈<?php echo esc_html( $effort ); ?>)</span><?php endif; ?></div><?php endif; ?>
-			</div>
-			<div style="flex-shrink:0;text-align:right;min-width:80px;">
-				<div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px;"><?php echo esc_html( $cat_label ); ?></div>
-				<?php if ( $ai_models ) : ?><div style="font-size:10px;color:#64748b;margin-top:1px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?php echo esc_attr( $ai_models ); ?>"><?php echo esc_html( $ai_models ); ?></div><?php endif; ?>
-				<div style="font-weight:600;font-size:12px;color:#64748b;margin-top:2px;"><?php echo (int) ( $ch['score'] ?? 0 ); ?>/<?php echo (int) ( $ch['maxScore'] ?? 0 ); ?></div>
-			</div>
-		</div>
-		<?php endforeach; ?></div>
-	</div>
+	<div style="grid-column: span 2;"><div class="gf-card"><div class="gf-card-title">Check Results <span class="gf-badge gf-badge-blue"><?php echo count( $ck ); ?></span></div>
+		<div style="overflow-y:auto;padding-right:4px;">
+		<table><thead><tr><th></th><th>Check</th><th style="width:80px;">Category</th><th style="width:60px;">Score</th><th style="width:140px;">AI Models</th><th style="width:80px;">Status</th></tr></thead><tbody>
+		<?php foreach ( $ck as $ch ) : $st = $ch['status'] ?? 'fail'; $ic = $st === 'pass' ? '✅' : ( $st === 'warn' ? '⚠️' : '❌' ); $label = $ch['label'] ?? $ch['name'] ?? $ch['id'] ?? '?'; $chid = $ch['id'] ?? ''; $chcat = $ch['category'] ?? ''; $cat_label = $cat_names[ $chcat ] ?? $chcat; $ai_models = $check_models[ $chid ] ?? '—'; $score_raw = $ch['score'] ?? 0; $max_raw = $ch['maxScore'] ?? 0; $score_pct = $max_raw > 0 ? round( $score_raw / $max_raw * 100 ) : 0; $score_cl = $score_pct >= 80 ? '#16a34a' : ( $score_pct >= 40 ? '#ca8a04' : '#dc2626' ); ?>
+		<tr>
+			<td><?php echo $ic; ?></td>
+			<td><div style="font-weight:600;font-size:12px;"><?php echo esc_html( $label ); ?></div></td>
+			<td><span style="font-size:11px;color:#64748b;"><?php echo esc_html( $cat_label ); ?></span></td>
+			<td><span style="font-weight:600;font-size:12px;color:<?php echo $score_cl; ?>;"><?php echo (int) $score_raw; ?>/<?php echo (int) $max_raw; ?></span></td>
+			<td><span style="font-size:10px;color:#94a3b8;line-height:1.3;"><?php echo esc_html( $ai_models ); ?></span></td>
+			<td><span class="gf-badge gf-badge-<?php echo $st === 'pass' ? 'green' : 'red'; ?>"><?php echo ucfirst( $st ); ?></span></td>
+		</tr>
+		<?php endforeach; ?></tbody></table></div>
+	</div></div>
 </div>
 <?php endif; ?>
 
