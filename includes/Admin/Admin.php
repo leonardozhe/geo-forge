@@ -31,7 +31,7 @@ final class Admin {
 		),
 		array(
 			'slug'     => 'geo-forge-fixes',
-			'title'    => 'Fix Center',
+			'title'    => 'Optimizations',
 			'view'     => 'page-fix-center',
 			'callback' => 'render_fix_center',
 		),
