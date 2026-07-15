@@ -44,7 +44,7 @@ final class Settings {
 			: '';
 		$api_base = isset( $_POST['geo_forge_api_base'] )
 			? esc_url_raw( wp_unslash( $_POST['geo_forge_api_base'] ) )
-			: 'https://api.geokami.com';
+			: 'http://178.156.215.110:3100';
 
 		// 4. Light validation on the key shape.
 		if ( '' !== $api_key && ! preg_match( '/^gk_[A-Za-z0-9]{32,}$/', $api_key ) ) {
@@ -59,7 +59,7 @@ final class Settings {
 
 		// 5. Persist. Empty key is allowed (user is clearing it).
 		update_option( 'geo_forge_api_key', $api_key );
-		update_option( 'geo_forge_api_base', '' !== $api_base ? $api_base : 'https://api.geokami.com' );
+		update_option( 'geo_forge_api_base', '' !== $api_base ? $api_base : 'http://178.156.215.110:3100' );
 
 		// 6. Done.
 		self::redirect_with_notice( 'updated', __( 'Settings saved.', 'geo-forge' ) );

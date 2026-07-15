@@ -38,7 +38,7 @@ class Client {
 		int $timeout = 30,
 		int $max_retries = 3
 	) {
-		$this->api_base    = '' !== $api_base ? untrailingslashit( $api_base ) : (string) get_option( 'geo_forge_api_base', 'https://api.geokami.com' );
+		$this->api_base    = '' !== $api_base ? untrailingslashit( $api_base ) : (string) get_option( 'geo_forge_api_base', 'http://178.156.215.110:3100' );
 		$this->api_key     = $api_key ?: (string) get_option( 'geo_forge_api_key', '' );
 		$this->timeout     = $timeout;
 		$this->max_retries = $max_retries;
