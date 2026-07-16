@@ -90,6 +90,12 @@ class Logger {
 		global $wpdb;
 		$limit = max( 1, min( $limit, 1000 ) );
 
+		$cache_key = 'geo_forge_logs_recent_' . $limit . '_' . ( $min_level ? $min_level->value : 'all' );
+		$cached    = wp_cache_get( $cache_key, 'geo-forge' );
+		if ( false !== $cached && is_array( $cached ) ) {
+			return $cached;
+		}
+
 		// Single query; filter by level in PHP when needed. Level cardinality
 		// is low (5 values) so the PHP filter is cheap, and we avoid a dynamic
 		// IN clause with variable bindings.
@@ -117,6 +123,7 @@ class Logger {
 			$row['context'] = is_array( $decoded ) ? $decoded : array();
 		}
 
+		wp_cache_set( $cache_key, $rows, 'geo-forge', 60 );
 		return $rows;
 	}
 
@@ -126,6 +133,7 @@ class Logger {
 	public static function clear(): void {
 		global $wpdb;
 		$wpdb->query( "TRUNCATE TABLE `{$wpdb->prefix}geo_forge_logs`" );
+		wp_cache_delete( 'geo_forge_logs_recent_all', 'geo-forge' );
 	}
 
 	/**
@@ -145,18 +153,16 @@ class Logger {
 	public static function reset(): array {
 		global $wpdb;
 
-		$table = $wpdb->prefix . self::TABLE_SUFFIX;
-
 		// Count rows before the rebuild (informational).
-		$rows_before = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
+		$rows_before = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$wpdb->prefix}geo_forge_logs`" );
 
 		// Drop the existing table.
-		$wpdb->query( "DROP TABLE IF EXISTS `{$table}`" );
+		$wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}geo_forge_logs`" );
 
 		// Recreate using dbDelta (same schema as Installer::create_tables).
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		$charset_collate = $wpdb->get_charset_collate();
-		$schema = "CREATE TABLE {$table} (
+		$schema = "CREATE TABLE {$wpdb->prefix}geo_forge_logs (
     id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
     level varchar(10) NOT NULL,
     message varchar(500) NOT NULL,
@@ -172,9 +178,9 @@ class Logger {
 		dbDelta( $schema );
 
 		// Verify the table exists after recreation.
-		$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+		$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . self::TABLE_SUFFIX ) );
 
-		if ( $table_exists !== $table ) {
+		if ( $table_exists !== $wpdb->prefix . self::TABLE_SUFFIX ) {
 			return array(
 				'success'    => false,
 				'message'    => __( 'Failed to recreate logs table.', 'geo-forge' ),
@@ -187,6 +193,9 @@ class Logger {
 		// Without this, an old 'warning' value would persist in the DB and
 		// cause info-level logs to be silently dropped.
 		delete_option( 'geo_forge_log_min_level' );
+
+		// Invalidate log caches after rebuild.
+		wp_cache_delete( 'geo_forge_logs_recent_all', 'geo-forge' );
 
 		return array(
 			'success'     => true,
@@ -228,6 +237,9 @@ class Logger {
 				)
 			);
 		}
+
+		// Invalidate recent-logs caches after pruning.
+		wp_cache_delete( 'geo_forge_logs_recent_all', 'geo-forge' );
 	}
 
 	/**

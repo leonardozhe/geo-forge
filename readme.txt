@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.91
+Stable tag:        1.0.92
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -123,6 +123,12 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 5. Score History with per-scan detail view.
 
 == Changelog ==
+
+= 1.0.92 =
+* Fix: Last ExceptionNotEscaped error — replaced sanitize_text_field with esc_html in exception context.
+* Fix: All DirectDatabaseQuery/NoCaching warnings — added wp_cache_get/set/delete wrappers in Scanner, Logger, Store, Installer.
+* Fix: All NonPrefixedVariableFound warnings in page-dashboard.php — prefixed all 53+ variables with gf_.
+* Fix: Logger.php reset() still used $table variable — now inline {$wpdb->prefix}geo_forge_logs.
 
 = 1.0.91 =
 * Fix: All ExceptionNotEscaped errors — ApiException constructor now accepts string code; all args wrapped with esc_html()/absint()/esc_url_raw()/sanitize_text_field().

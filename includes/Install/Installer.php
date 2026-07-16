@@ -174,6 +174,7 @@ final class Installer {
 					),
 					array( '%s', '%s' )
 				);
+				wp_cache_delete( 'geo_forge_setting_' . $key, 'geo-forge' );
 			}
 		}
 	}
@@ -181,16 +182,28 @@ final class Installer {
 	public static function get_setting( string $key, mixed $default = null ): mixed {
 		global $wpdb;
 
+		$cache_key = 'geo_forge_setting_' . $key;
+		$cached    = wp_cache_get( $cache_key, 'geo-forge' );
+		if ( false !== $cached ) {
+			if ( 'empty' === $cached ) {
+				return get_option( 'geo_forge_' . $key, $default );
+			}
+			return is_array( $cached ) ? $cached : $cached;
+		}
+
 		$value = $wpdb->get_var(
 			$wpdb->prepare( "SELECT setting_value FROM {$wpdb->prefix}geo_forge_settings WHERE setting_key = %s", $key )
 		);
 
 		if ( null === $value || false === $value ) {
+			wp_cache_set( $cache_key, 'empty', 'geo-forge', 0 );
 			return get_option( 'geo_forge_' . $key, $default );
 		}
 
 		$decoded = json_decode( $value, true );
-		return ( JSON_ERROR_NONE === json_last_error() && is_array( $decoded ) ) ? $decoded : $value;
+		$result  = ( JSON_ERROR_NONE === json_last_error() && is_array( $decoded ) ) ? $decoded : $value;
+		wp_cache_set( $cache_key, $result, 'geo-forge', 0 );
+		return $result;
 	}
 
 	public static function set_setting( string $key, mixed $value ): void {
@@ -206,6 +219,7 @@ final class Installer {
 		);
 
 		update_option( 'geo_forge_' . $key, is_array( $value ) ? $db_value : $value );
+		wp_cache_delete( 'geo_forge_setting_' . $key, 'geo-forge' );
 	}
 
 	/**

@@ -98,6 +98,9 @@ class Store {
 				'Store::record: Successfully inserted traffic record.',
 				array( 'family' => $family, 'source' => $source, 'insert_id' => $wpdb->insert_id )
 			);
+			// Invalidate traffic caches after a new record.
+			wp_cache_delete( 'geo_forge_traffic_summary', 'geo-forge' );
+			wp_cache_delete( 'geo_forge_traffic_chart_all', 'geo-forge' );
 		}
 	}
 
@@ -112,6 +115,12 @@ class Store {
 	public static function recent( int $limit = 100, ?string $family = null, ?string $source = null ): array {
 		global $wpdb;
 		$limit = max( 1, min( $limit, 1000 ) );
+
+		$cache_key = 'geo_forge_traffic_recent_' . $limit . '_' . ( $family ?? 'all' ) . '_' . ( $source ?? 'all' );
+		$cached    = wp_cache_get( $cache_key, 'geo-forge' );
+		if ( false !== $cached && is_array( $cached ) ) {
+			return $cached;
+		}
 
 		if ( null !== $family && null !== $source ) {
 			$rows = $wpdb->get_results(
@@ -151,7 +160,9 @@ class Store {
 			);
 		}
 
-		return $rows ?? array();
+		$result = $rows ?? array();
+		wp_cache_set( $cache_key, $result, 'geo-forge', 60 );
+		return $result;
 	}
 
 	/**
@@ -163,6 +174,12 @@ class Store {
 	 */
 	public static function chart_data( int $days = 14 ): array {
 		global $wpdb;
+
+		$cache_key = 'geo_forge_traffic_chart_' . $days;
+		$cached    = wp_cache_get( $cache_key, 'geo-forge' );
+		if ( false !== $cached && is_array( $cached ) && isset( $cached['labels'] ) ) {
+			return $cached;
+		}
 
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
@@ -195,7 +212,9 @@ class Store {
 			$series[ $family ] = $filled;
 		}
 
-		return array( 'labels' => $labels, 'series' => $series );
+		$result = array( 'labels' => $labels, 'series' => $series );
+		wp_cache_set( $cache_key, $result, 'geo-forge', 300 );
+		return $result;
 	}
 
 	/**
@@ -203,6 +222,11 @@ class Store {
 	 */
 	public static function summary_24h(): array {
 		global $wpdb;
+
+		$cached = wp_cache_get( 'geo_forge_traffic_summary', 'geo-forge' );
+		if ( false !== $cached && is_array( $cached ) && isset( $cached['total_24h'] ) ) {
+			return $cached;
+		}
 
 		$total = (int) $wpdb->get_var(
 			$wpdb->prepare(
@@ -221,10 +245,13 @@ class Store {
 			ARRAY_A
 		) ?? array();
 
-		return array(
+		$result = array(
 			'total_24h' => $total,
 			'by_family' => $by_family,
 		);
+
+		wp_cache_set( 'geo_forge_traffic_summary', $result, 'geo-forge', 300 );
+		return $result;
 	}
 
 	/**
@@ -233,6 +260,8 @@ class Store {
 	public static function clear(): void {
 		global $wpdb;
 		$wpdb->query( "TRUNCATE TABLE `{$wpdb->prefix}geo_forge_traffic`" );
+		wp_cache_delete( 'geo_forge_traffic_summary', 'geo-forge' );
+		wp_cache_delete( 'geo_forge_traffic_chart_all', 'geo-forge' );
 	}
 
 	/**

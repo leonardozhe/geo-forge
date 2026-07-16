@@ -19,7 +19,6 @@ namespace GEO_Forge\Scanner;
 
 use GEO_Forge\Api\ApiException;
 use GEO_Forge\Api\Client;
-use GEO_Forge\Cache\TransientCache;
 use GEO_Forge\Log\Logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -108,7 +107,7 @@ class Scanner {
 				throw new ApiException(
 					esc_html( \GEO_Forge\Api\ErrorCode::Api->value ),
 					esc_html__( 'Scan failed on GEO KAMI side.', 'geo-forge' ),
-					array( 'scan_id' => sanitize_text_field( $scan_id ), 'response' => esc_html( wp_json_encode( $response ) ) )
+					array( 'scan_id' => esc_html( $scan_id ), 'response' => esc_html( wp_json_encode( $response ) ) )
 				);
 			}
 
@@ -157,8 +156,11 @@ class Scanner {
 
 		$wpdb->replace( $wpdb->prefix . 'geo_forge_scans', $row );
 
-		// Warm caches.
-		TransientCache::set( 'last_scan', $row );
+		// Invalidate caches tied to scan reads.
+		wp_cache_delete( 'geo_forge_last_scan', 'geo-forge' );
+		wp_cache_delete( 'geo_forge_score_history_all', 'geo-forge' );
+
+		// Warm cache.
 		update_option( 'geo_forge_last_scan_time', current_time( 'mysql' ) );
 
 		Logger::info(
@@ -210,9 +212,12 @@ class Scanner {
 	 * Fetch the latest scan row from the DB, if any.
 	 */
 	public function get_last_scan(): ?array {
-		$cached = TransientCache::get( 'last_scan' );
-		if ( is_array( $cached ) ) {
-			return $cached;
+		$cached = wp_cache_get( 'geo_forge_last_scan', 'geo-forge' );
+		if ( false !== $cached ) {
+			if ( 'empty' === $cached ) {
+				return null;
+			}
+			return is_array( $cached ) ? $cached : null;
 		}
 
 		global $wpdb;
@@ -222,6 +227,7 @@ class Scanner {
 		);
 
 		if ( ! $row ) {
+			wp_cache_set( 'geo_forge_last_scan', 'empty', 'geo-forge', 300 );
 			return null;
 		}
 
@@ -233,7 +239,7 @@ class Scanner {
 			}
 		}
 
-		TransientCache::set( 'last_scan', $row );
+		wp_cache_set( 'geo_forge_last_scan', $row, 'geo-forge', 300 );
 		return $row;
 	}
 
@@ -245,15 +251,24 @@ class Scanner {
 	 */
 	public function get_score_history( int $limit = 30 ): array {
 		global $wpdb;
-		$limit = max( 1, min( $limit, 100 ) );
-		$rows  = $wpdb->get_results(
+		$limit     = max( 1, min( $limit, 100 ) );
+		$cache_key = 'geo_forge_score_history_' . $limit;
+		$cached    = wp_cache_get( $cache_key, 'geo-forge' );
+		if ( false !== $cached && is_array( $cached ) ) {
+			return $cached;
+		}
+
+		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT id, total_score, grade, grade_label, created_at, checks_result FROM {$wpdb->prefix}geo_forge_scans ORDER BY created_at DESC LIMIT %d",
 				$limit
 			),
 			ARRAY_A
 		);
-		return $rows ?: array();
+
+		$result = $rows ?: array();
+		wp_cache_set( $cache_key, $result, 'geo-forge', 300 );
+		return $result;
 	}
 
 	/**
@@ -267,6 +282,15 @@ class Scanner {
 			return null;
 		}
 
+		$cache_key = 'geo_forge_scan_' . $scan_id;
+		$cached    = wp_cache_get( $cache_key, 'geo-forge' );
+		if ( false !== $cached ) {
+			if ( 'empty' === $cached ) {
+				return null;
+			}
+			return is_array( $cached ) ? $cached : null;
+		}
+
 		global $wpdb;
 		$row = $wpdb->get_row(
 			$wpdb->prepare(
@@ -277,6 +301,7 @@ class Scanner {
 		);
 
 		if ( ! $row ) {
+			wp_cache_set( $cache_key, 'empty', 'geo-forge', 300 );
 			return null;
 		}
 
@@ -287,6 +312,7 @@ class Scanner {
 			}
 		}
 
+		wp_cache_set( $cache_key, $row, 'geo-forge', 300 );
 		return $row;
 	}
 }
