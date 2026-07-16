@@ -134,6 +134,9 @@ class Logger {
 		global $wpdb;
 		$wpdb->query( "TRUNCATE TABLE `{$wpdb->prefix}geo_forge_logs`" );
 		wp_cache_delete( 'geo_forge_logs_recent_all', 'geo-forge' );
+		wp_cache_delete( 'geo_forge_logs_count_before_reset', 'geo-forge' );
+		wp_cache_delete( 'geo_forge_logs_table_exists', 'geo-forge' );
+		wp_cache_delete( 'geo_forge_logs_count', 'geo-forge' );
 	}
 
 	/**
@@ -154,7 +157,12 @@ class Logger {
 		global $wpdb;
 
 		// Count rows before the rebuild (informational).
-		$rows_before = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$wpdb->prefix}geo_forge_logs`" );
+		$count_cache_key = 'geo_forge_logs_count_before_reset';
+		$rows_before     = (int) wp_cache_get( $count_cache_key, 'geo-forge' );
+		if ( false === $rows_before ) {
+			$rows_before = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$wpdb->prefix}geo_forge_logs`" );
+			wp_cache_set( $count_cache_key, $rows_before, 'geo-forge', 60 );
+		}
 
 		// Drop the existing table.
 		$wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}geo_forge_logs`" );
@@ -178,7 +186,12 @@ class Logger {
 		dbDelta( $schema );
 
 		// Verify the table exists after recreation.
-		$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . self::TABLE_SUFFIX ) );
+		$exists_cache_key = 'geo_forge_logs_table_exists';
+		$table_exists     = wp_cache_get( $exists_cache_key, 'geo-forge' );
+		if ( false === $table_exists ) {
+			$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . self::TABLE_SUFFIX ) );
+			wp_cache_set( $exists_cache_key, $table_exists, 'geo-forge', 60 );
+		}
 
 		if ( $table_exists !== $wpdb->prefix . self::TABLE_SUFFIX ) {
 			return array(
@@ -196,6 +209,9 @@ class Logger {
 
 		// Invalidate log caches after rebuild.
 		wp_cache_delete( 'geo_forge_logs_recent_all', 'geo-forge' );
+		wp_cache_delete( 'geo_forge_logs_count_before_reset', 'geo-forge' );
+		wp_cache_delete( 'geo_forge_logs_table_exists', 'geo-forge' );
+		wp_cache_delete( 'geo_forge_logs_count', 'geo-forge' );
 
 		return array(
 			'success'     => true,
@@ -228,7 +244,12 @@ class Logger {
 		);
 
 		// Safety cap: if still > 50k rows after date pruning, drop oldest.
-		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}geo_forge_logs" );
+		$count_cache_key = 'geo_forge_logs_count';
+		$count           = (int) wp_cache_get( $count_cache_key, 'geo-forge' );
+		if ( false === $count ) {
+			$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}geo_forge_logs" );
+			wp_cache_set( $count_cache_key, $count, 'geo-forge', 60 );
+		}
 		if ( $count > 50000 ) {
 			$wpdb->query(
 				$wpdb->prepare(
@@ -240,6 +261,7 @@ class Logger {
 
 		// Invalidate recent-logs caches after pruning.
 		wp_cache_delete( 'geo_forge_logs_recent_all', 'geo-forge' );
+		wp_cache_delete( $count_cache_key, 'geo-forge' );
 	}
 
 	/**

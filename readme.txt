@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.92
+Stable tag:        1.0.93
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -123,6 +123,12 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 5. Score History with per-scan detail view.
 
 == Changelog ==
+
+= 1.0.93 =
+* Fix: All view files now use full `geo_forge_` prefix (WordPress standard) instead of `gf_`.
+* Fix: Added wp_cache_get/set to all SELECT queries in Logger.php (reset, prune, recent).
+* Fix: Added cache invalidation after all mutations (INSERT/DELETE/TRUNCATE/DROP).
+* Fix: Removed all phpcs:disable comments from view files.
 
 = 1.0.92 =
 * Fix: Last ExceptionNotEscaped error — replaced sanitize_text_field with esc_html in exception context.
