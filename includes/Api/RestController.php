@@ -473,12 +473,26 @@ class RestController {
 	 * POST /well-known/llms-txt/regenerate — rebuild from store data.
 	 */
 	public function handle_regenerate_llms_txt(): \WP_REST_Response {
-		$content = LlmsTxt::regenerate();
-		return new \WP_REST_Response( array(
-			'success' => true,
-			'content' => $content,
-			'bytes'   => strlen( $content ),
-		), 200 );
+		try {
+			$content = LlmsTxt::regenerate();
+			return new \WP_REST_Response( array(
+				'success' => true,
+				'content' => $content,
+				'bytes'   => strlen( $content ),
+			), 200 );
+		} catch ( \Throwable $e ) {
+			\GEO_Forge\Log\Logger::error(
+				'llms.txt regenerate failed: ' . $e->getMessage(),
+				array( 'exception' => get_class( $e ), 'file' => $e->getFile(), 'line' => $e->getLine() )
+			);
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'error'   => array(
+					'code'    => 'regenerate_failed',
+					'message' => $e->getMessage(),
+				),
+			), 500 );
+		}
 	}
 
 	/* ---- security.txt handlers ---- */
@@ -500,11 +514,19 @@ class RestController {
 	}
 
 	public function handle_regenerate_security_txt(): \WP_REST_Response {
-		$content = SecurityTxt::regenerate();
-		return new \WP_REST_Response( array(
-			'success' => true,
-			'content' => $content,
-		), 200 );
+		try {
+			$content = SecurityTxt::regenerate();
+			return new \WP_REST_Response( array(
+				'success' => true,
+				'content' => $content,
+			), 200 );
+		} catch ( \Throwable $e ) {
+			\GEO_Forge\Log\Logger::error( 'security.txt regenerate failed: ' . $e->getMessage(), array( 'exception' => get_class( $e ) ) );
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'error'   => array( 'code' => 'regenerate_failed', 'message' => $e->getMessage() ),
+			), 500 );
+		}
 	}
 
 	/* ---- robots.txt handlers ---- */
@@ -526,11 +548,19 @@ class RestController {
 	}
 
 	public function handle_regenerate_robots_txt(): \WP_REST_Response {
-		$content = RobotsTxt::regenerate();
-		return new \WP_REST_Response( array(
-			'success' => true,
-			'content' => $content,
-		), 200 );
+		try {
+			$content = RobotsTxt::regenerate();
+			return new \WP_REST_Response( array(
+				'success' => true,
+				'content' => $content,
+			), 200 );
+		} catch ( \Throwable $e ) {
+			\GEO_Forge\Log\Logger::error( 'robots.txt regenerate failed: ' . $e->getMessage(), array( 'exception' => get_class( $e ) ) );
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'error'   => array( 'code' => 'regenerate_failed', 'message' => $e->getMessage() ),
+			), 500 );
+		}
 	}
 
 	/* =====================================================================

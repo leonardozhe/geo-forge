@@ -41,6 +41,11 @@
     });
 
     // View Details — event delegation on document
+    // Priority:
+    //   1. Embedded `window.GeoForgeScans` data (baked into the page by PHP).
+    //      Works even if the REST endpoint isn't registered yet (opcache).
+    //   2. REST GET /scan/{id} (new endpoint, v1.0.81+).
+    //   3. REST GET /scan/last (legacy fallback, for very old scans not in embed).
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('.gf-view-detail');
         if (!btn) return;
@@ -53,19 +58,36 @@
         }
         content.innerHTML = '<p class="gf-muted">Loading...</p>';
         dialog.classList.add('open');
-        // Use the specific scan ID from the button's data-scan attribute.
-        // Fall back to /scan/last only if data-scan is missing.
+
         var scanId = btn.getAttribute('data-scan');
+        var embedded = window.GeoForgeScans || {};
+        var scan = scanId ? embedded[scanId] || embedded[Number(scanId)] : null;
+
+        if (scan && scan.checks_result) {
+            console.log('[GEO Forge Dashboard] Using embedded data for scanId=' + scanId);
+            renderScanDetail(content, scan);
+            return;
+        }
+
+        console.log('[GEO Forge Dashboard] No embedded data for scanId=' + scanId + ', falling back to REST');
+        fetchScanDetail(scanId).then(function (s) {
+            renderScanDetail(content, s);
+        }).catch(function (err) {
+            console.error('[GEO Forge Dashboard] Details fetch error:', err);
+            content.innerHTML = '<p class="gf-muted">Failed to load: ' + (err.message || 'Unknown error') + '</p>';
+        });
+    });
+
+    function fetchScanDetail(scanId) {
         var url = scanId ? restRoot + 'scan/' + scanId : restRoot + 'scan/last';
-        console.log('[GEO Forge Dashboard] GET ' + url + ' (scanId=' + scanId + ')');
-        fetch(url, {
+        console.log('[GEO Forge Dashboard] GET ' + url);
+        return fetch(url, {
             credentials: 'same-origin',
             headers: { 'X-WP-Nonce': restNonce }
         })
         .then(function (r) {
             console.log('[GEO Forge Dashboard] Details response status: ' + r.status);
             if (!r.ok) {
-                // Non-2xx: try to parse error body, otherwise show HTTP status
                 return r.json().catch(function () { return null; }).then(function (body) {
                     var msg = (body && body.error && body.error.message) || 'HTTP ' + r.status;
                     throw new Error(msg);
@@ -74,26 +96,21 @@
             return r.json();
         })
         .then(function (b) {
-            console.log('[GEO Forge Dashboard] Details response body:', b);
-            if (b && b.scan) {
-                var s = b.scan, checks = s.checks_result || [], rows = '';
-                checks.forEach(function (x) {
-                    var ic = x.status === 'pass' ? '✅' : (x.status === 'warn' ? '⚠️' : '❌');
-                    rows += '<tr><td>' + ic + '</td><td style="font-size:12px;">' + (x.label||x.id||'?') + '</td><td style="font-size:11px;color:#64748b;">' + (x.category||'') + '</td><td style="font-size:12px;font-weight:600;">' + (x.score||0) + '/' + (x.maxScore||0) + '</td><td style="font-size:11px;color:#94a3b8;">' + (x.goal||'') + '</td></tr>';
-                });
-                content.innerHTML = '<h2>Scan Details</h2><p class="gf-muted">Score: <b>' + s.total_score + '</b> | ' + (s.created_at||'') + '</p><hr style="margin:12px 0"><table><thead><tr><th></th><th>Check</th><th>Category</th><th>Score</th><th>Result</th></tr></thead><tbody>' + rows + '</tbody></table>';
-            } else {
-                // Response had no scan field — show raw response for debugging
-                var debugInfo = b ? JSON.stringify(b).substring(0, 200) : '(empty)';
-                console.warn('[GEO Forge Dashboard] Response missing scan field:', b);
-                content.innerHTML = '<p class="gf-muted">Details not available.</p><p style="font-size:11px;color:#94a3b8;">Response: ' + debugInfo + '</p>';
-            }
-        })
-        .catch(function (err) {
-            console.error('[GEO Forge Dashboard] Details fetch error:', err);
-            content.innerHTML = '<p class="gf-muted">Failed to load: ' + (err.message || 'Unknown error') + '</p>';
+            if (b && b.scan) return b.scan;
+            var debugInfo = b ? JSON.stringify(b).substring(0, 200) : '(empty)';
+            throw new Error('Scan not found in response: ' + debugInfo);
         });
-    });
+    }
+
+    function renderScanDetail(content, s) {
+        var checks = s.checks_result || [];
+        var rows = '';
+        checks.forEach(function (x) {
+            var ic = x.status === 'pass' ? '✅' : (x.status === 'warn' ? '⚠️' : '❌');
+            rows += '<tr><td>' + ic + '</td><td style="font-size:12px;">' + (x.label||x.id||'?') + '</td><td style="font-size:11px;color:#64748b;">' + (x.category||'') + '</td><td style="font-size:12px;font-weight:600;">' + (x.score||0) + '/' + (x.maxScore||0) + '</td><td style="font-size:11px;color:#94a3b8;">' + (x.goal||'') + '</td></tr>';
+        });
+        content.innerHTML = '<h2>Scan Details</h2><p class="gf-muted">Score: <b>' + s.total_score + '</b> | ' + (s.created_at||'') + '</p><hr style="margin:12px 0"><table><thead><tr><th></th><th>Check</th><th>Category</th><th>Score</th><th>Result</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    }
 
     // Close dialog on overlay click
     document.addEventListener('click', function (e) {

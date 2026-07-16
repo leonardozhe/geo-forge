@@ -44,7 +44,25 @@ $ps  = count( array_filter( $ck, fn( $c ) => ( $c['status'] ?? '' ) === 'pass' )
 $fl  = count( $ck ) - $ps;
 
 global $wpdb;
-$ht = $wpdb->get_results( "SELECT id, total_score, grade, grade_label, created_at FROM {$wpdb->prefix}geo_forge_scans ORDER BY created_at DESC LIMIT 30", ARRAY_A ) ?: array();
+$ht = $wpdb->get_results( "SELECT id, total_score, grade, grade_label, created_at, checks_result FROM {$wpdb->prefix}geo_forge_scans ORDER BY created_at DESC LIMIT 30", ARRAY_A ) ?: array();
+
+// Pre-decode JSON for embedding into the page (so View Details can work without REST).
+$ht_embed = array();
+foreach ( $ht as $row ) {
+	$checks = array();
+	if ( isset( $row['checks_result'] ) && is_string( $row['checks_result'] ) ) {
+		$decoded = json_decode( $row['checks_result'], true );
+		if ( is_array( $decoded ) ) {
+			$checks = $decoded;
+		}
+	}
+	$ht_embed[ (int) $row['id'] ] = array(
+		'id'            => (int) $row['id'],
+		'total_score'   => (int) $row['total_score'],
+		'created_at'    => $row['created_at'],
+		'checks_result' => $checks,
+	);
+}
 
 $cat_names = array(
 	'ai-readability' => 'AI Readability', 'discoverability' => 'Discoverability',
@@ -187,4 +205,10 @@ $check_models = array(
 
 <div class="gf-detail-overlay" id="gf-detail-dialog"><div class="gf-detail-dialog"><button class="gf-detail-close" onclick="document.getElementById('gf-detail-dialog').classList.remove('open')">&times;</button><div id="gf-detail-content"></div></div></div>
 </div>
-<script>// Icons are inline SVG — no external dependencies</script>
+<?php if ( ! empty( $ht_embed ) ) : ?>
+<script>
+// Embedded scan data for "View Details" — lets the button work even if the REST
+// endpoint isn't registered (e.g. PHP opcache serving an older plugin version).
+window.GeoForgeScans = <?php echo wp_json_encode( $ht_embed ); ?>;
+</script>
+<?php endif; ?>
