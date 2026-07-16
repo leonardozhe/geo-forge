@@ -7,13 +7,10 @@
     var restRoot = cfg.restRoot || '';
     var restNonce = cfg.restNonce || '';
 
-    console.log('[GEO Forge Dashboard] script loaded. restRoot=' + restRoot);
 
     // Scan button
     document.querySelectorAll('#geo-forge-scan-btn').forEach(function (btn) {
-        console.log('[GEO Forge Dashboard] Scan button bound');
         btn.addEventListener('click', function () {
-            console.log('[GEO Forge Dashboard] Scan clicked');
             btn.disabled = true;
             var statusEl = document.getElementById('geo-forge-scan-status');
             if (statusEl) { statusEl.textContent = 'Scanning...'; statusEl.style.color = '#64748b'; }
@@ -33,7 +30,6 @@
                 }
             })
             .catch(function (err) {
-                console.error('[GEO Forge Dashboard] Scan fetch error:', err);
                 btn.disabled = false;
                 if (statusEl) { statusEl.textContent = '❌ Network error'; statusEl.style.color = '#dc2626'; }
             });
@@ -49,11 +45,9 @@
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('.gf-view-detail');
         if (!btn) return;
-        console.log('[GEO Forge Dashboard] View Details clicked');
         var dialog = document.getElementById('gf-detail-dialog');
         var content = document.getElementById('gf-detail-content');
         if (!dialog || !content) {
-            console.warn('[GEO Forge Dashboard] #gf-detail-dialog or #gf-detail-content not found');
             return;
         }
         content.innerHTML = '<p class="gf-muted">Loading...</p>';
@@ -64,29 +58,24 @@
         var scan = scanId ? embedded[scanId] || embedded[Number(scanId)] : null;
 
         if (scan && scan.checks_result) {
-            console.log('[GEO Forge Dashboard] Using embedded data for scanId=' + scanId);
             renderScanDetail(content, scan);
             return;
         }
 
-        console.log('[GEO Forge Dashboard] No embedded data for scanId=' + scanId + ', falling back to REST');
         fetchScanDetail(scanId).then(function (s) {
             renderScanDetail(content, s);
         }).catch(function (err) {
-            console.error('[GEO Forge Dashboard] Details fetch error:', err);
             content.innerHTML = '<p class="gf-muted">Failed to load: ' + (err.message || 'Unknown error') + '</p>';
         });
     });
 
     function fetchScanDetail(scanId) {
         var url = scanId ? restRoot + 'scan/' + scanId : restRoot + 'scan/last';
-        console.log('[GEO Forge Dashboard] GET ' + url);
         return fetch(url, {
             credentials: 'same-origin',
             headers: { 'X-WP-Nonce': restNonce }
         })
         .then(function (r) {
-            console.log('[GEO Forge Dashboard] Details response status: ' + r.status);
             if (!r.ok) {
                 return r.json().catch(function () { return null; }).then(function (body) {
                     var msg = (body && body.error && body.error.message) || 'HTTP ' + r.status;
@@ -119,5 +108,4 @@
         }
     });
 
-    console.log('[GEO Forge Dashboard] event listeners registered');
 })();

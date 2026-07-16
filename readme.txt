@@ -1,14 +1,15 @@
 === GEO Forge ===
 Contributors:      geokami
-Tags:              woocommerce, geo, ai, llms.txt, mcp
+Tags:              woocommerce, ai, seo, llms.txt, chatgpt, perplexy, claude, mcp, structured-data
 Requires at least: 6.0
 Tested up to:      6.7
 Requires PHP:      8.1
-Stable tag:        1.0.0-dev
+WC requires at least: 8.0
+Stable tag:        1.0.86
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
-Forge your WooCommerce store for the AI era — one-click scan, fix, and monitor for AI agent discoverability.
+Forge your WooCommerce store for the AI era — one-click scan, fix, and monitor for AI agent discoverability (llms.txt, MCP, A2A, structured data, markdown negotiation).
 
 == Description ==
 
@@ -16,13 +17,19 @@ Forge your WooCommerce store for the AI era — one-click scan, fix, and monitor
 
 > Powered by [GEO KAMI](https://geokami.com) cloud scanning.
 
+= Why GEO? =
+
+Over **40% of searches** now return AI-generated answers. If AI agents can't parse your store, your products don't exist to ChatGPT, Perplexity, Claude, or Google AI — no matter how well you rank in traditional search.
+
+GEO Forge bridges this gap: audit 22+ AI-readiness checks, auto-deploy fixes, and make your store visible to the agents that now drive real purchase decisions.
+
 = What it does =
 
-* **One-click AI visibility scan** — calls the GEO KAMI API to audit your store against 22+ AI-readiness checks.
+* **One-click AI visibility scan** — calls the GEO KAMI API to audit your store against 22+ AI-readiness checks across 7 categories.
 * **Auto-fix core issues** — generates `llms.txt`, `security.txt`, MCP and A2A agent cards, structured data enhancements, markdown negotiation, and more.
 * **Continuous monitoring** — detects content, theme, and plugin changes, then re-scans automatically.
-* **AI traffic insights** — records when AI agents crawl your store (Milestone 4).
-* **Score trends** — track your AI-readiness score over time.
+* **AI traffic insights** — records when AI agents crawl your store.
+* **Score trends** — track your AI-readiness score over time with detailed per-check history.
 
 = AI protocols supported =
 
@@ -42,23 +49,44 @@ Forge your WooCommerce store for the AI era — one-click scan, fix, and monitor
 * PHP 8.1 or higher
 * A GEO KAMI API key (free tier available at [geokami.com](https://geokami.com))
 
-= Privacy =
+== Privacy & External Services ==
 
-* Your GEO KAMI API key is stored in `wp_options` (access-controlled by WordPress).
-* No data leaves your store except the scan requests sent to `api.geokami.com` (configurable).
-* AI traffic logs store only SHA-256 IP hashes — never raw IP addresses.
+This plugin communicates with the GEO KAMI Cloud API (`api.geokami.com`, configurable) for scanning and account management.
 
-= Credits =
+**Data sent to GEO KAMI during a scan:**
 
-GEO Forge is developed by the GEO KAMI team. Scan scoring and suggestions are provided by the GEO KAMI Cloud API.
+* Your site's domain name
+* WordPress version and WooCommerce version
+* Product count (aggregate, no product data)
+* Site language and permalink structure
+* SSL status
+
+**Data NOT sent:**
+
+* Raw product data, customer data, or order data
+* Admin credentials or sensitive configuration
+* Raw IP addresses (stored only as SHA-256 hashes for AI traffic logs)
+
+**Local storage:**
+
+* Your GEO KAMI API key is stored in `wp_options` (access-controlled by WordPress; only administrators can view or change it)
+* Scan results, fix history, logs, and AI traffic logs are stored in your local WordPress database
+* Generated files (llms.txt, security.txt, robots.txt) are stored as WordPress options and served via virtual routes
+
+**Third-party services:**
+
+* `api.geokami.com` — scan execution and account management (GEO KAMI Cloud)
+* `update.wordpress.org` — standard plugin updates via the WordPress Plugin Directory (after this plugin is listed)
+
+You can review the GEO KAMI privacy policy at [geokami.com/privacy](https://geokami.com/privacy).
 
 == Installation ==
 
 1. Upload the `geo-forge` folder to `/wp-content/plugins/`, or install via **Plugins → Add New** in wp-admin.
 2. Activate the plugin through the **Plugins** menu.
-3. Go to **WooCommerce → GEO Forge → Settings** and enter your GEO KAMI API key.
+3. Go to **GEO Forge → Settings** and enter your GEO KAMI API key.
 4. Click **Health Check** to verify connectivity.
-5. Visit **WooCommerce → GEO Forge → Dashboard** and click **Scan Now**.
+5. Visit **GEO Forge → Dashboard** and click **Scan Now**.
 
 == Frequently Asked Questions ==
 
@@ -76,24 +104,53 @@ No. GEO Forge complements — not replaces — Rank Math, Yoast, SEOPress, etc. 
 
 = Is my API key safe? =
 
-Your API key is stored in `wp_options`, access-controlled by WordPress permissions (only `manage_woocommerce` users can view or change it). The key is sent over HTTPS only.
+Your API key is stored in `wp_options`, access-controlled by WordPress permissions (only `manage_options` users can view or change it). The key is sent over HTTPS only, to the configured API base URL.
 
 = Can I use GEO Forge on a non-WooCommerce site? =
 
 Not yet. GEO Forge is built specifically for WooCommerce. A standalone WordPress version is on the roadmap.
 
+= What happens when I uninstall the plugin? =
+
+All plugin data is removed: custom tables, options, transients, scheduled hooks, and rewrite rules. If you want to preserve data for re-installation, export it before uninstalling.
+
 == Screenshots ==
 
 1. Dashboard showing AI Score, category breakdown, and the Scan Now button.
 2. Settings page with API key input and Health Check.
-3. Fix Center with auto-fixable issues grouped by priority.
-4. llms.txt visual editor.
-5. Logs page with level filter and context viewer.
+3. Optimizations page with auto-fixable issues grouped by priority.
+4. llms.txt visual editor with Save/Regenerate.
+5. Score History with per-scan detail view.
 
 == Changelog ==
 
-= 1.0.0-dev =
-* Initial development build.
+= 1.0.86 =
+* Fix: About tab hero title now visible on purple gradient background.
+
+= 1.0.85 =
+* Fix: Settings Save button starts disabled, enables only when textarea is modified.
+* Fix: Logs page now shows entries on existing installations (auto-migrates stale min_level option).
+
+= 1.0.84 =
+* About tab redesign: professional inline SVG line icons, compact WHY + WHAT layout.
+* Fix: Logs page default min level changed from warning to info.
+
+= 1.0.83 =
+* Fix: Score History View Details uses embedded scan data (no REST dependency).
+* Added PHP opcache auto-invalidation on version change.
+* Regenerate handlers wrapped in try/catch to prevent Cloudflare 520 errors.
+
+= 1.0.82 =
+* Fix: Score History Details now shows actual error messages.
+* Fix: Settings Save button disabled by default, enables on modification.
+
+= 1.0.81 =
+* Fix: Score History View Details fetches correct scan by ID (new `/scan/{id}` REST endpoint).
+* Fix: Optimizations page refreshes after Apply/Verify/Undo.
+* Fix: Settings Save/Regenerate buttons show visible feedback.
+
+= 1.0.0 =
+* Initial release.
 * End-to-end scan via GEO KAMI Cloud API.
 * Dashboard with score tiles, category breakdown, Scan Now button.
 * Settings page with API key + Health Check.
@@ -102,5 +159,5 @@ Not yet. GEO Forge is built specifically for WooCommerce. A standalone WordPress
 
 == Upgrade Notice ==
 
-= 1.0.0-dev =
-Initial development release.
+= 1.0.86 =
+Visual fix for About tab + WordPress.org compliance preparation.

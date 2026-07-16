@@ -11,18 +11,14 @@
     var restRoot = cfg.restRoot || '';
     var restNonce = cfg.restNonce || '';
     var i18n = cfg.i18n || {};
-    console.log('[GEO Forge Logs] script loaded. restRoot=' + restRoot);
 
     var btn = document.getElementById('geo-forge-clear-logs');
     var statusEl = document.getElementById('geo-forge-clear-status');
     if (!btn) {
-        console.warn('[GEO Forge Logs] #geo-forge-clear-logs not found');
         return;
     }
-    console.log('[GEO Forge Logs] Clear Logs button bound');
 
     btn.addEventListener('click', function () {
-        console.log('[GEO Forge Logs] Clear Logs clicked');
         if (!window.confirm(i18n.confirmClear || 'Clear all log entries?')) {
             return;
         }

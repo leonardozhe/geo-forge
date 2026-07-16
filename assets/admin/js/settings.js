@@ -16,12 +16,10 @@
     // Track original textarea values so Save button can stay disabled until the user edits.
     var originalValues = {};
 
-    console.log('[GEO Forge Settings] script loaded. restRoot=' + restRoot);
 
     function showToast(message, isError) {
         var el = document.getElementById('geo-forge-editor-status');
         if (!el) {
-            console.warn('[GEO Forge Settings] #geo-forge-editor-status not found in DOM');
             // Fallback: alert so the user at least sees something
             alert(message);
             return;
@@ -33,7 +31,6 @@
     }
 
     if (!restRoot || !restNonce) {
-        console.error('[GEO Forge Settings] Config missing! restRoot=' + restRoot + ', restNonce=' + (restNonce ? 'set' : 'empty'));
         return;
     }
 
@@ -42,7 +39,6 @@
         var btn = e.target.closest('#geo-forge-health-btn');
         if (!btn) return;
         e.preventDefault();
-        console.log('[GEO Forge Settings] Health Check clicked');
         var originalText = btn.textContent;
         btn.disabled = true;
         btn.textContent = '…';
@@ -64,7 +60,6 @@
             }
         })
         .catch(function (err) {
-            console.error('[GEO Forge Settings] Health Check fetch error:', err);
             btn.disabled = false;
             btn.textContent = originalText;
             if (statusEl) { statusEl.textContent = '❌ Network error'; statusEl.style.color = '#dc2626'; }
@@ -80,27 +75,22 @@
         var endpoint = ENDPOINT_MAP[id] || id;                 // 'llms-txt', 'security-txt', 'robots-txt'
         var ta = document.getElementById('geo-forge-' + id + '-content');
         if (!ta) {
-            console.error('[GEO Forge Settings] textarea not found: geo-forge-' + id + '-content');
             showToast('❌ Editor not found', true);
             return;
         }
-        console.log('[GEO Forge Settings] Save clicked for: ' + id + ' → endpoint: ' + endpoint);
         var originalText = btn.textContent;
         btn.disabled = true;
         btn.textContent = '…';
         var url = restRoot + 'well-known/' + endpoint;
-        console.log('[GEO Forge Settings] POST ' + url);
         fetch(url, {
             method: 'POST', credentials: 'same-origin',
             headers: { 'X-WP-Nonce': restNonce, 'Content-Type': 'application/json' },
             body: JSON.stringify({ content: ta.value })
         })
         .then(function (r) {
-            console.log('[GEO Forge Settings] Save response status: ' + r.status);
             return r.json();
         })
         .then(function (body) {
-            console.log('[GEO Forge Settings] Save response body:', body);
             btn.disabled = false;
             btn.textContent = originalText;
             if (body && body.success) {
@@ -113,7 +103,6 @@
             }
         })
         .catch(function (err) {
-            console.error('[GEO Forge Settings] Save fetch error:', err);
             btn.disabled = false;
             btn.textContent = originalText;
             showToast('❌ Network error', true);
@@ -129,26 +118,21 @@
         var endpoint = ENDPOINT_MAP[id] || id;
         var ta = document.getElementById('geo-forge-' + id + '-content');
         if (!ta) {
-            console.error('[GEO Forge Settings] textarea not found: geo-forge-' + id + '-content');
             showToast('❌ Editor not found', true);
             return;
         }
-        console.log('[GEO Forge Settings] Regenerate clicked for: ' + id);
         var originalText = btn.textContent;
         btn.disabled = true;
         btn.textContent = '…';
         var url = restRoot + 'well-known/' + endpoint + '/regenerate';
-        console.log('[GEO Forge Settings] POST ' + url);
         fetch(url, {
             method: 'POST', credentials: 'same-origin',
             headers: { 'X-WP-Nonce': restNonce, 'Content-Type': 'application/json' }
         })
         .then(function (r) {
-            console.log('[GEO Forge Settings] Regenerate response status: ' + r.status);
             return r.json();
         })
         .then(function (body) {
-            console.log('[GEO Forge Settings] Regenerate response body:', body);
             btn.disabled = false;
             btn.textContent = originalText;
             if (body && body.success && body.content) {
@@ -161,50 +145,39 @@
             }
         })
         .catch(function (err) {
-            console.error('[GEO Forge Settings] Regenerate fetch error:', err);
             btn.disabled = false;
             btn.textContent = originalText;
             showToast('❌ Network error', true);
         });
     });
 
-    console.log('[GEO Forge Settings] event listeners registered');
 
     // Save-button state management: disabled until textarea differs from its initial value.
     function updateSaveBtnState(suffix) {
         var saveBtn = document.getElementById('geo-forge-save-' + suffix);
         var ta = document.getElementById('geo-forge-' + suffix + '-content');
         if (!saveBtn || !ta) {
-            console.warn('[GEO Forge Settings] updateSaveBtnState: missing element for ' + suffix +
-                ' (saveBtn=' + !!saveBtn + ', ta=' + !!ta + ')');
             return;
         }
         var baseline = originalValues[suffix] || '';
         var isDirty = ta.value !== baseline;
         saveBtn.disabled = !isDirty;
-        console.log('[GEO Forge Settings] save-' + suffix + ' ' + (isDirty ? 'ENABLED' : 'DISABLED') +
-            ' (dirty=' + isDirty + ', len=' + ta.value.length + ' vs baseline=' + baseline.length + ')');
     }
 
     // Initialize: store baseline values and disable all Save buttons.
-    console.log('[GEO Forge Settings] Initializing Save-button state tracking...');
     var suffixes = ['llms', 'security', 'robots'];
     suffixes.forEach(function (suffix) {
         var ta = document.getElementById('geo-forge-' + suffix + '-content');
         var saveBtn = document.getElementById('geo-forge-save-' + suffix);
         if (!ta) {
-            console.warn('[GEO Forge Settings] textarea not found: geo-forge-' + suffix + '-content');
             return;
         }
         if (!saveBtn) {
-            console.warn('[GEO Forge Settings] save button not found: geo-forge-save-' + suffix);
             return;
         }
         originalValues[suffix] = ta.value;
         saveBtn.disabled = true;
         // Re-check on every keystroke
         ta.addEventListener('input', function () { updateSaveBtnState(suffix); });
-        console.log('[GEO Forge Settings] initialized ' + suffix + ': disabled Save button, stored baseline length=' + ta.value.length);
     });
-    console.log('[GEO Forge Settings] Save-button state tracking initialized for ' + suffixes.length + ' sections');
 })();

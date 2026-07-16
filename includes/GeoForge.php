@@ -21,7 +21,6 @@ use GEO_Forge\Fixer\Fixer;
 use GEO_Forge\Install\Installer;
 use GEO_Forge\Log\ErrorCapture;
 use GEO_Forge\Traffic\Capture;
-use GEO_Forge\Updater\Updater;
 use GEO_Forge\WellKnown\ContentSignals;
 use GEO_Forge\WellKnown\RobotsTxt;
 use GEO_Forge\WellKnown\Router;
@@ -90,9 +89,6 @@ final class GeoForge {
 		// Registered on every request including non-admin — Capture returns
 		// fast for non-matching requests.
 		Capture::register();
-
-		// Auto-updater — pulls release info from update.geokami.com.
-		Updater::register();
 
 		// Fixer engine — register built-in fix actions.
 		$this->boot_fixer();

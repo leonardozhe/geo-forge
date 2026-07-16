@@ -4,19 +4,8 @@
  *
  * WordPress calls this when the user clicks "Delete" on the Plugins screen.
  *
- * GEO Forge policy: we do NOT drop tables or delete configuration on uninstall.
- * Why? Store owners frequently deactivate/reactivate plugins for debugging.
- * Losing scan history, API keys, fixes, and traffic data on an accidental
- * uninstall is unacceptable.
- *
- * Only clean up:
- *   - Transients (will be re-created on next activation)
- *   - Rewrite rules (will be re-registered on next activation)
- *   - Cron hooks (will be re-scheduled on next activation)
- *
- * Full data wipe (tables + options) is available via the "Delete All Data"
- * button in Settings, or by calling WP-CLI:
- *   wp geo-forge purge --all
+ * WordPress.org requirement: all plugin data must be removed on uninstall.
+ * This includes options, custom tables, transients, and user meta.
  *
  * @package GEO_Forge
  */
@@ -27,21 +16,40 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 global $wpdb;
 
-// --- Transients (safe to delete — auto-recreated) ---
-delete_transient( 'geo_forge_last_scan' );
-delete_transient( 'geo_forge_account_info' );
-delete_transient( 'geo_forge_remote_update' );
-delete_transient( 'geo_forge_settings_notice' );
+// --- Custom tables ---
+$tables = array(
+	$wpdb->prefix . 'geo_forge_scans',
+	$wpdb->prefix . 'geo_forge_fixes',
+	$wpdb->prefix . 'geo_forge_logs',
+	$wpdb->prefix . 'geo_forge_traffic',
+	$wpdb->prefix . 'geo_forge_settings',
+);
+foreach ( $tables as $table ) {
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$wpdb->query( "DROP TABLE IF EXISTS `{$table}`" );
+}
+
+// --- All plugin options (pattern: geo_forge_*) ---
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+$option_keys = $wpdb->get_col(
+	"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE 'geo\_forge\_%'"
+);
+foreach ( $option_keys as $key ) {
+	delete_option( $key );
+}
+
+// --- Transients (pattern: _transient_geo_forge_* and _transient_timeout_geo_forge_*) ---
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+$transient_keys = $wpdb->get_col(
+	"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '\_transient\_geo\_forge\_%' OR option_name LIKE '\_transient\_timeout\_geo\_forge\_%'"
+);
+foreach ( $transient_keys as $key ) {
+	delete_option( $key );
+}
 
 // --- Clean up WP's rewrite rules ---
-delete_option( 'geo_forge_routes_version' );
 flush_rewrite_rules();
 
 // --- Clear scheduled hooks ---
 wp_clear_scheduled_hook( 'geo_forge_daily_scan' );
 wp_clear_scheduled_hook( 'geo_forge_weekly_report' );
-
-// --- All other data stays ---
-// Custom tables (geo_forge_scans, geo_forge_fixes, geo_forge_logs, geo_forge_traffic)
-// are preserved. WordPress options (geo_forge_*) are preserved.
-// Re-installing will pick up everything exactly as it was.

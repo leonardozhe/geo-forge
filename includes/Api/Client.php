@@ -164,7 +164,7 @@ class Client {
 			'headers'     => array(
 				'Authorization' => 'Bearer ' . $this->api_key,
 				'Accept'        => 'application/json',
-				'User-Agent'    => 'GEO-Forge/' . GEO_FORGE_VERSION . ' (+https://geokami.com)',
+				'User-Agent'    => 'GEO-Forge/' . GEO_FORGE_VERSION . ' (WordPress plugin; https://wordpress.org/plugins/geo-forge/)',
 			),
 		);
 
