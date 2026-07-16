@@ -13,6 +13,9 @@
     // Button IDs: geo-forge-save-robots   → POST /well-known/robots-txt
     var ENDPOINT_MAP = { llms: 'llms-txt', security: 'security-txt', robots: 'robots-txt' };
 
+    // Track original textarea values so Save button can stay disabled until the user edits.
+    var originalValues = {};
+
     console.log('[GEO Forge Settings] script loaded. restRoot=' + restRoot);
 
     function showToast(message, isError) {
@@ -101,6 +104,9 @@
             btn.disabled = false;
             btn.textContent = originalText;
             if (body && body.success) {
+                // Content is now persisted — treat current textarea value as the new baseline
+                originalValues[id] = ta.value;
+                updateSaveBtnState(id);
                 showToast('✅ Saved');
             } else {
                 showToast('❌ ' + ((body && body.error && body.error.message) || 'Save failed'), true);
@@ -147,6 +153,8 @@
             btn.textContent = originalText;
             if (body && body.success && body.content) {
                 ta.value = body.content;
+                // Trigger input event so the Save button's disabled state updates
+                ta.dispatchEvent(new Event('input', { bubbles: true }));
                 showToast('✅ Regenerated');
             } else {
                 showToast('❌ Regenerate failed', true);
@@ -161,4 +169,26 @@
     });
 
     console.log('[GEO Forge Settings] event listeners registered');
+
+    // Save-button state management: disabled until textarea differs from its initial value.
+    function updateSaveBtnState(suffix) {
+        var saveBtn = document.getElementById('geo-forge-save-' + suffix);
+        var ta = document.getElementById('geo-forge-' + suffix + '-content');
+        if (!saveBtn || !ta) return;
+        var isDirty = ta.value !== (originalValues[suffix] || '');
+        saveBtn.disabled = !isDirty;
+        console.log('[GEO Forge Settings] save-' + suffix + ' ' + (isDirty ? 'enabled' : 'disabled') + ' (dirty=' + isDirty + ')');
+    }
+
+    // Initialize: store baseline values and disable all Save buttons.
+    ['llms', 'security', 'robots'].forEach(function (suffix) {
+        var ta = document.getElementById('geo-forge-' + suffix + '-content');
+        if (!ta) return;
+        originalValues[suffix] = ta.value;
+        var saveBtn = document.getElementById('geo-forge-save-' + suffix);
+        if (saveBtn) saveBtn.disabled = true;
+        // Re-check on every keystroke
+        ta.addEventListener('input', function () { updateSaveBtnState(suffix); });
+    });
+    console.log('[GEO Forge Settings] Save-button state tracking initialized');
 })();

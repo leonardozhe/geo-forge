@@ -64,6 +64,13 @@
         })
         .then(function (r) {
             console.log('[GEO Forge Dashboard] Details response status: ' + r.status);
+            if (!r.ok) {
+                // Non-2xx: try to parse error body, otherwise show HTTP status
+                return r.json().catch(function () { return null; }).then(function (body) {
+                    var msg = (body && body.error && body.error.message) || 'HTTP ' + r.status;
+                    throw new Error(msg);
+                });
+            }
             return r.json();
         })
         .then(function (b) {
@@ -75,11 +82,16 @@
                     rows += '<tr><td>' + ic + '</td><td style="font-size:12px;">' + (x.label||x.id||'?') + '</td><td style="font-size:11px;color:#64748b;">' + (x.category||'') + '</td><td style="font-size:12px;font-weight:600;">' + (x.score||0) + '/' + (x.maxScore||0) + '</td><td style="font-size:11px;color:#94a3b8;">' + (x.goal||'') + '</td></tr>';
                 });
                 content.innerHTML = '<h2>Scan Details</h2><p class="gf-muted">Score: <b>' + s.total_score + '</b> | ' + (s.created_at||'') + '</p><hr style="margin:12px 0"><table><thead><tr><th></th><th>Check</th><th>Category</th><th>Score</th><th>Result</th></tr></thead><tbody>' + rows + '</tbody></table>';
-            } else { content.innerHTML = '<p class="gf-muted">Details not available.</p>'; }
+            } else {
+                // Response had no scan field — show raw response for debugging
+                var debugInfo = b ? JSON.stringify(b).substring(0, 200) : '(empty)';
+                console.warn('[GEO Forge Dashboard] Response missing scan field:', b);
+                content.innerHTML = '<p class="gf-muted">Details not available.</p><p style="font-size:11px;color:#94a3b8;">Response: ' + debugInfo + '</p>';
+            }
         })
         .catch(function (err) {
             console.error('[GEO Forge Dashboard] Details fetch error:', err);
-            content.innerHTML = '<p class="gf-muted">Failed to load.</p>';
+            content.innerHTML = '<p class="gf-muted">Failed to load: ' + (err.message || 'Unknown error') + '</p>';
         });
     });
 
