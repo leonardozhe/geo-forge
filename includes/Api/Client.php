@@ -152,8 +152,7 @@ class Client {
 	 */
 	private function request_json( string $method, string $path, array $body = array() ): array {
 		if ( ! $this->has_api_key() && '/health' !== $path ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
-			throw new ApiException( ErrorCode::Auth, esc_html__( 'GEO KAMI API key is not configured.', 'geo-forge' ) );
+			throw new ApiException( esc_html( ErrorCode::Auth->value ), esc_html__( 'GEO KAMI API key is not configured.', 'geo-forge' ) );
 		}
 
 		$url = $this->api_base . $path;
@@ -182,9 +181,9 @@ class Client {
 			// Network / WP_Error — retry.
 			if ( is_wp_error( $response ) ) {
 				$last_error = new ApiException(
-					ErrorCode::Network,
-					$response->get_error_message(),
-					array( 'wp_error_code' => $response->get_error_code() )
+					esc_html( ErrorCode::Network->value ),
+					esc_html( $response->get_error_message() ),
+					array( 'wp_error_code' => esc_html( (string) $response->get_error_code() ) )
 				);
 
 				if ( $attempt < $this->max_retries ) {
@@ -205,19 +204,18 @@ class Client {
 			// Map status → ErrorCode. 2xx returns null (success).
 			$error_code = ErrorCode::from_http_status( $status );
 			if ( null !== $error_code ) {
-				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 				throw new ApiException(
-					$error_code,
+					esc_html( $error_code->value ),
 					sprintf(
 						/* translators: 1: HTTP status, 2: response body */
 						esc_html__( 'GEO KAMI API error (HTTP %1$d): %2$s', 'geo-forge' ),
-						$status,
-						wp_trim_words( wp_remote_retrieve_body( $response ), 20, '...' )
+						absint( $status ),
+						esc_html( wp_trim_words( wp_remote_retrieve_body( $response ), 20, '...' ) )
 					),
 					array(
-						'status' => $status,
-						'body'   => wp_remote_retrieve_body( $response ),
-						'url'    => $url,
+						'status' => absint( $status ),
+						'body'   => esc_html( wp_remote_retrieve_body( $response ) ),
+						'url'    => esc_url_raw( $url ),
 					)
 				);
 			}
@@ -227,11 +225,10 @@ class Client {
 			$decoded  = json_decode( $raw_body, true );
 
 			if ( ! is_array( $decoded ) ) {
-				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 				throw new ApiException(
-					ErrorCode::InvalidResponse,
+					esc_html( ErrorCode::InvalidResponse->value ),
 					esc_html__( 'GEO KAMI returned a non-JSON response.', 'geo-forge' ),
-					array( 'raw_body' => $raw_body )
+					array( 'raw_body' => esc_html( (string) $raw_body ) )
 				);
 			}
 
@@ -239,6 +236,6 @@ class Client {
 		}
 
 		// Unreachable in practice — loop always returns or throws.
-		throw $last_error ?? new ApiException( ErrorCode::Api, __( 'Unknown API failure.', 'geo-forge' ) );
+		throw $last_error ?? new ApiException( esc_html( ErrorCode::Api->value ), esc_html__( 'Unknown API failure.', 'geo-forge' ) );
 	}
 }

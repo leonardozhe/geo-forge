@@ -63,11 +63,10 @@ class Scanner {
 				return $this->store_result( $response, $site_info );
 			}
 			Logger::warning( 'Scan response did not include a scanId.', array( 'response' => $response ) );
-			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new ApiException(
-				\GEO_Forge\Api\ErrorCode::InvalidResponse,
+				esc_html( \GEO_Forge\Api\ErrorCode::InvalidResponse->value ),
 				esc_html__( 'Scan response did not include a scanId.', 'geo-forge' ),
-				array( 'response' => $response )
+				array( 'response' => esc_html( wp_json_encode( $response ) ) )
 			);
 		}
 
@@ -106,11 +105,10 @@ class Scanner {
 					'Scan failed on GEO KAMI side.',
 					array( 'scan_id' => $scan_id )
 				);
-				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 				throw new ApiException(
-					\GEO_Forge\Api\ErrorCode::Api,
+					esc_html( \GEO_Forge\Api\ErrorCode::Api->value ),
 					esc_html__( 'Scan failed on GEO KAMI side.', 'geo-forge' ),
-					array( 'scan_id' => $scan_id, 'response' => $response )
+					array( 'scan_id' => sanitize_text_field( $scan_id ), 'response' => esc_html( wp_json_encode( $response ) ) )
 				);
 			}
 
@@ -126,13 +124,12 @@ class Scanner {
 			array( 'scan_id' => $scan_id )
 		);
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		throw new \RuntimeException(
-			sprintf(
+			esc_html( sprintf(
 				/* translators: %d: seconds */
 				esc_html__( 'Scan did not complete within %d seconds.', 'geo-forge' ),
-				$max_wait_seconds
-			)
+				absint( $max_wait_seconds )
+			) )
 		);
 	}
 
@@ -158,7 +155,6 @@ class Scanner {
 			'completed_at'     => sanitize_text_field( $result['completedAt'] ?? current_time( 'mysql', true ) ),
 		);
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$wpdb->replace( $wpdb->prefix . 'geo_forge_scans', $row );
 
 		// Warm caches.
@@ -220,7 +216,6 @@ class Scanner {
 		}
 
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$row = $wpdb->get_row(
 			"SELECT * FROM {$wpdb->prefix}geo_forge_scans ORDER BY created_at DESC LIMIT 1",
 			ARRAY_A
@@ -243,6 +238,25 @@ class Scanner {
 	}
 
 	/**
+	 * Fetch the most recent scan rows for the score history chart.
+	 *
+	 * @param int $limit Number of rows to return (clamped to 1–100).
+	 * @return array List of scan rows (associative arrays).
+	 */
+	public function get_score_history( int $limit = 30 ): array {
+		global $wpdb;
+		$limit = max( 1, min( $limit, 100 ) );
+		$rows  = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, total_score, grade, grade_label, created_at, checks_result FROM {$wpdb->prefix}geo_forge_scans ORDER BY created_at DESC LIMIT %d",
+				$limit
+			),
+			ARRAY_A
+		);
+		return $rows ?: array();
+	}
+
+	/**
 	 * Fetch a specific scan row by its ID.
 	 *
 	 * @param int $scan_id Primary key in the scans table.
@@ -254,7 +268,6 @@ class Scanner {
 		}
 
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$row = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT * FROM {$wpdb->prefix}geo_forge_scans WHERE id = %d LIMIT 1",

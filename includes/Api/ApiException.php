@@ -20,11 +20,11 @@ class ApiException extends \RuntimeException {
 	private ErrorCode $code_enum;
 	private array     $context;
 
-	public function __construct( ErrorCode $code, string $message = '', array $context = array(), ?\Throwable $previous = null ) {
-		$this->code_enum = $code;
+	public function __construct( string $code_value, string $message = '', array $context = array(), ?\Throwable $previous = null ) {
+		$this->code_enum = ErrorCode::tryFrom( $code_value ) ?? ErrorCode::Api;
 		$this->context   = $context;
 
-		parent::__construct( $message ?: $code->label(), 0, $previous );
+		parent::__construct( $message ?: $this->code_enum->label(), 0, $previous );
 	}
 
 	public function getCodeEnum(): ErrorCode {

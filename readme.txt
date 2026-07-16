@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.90
+Stable tag:        1.0.91
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -123,6 +123,12 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 5. Score History with per-scan detail view.
 
 == Changelog ==
+
+= 1.0.91 =
+* Fix: All ExceptionNotEscaped errors — ApiException constructor now accepts string code; all args wrapped with esc_html()/absint()/esc_url_raw()/sanitize_text_field().
+* Fix: All SQL InterpolatedNotPrepared/NotPrepared errors — removed dynamic $sql variables; inline {$wpdb->prefix}table_name in queries.
+* Fix: DirectDatabaseQuery in dashboard — moved query to Scanner::get_score_history() method.
+* Fix: Removed all phpcs:ignore/phpcs:disable workarounds from Client.php, Scanner.php, Store.php, Logger.php, Installer.php, page-dashboard.php.
 
 = 1.0.90 =
 * Fix: Resolved all WordPress Plugin Check errors — proper output escaping (esc_html, esc_attr, wp_kses) on all view templates.

@@ -1,6 +1,5 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) { exit; }
-// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 
 use GEO_Forge\GeoForge;
 use GEO_Forge\Install\Installer;
@@ -44,8 +43,7 @@ $ck  = is_array( $lk['checks_result'] ?? null ) ? $lk['checks_result'] : array()
 $ps  = count( array_filter( $ck, fn( $c ) => ( $c['status'] ?? '' ) === 'pass' ) );
 $fl  = count( $ck ) - $ps;
 
-global $wpdb;
-$ht = $wpdb->get_results( "SELECT id, total_score, grade, grade_label, created_at, checks_result FROM {$wpdb->prefix}geo_forge_scans ORDER BY created_at DESC LIMIT 30", ARRAY_A ) ?: array();
+$ht = $sc->get_score_history( 30 );
 
 // Pre-decode JSON for embedding into the page (so View Details can work without REST).
 $ht_embed = array();

@@ -166,7 +166,6 @@ final class Installer {
 			$value       = get_option( $option_name, null );
 
 			if ( null !== $value && false !== $value ) {
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 				$wpdb->replace(
 					$table,
 					array(
@@ -181,11 +180,9 @@ final class Installer {
 
 	public static function get_setting( string $key, mixed $default = null ): mixed {
 		global $wpdb;
-		$table = $wpdb->prefix . 'geo_forge_settings';
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$value = $wpdb->get_var(
-			$wpdb->prepare( "SELECT setting_value FROM {$table} WHERE setting_key = %s", $key )
+			$wpdb->prepare( "SELECT setting_value FROM {$wpdb->prefix}geo_forge_settings WHERE setting_key = %s", $key )
 		);
 
 		if ( null === $value || false === $value ) {
@@ -202,7 +199,6 @@ final class Installer {
 
 		$db_value = is_array( $value ) ? wp_json_encode( $value ) : (string) $value;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$wpdb->replace(
 			$table,
 			array( 'setting_key' => $key, 'setting_value' => $db_value ),

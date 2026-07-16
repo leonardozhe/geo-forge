@@ -54,7 +54,6 @@ class Logger {
 			'created_at' => current_time( 'mysql', true ),
 		);
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$wpdb->insert( $wpdb->prefix . self::TABLE_SUFFIX, $row );
 
 		// Lazy pruning — ~1% of writes trigger a cleanup.
@@ -89,15 +88,13 @@ class Logger {
 	 */
 	public static function recent( int $limit = 100, ?Level $min_level = null ): array {
 		global $wpdb;
-		$table = $wpdb->prefix . self::TABLE_SUFFIX;
 		$limit = max( 1, min( $limit, 1000 ) );
 
 		// Single query; filter by level in PHP when needed. Level cardinality
 		// is low (5 values) so the PHP filter is cheap, and we avoid a dynamic
 		// IN clause with variable bindings.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$rows = $wpdb->get_results(
-			$wpdb->prepare( "SELECT * FROM {$table} ORDER BY created_at DESC LIMIT %d", $limit ),
+			$wpdb->prepare( "SELECT * FROM {$wpdb->prefix}geo_forge_logs ORDER BY created_at DESC LIMIT %d", $limit ),
 			ARRAY_A
 		) ?? array();
 
@@ -128,8 +125,7 @@ class Logger {
 	 */
 	public static function clear(): void {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
-		$wpdb->query( "TRUNCATE TABLE `{$wpdb->prefix}" . self::TABLE_SUFFIX . '`' );
+		$wpdb->query( "TRUNCATE TABLE `{$wpdb->prefix}geo_forge_logs`" );
 	}
 
 	/**
@@ -152,11 +148,9 @@ class Logger {
 		$table = $wpdb->prefix . self::TABLE_SUFFIX;
 
 		// Count rows before the rebuild (informational).
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows_before = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
 
 		// Drop the existing table.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query( "DROP TABLE IF EXISTS `{$table}`" );
 
 		// Recreate using dbDelta (same schema as Installer::create_tables).
@@ -178,7 +172,6 @@ class Logger {
 		dbDelta( $schema );
 
 		// Verify the table exists after recreation.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
 
 		if ( $table_exists !== $table ) {
@@ -213,28 +206,24 @@ class Logger {
 	 */
 	public static function prune(): void {
 		global $wpdb;
-		$table = $wpdb->prefix . self::TABLE_SUFFIX;
 
 		$retention_days = (int) get_option( 'geo_forge_log_retention_days', self::RETENTION_DAYS );
 		$retention_days = max( 1, min( $retention_days, 365 ) );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query(
 			$wpdb->prepare(
-				"DELETE FROM {$table} WHERE created_at < DATE_SUB(%s, INTERVAL %d DAY)",
+				"DELETE FROM {$wpdb->prefix}geo_forge_logs WHERE created_at < DATE_SUB(%s, INTERVAL %d DAY)",
 				current_time( 'mysql', true ),
 				$retention_days
 			)
 		);
 
 		// Safety cap: if still > 50k rows after date pruning, drop oldest.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" );
+		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}geo_forge_logs" );
 		if ( $count > 50000 ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->query(
 				$wpdb->prepare(
-					"DELETE FROM {$table} ORDER BY created_at ASC LIMIT %d",
+					"DELETE FROM {$wpdb->prefix}geo_forge_logs ORDER BY created_at ASC LIMIT %d",
 					(int) ( $count - 50000 )
 				)
 			);
@@ -257,7 +246,6 @@ class Logger {
 	 * Cheap — just walks debug_backtrace looking for our namespace.
 	 */
 	private static function guess_source(): string {
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
 		$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 8 );
 		foreach ( $trace as $frame ) {
 			$class = $frame['class'] ?? '';

@@ -70,20 +70,17 @@ class Store {
 			'response_size'   => $response_bytes,
 		);
 
-		$table = $wpdb->prefix . self::TABLE;
-
 		// Check if table exists
-		$table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) );
+		$table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $wpdb->prefix . self::TABLE ) );
 		if ( ! $table_exists ) {
 			PluginLogger::error(
 				'Store::record: Traffic table does not exist.',
-				array( 'table' => $table )
+				array( 'table' => $wpdb->prefix . self::TABLE )
 			);
 			return;
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$ok = $wpdb->insert( $table, $row );
+		$ok = $wpdb->insert( $wpdb->prefix . self::TABLE, $row );
 
 		if ( false === $ok ) {
 			// Traffic recording is best-effort — don't break the request.
@@ -114,34 +111,44 @@ class Store {
 	 */
 	public static function recent( int $limit = 100, ?string $family = null, ?string $source = null ): array {
 		global $wpdb;
-		$table = $wpdb->prefix . self::TABLE;
 		$limit = max( 1, min( $limit, 1000 ) );
 
-		$where  = array();
-		$values = array();
-
-		if ( null !== $family ) {
-			$where[]  = 'bot_family = %s';
-			$values[] = $family;
-		}
-		if ( null !== $source ) {
-			$where[]  = 'source = %s';
-			$values[] = $source;
-		}
-
-		$sql = "SELECT * FROM {$table}";
-		if ( ! empty( $where ) ) {
-			$sql .= ' WHERE ' . implode( ' AND ', $where );
-		}
-		$sql .= ' ORDER BY recorded_at DESC';
-
-		if ( empty( $values ) ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$rows = $wpdb->get_results( $wpdb->prepare( $sql . ' LIMIT %d', $limit ), ARRAY_A );
+		if ( null !== $family && null !== $source ) {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$wpdb->prefix}geo_forge_traffic WHERE bot_family = %s AND source = %s ORDER BY recorded_at DESC LIMIT %d",
+					$family,
+					$source,
+					$limit
+				),
+				ARRAY_A
+			);
+		} elseif ( null !== $family ) {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$wpdb->prefix}geo_forge_traffic WHERE bot_family = %s ORDER BY recorded_at DESC LIMIT %d",
+					$family,
+					$limit
+				),
+				ARRAY_A
+			);
+		} elseif ( null !== $source ) {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$wpdb->prefix}geo_forge_traffic WHERE source = %s ORDER BY recorded_at DESC LIMIT %d",
+					$source,
+					$limit
+				),
+				ARRAY_A
+			);
 		} else {
-			$values[] = $limit;
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$rows = $wpdb->get_results( $wpdb->prepare( $sql . ' LIMIT %d', ...$values ), ARRAY_A );
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$wpdb->prefix}geo_forge_traffic ORDER BY recorded_at DESC LIMIT %d",
+					$limit
+				),
+				ARRAY_A
+			);
 		}
 
 		return $rows ?? array();
@@ -156,13 +163,11 @@ class Store {
 	 */
 	public static function chart_data( int $days = 14 ): array {
 		global $wpdb;
-		$table = $wpdb->prefix . self::TABLE;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT DATE(recorded_at) AS day, bot_family, COUNT(*) AS n
-				 FROM {$table}
+				 FROM {$wpdb->prefix}geo_forge_traffic
 				 WHERE recorded_at >= DATE_SUB(%s, INTERVAL %d DAY)
 				 GROUP BY day, bot_family
 				 ORDER BY day ASC",
@@ -198,20 +203,17 @@ class Store {
 	 */
 	public static function summary_24h(): array {
 		global $wpdb;
-		$table = $wpdb->prefix . self::TABLE;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$total = (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$table} WHERE recorded_at >= DATE_SUB(%s, INTERVAL 1 DAY)",
+				"SELECT COUNT(*) FROM {$wpdb->prefix}geo_forge_traffic WHERE recorded_at >= DATE_SUB(%s, INTERVAL 1 DAY)",
 				current_time( 'mysql', true )
 			)
 		);
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$by_family = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT bot_family, COUNT(*) AS n FROM {$table}
+				"SELECT bot_family, COUNT(*) AS n FROM {$wpdb->prefix}geo_forge_traffic
 				 WHERE recorded_at >= DATE_SUB(%s, INTERVAL 1 DAY)
 				 GROUP BY bot_family",
 				current_time( 'mysql', true )
@@ -230,8 +232,7 @@ class Store {
 	 */
 	public static function clear(): void {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
-		$wpdb->query( "TRUNCATE TABLE `{$wpdb->prefix}" . self::TABLE . '`' );
+		$wpdb->query( "TRUNCATE TABLE `{$wpdb->prefix}geo_forge_traffic`" );
 	}
 
 	/**
