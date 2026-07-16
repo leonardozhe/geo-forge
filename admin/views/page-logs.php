@@ -11,8 +11,11 @@ $rw=Logger::recent(200,$fl);
 		<select name="level" onchange="this.form.submit()" style="font-size:12px;"><option value="">All levels</option>
 			<?php foreach(Level::cases() as $l):?><option value="<?php echo esc_attr($l->value);?>" <?php selected($fl?->value,$l->value);?>><?php echo esc_html($l->label());?></option><?php endforeach;?>
 		</select></form>
-		<button type="button" id="geo-forge-clear-logs" class="gf-btn">Clear Logs</button>
-		<span id="geo-forge-clear-status" style="font-size:12px;"></span>
+		<div style="display:flex;gap:8px;align-items:center;">
+			<button type="button" id="geo-forge-clear-logs" class="gf-btn">Clear Logs</button>
+			<button type="button" id="geo-forge-reset-logs" class="gf-btn" title="Rebuild the logs table from scratch and reset min level to default. Use this if logs don't appear despite plugin activity.">Rebuild Table</button>
+			<span id="geo-forge-clear-status" style="font-size:12px;"></span>
+		</div>
 	</div>
 </div>
 

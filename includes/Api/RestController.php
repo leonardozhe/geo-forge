@@ -121,6 +121,16 @@ class RestController {
 
 		register_rest_route(
 			self::NAMESPACE,
+			'/logs/reset',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'handle_reset_logs' ),
+				'permission_callback' => array( $this, 'check_admin_permission' ),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
 			'/well-known/llms-txt',
 			array(
 				array(
@@ -441,6 +451,41 @@ class RestController {
 				'error'   => array(
 					'code'    => 'clear_failed',
 					'message' => __( 'Could not clear logs.', 'geo-forge' ),
+				),
+			), 500 );
+		}
+	}
+
+	/**
+	 * POST /logs/reset — rebuild the logs table from scratch.
+	 *
+	 * Drops the table, recreates it with the current schema, and resets the
+	 * min_level option to the default. Use this when:
+	 *   - Logs page shows nothing despite recent plugin activity.
+	 *   - Table schema is out of sync with the current plugin version.
+	 *   - The min_level option is stuck on an old value.
+	 */
+	public function handle_reset_logs(): \WP_REST_Response {
+		try {
+			$result = Logger::reset();
+
+			if ( $result['success'] ) {
+				Logger::info( 'Logs table rebuilt via REST.', array(
+					'source'      => 'RestController::handle_reset_logs',
+					'rows_before' => $result['rows_before'],
+				) );
+			}
+
+			return new \WP_REST_Response( $result, $result['success'] ? 200 : 500 );
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Failed to reset logs table: ' . $e->getMessage(), array(
+				'exception' => get_class( $e ),
+			) );
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'error'   => array(
+					'code'    => 'reset_failed',
+					'message' => $e->getMessage(),
 				),
 			), 500 );
 		}

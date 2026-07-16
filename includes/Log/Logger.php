@@ -133,6 +133,81 @@ class Logger {
 	}
 
 	/**
+	 * Rebuild the logs table from scratch.
+	 *
+	 * Drops the table, recreates it with the current schema, and resets the
+	 * min_level option back to the default. Fixes two failure modes:
+	 *   1. Table corruption or missing columns (e.g. after incomplete upgrade).
+	 *   2. Stale `geo_forge_log_min_level` option keeping logs invisible
+	 *      (e.g. old 'warning' value persisting after default was changed to
+	 *      'info').
+	 *
+	 * Returns a status array for the caller to report back to the user.
+	 *
+	 * @return array{success:bool,message:string,rows_before:int,rows_after:int}
+	 */
+	public static function reset(): array {
+		global $wpdb;
+
+		$table = $wpdb->prefix . self::TABLE_SUFFIX;
+
+		// Count rows before the rebuild (informational).
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$rows_before = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
+
+		// Drop the existing table.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( "DROP TABLE IF EXISTS `{$table}`" );
+
+		// Recreate using dbDelta (same schema as Installer::create_tables).
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		$charset_collate = $wpdb->get_charset_collate();
+		$schema = "CREATE TABLE {$table} (
+    id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    level varchar(10) NOT NULL,
+    message varchar(500) NOT NULL,
+    context longtext,
+    source varchar(120) NOT NULL,
+    request_id varchar(16) NOT NULL,
+    created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY  (id),
+    KEY level (level),
+    KEY created_at (created_at),
+    KEY request_id (request_id)
+) {$charset_collate};";
+		dbDelta( $schema );
+
+		// Verify the table exists after recreation.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+
+		if ( $table_exists !== $table ) {
+			return array(
+				'success'    => false,
+				'message'    => __( 'Failed to recreate logs table.', 'geo-forge' ),
+				'rows_before'=> $rows_before,
+				'rows_after' => 0,
+			);
+		}
+
+		// Reset min_level option so the default takes effect.
+		// Without this, an old 'warning' value would persist in the DB and
+		// cause info-level logs to be silently dropped.
+		delete_option( 'geo_forge_log_min_level' );
+
+		return array(
+			'success'     => true,
+			'message'     => sprintf(
+				/* translators: %d: number of rows cleared */
+				__( 'Logs table rebuilt. %d entries cleared. Min level reset to default.', 'geo-forge' ),
+				$rows_before
+			),
+			'rows_before' => $rows_before,
+			'rows_after'  => 0,
+		);
+	}
+
+	/**
 	 * Delete rows older than the retention window.
 	 * Also caps the table at a max row count (safety backstop).
 	 */

@@ -3,7 +3,7 @@
  * Plugin Name:       GEO Forge
  * Plugin URI:        https://geokami.com/geo-forge
  * Description:       Forge your WooCommerce store for the AI era — one-click scan, fix, and monitor for AI agent discoverability (llms.txt, MCP, A2A, structured data, markdown negotiation).
- * Version:           1.0.88
+ * Version:           1.0.89
  * Author:            GEO KAMI
  * Author URI:        https://geokami.com
  * License:           GPL v3+
@@ -42,7 +42,7 @@ if ( version_compare( PHP_VERSION, '8.1.0', '<' ) ) {
  * Constants.
  * Kept minimal — only what other files genuinely need.
  */
-define( 'GEO_FORGE_VERSION', '1.0.88' );
+define( 'GEO_FORGE_VERSION', '1.0.89' );
 define( 'GEO_FORGE_FILE', __FILE__ );
 define( 'GEO_FORGE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GEO_FORGE_URL', plugin_dir_url( __FILE__ ) );

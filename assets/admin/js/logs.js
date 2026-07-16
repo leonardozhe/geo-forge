@@ -1,8 +1,11 @@
 /**
  * GEO Forge — Logs page JS.
  *
- * Handles the "Clear all logs" button. POSTs to the REST endpoint,
- * reloads the page on success (table is server-rendered).
+ * Handles two buttons:
+ *   - "Clear Logs" — DELETE all rows (TRUNCATE).
+ *   - "Rebuild Table" — DROP + recreate the table AND reset min_level option.
+ *
+ * Both POST to the REST API and reload the page on success.
  */
 (function () {
     'use strict';
@@ -12,21 +15,23 @@
     var restNonce = cfg.restNonce || '';
     var i18n = cfg.i18n || {};
 
-    var btn = document.getElementById('geo-forge-clear-logs');
     var statusEl = document.getElementById('geo-forge-clear-status');
-    if (!btn) {
-        return;
-    }
 
-    btn.addEventListener('click', function () {
-        if (!window.confirm(i18n.confirmClear || 'Clear all log entries?')) {
+    function postLogsAction(endpoint, confirmMessage, successMessage) {
+        if (!window.confirm(confirmMessage)) {
             return;
         }
 
-        btn.disabled = true;
-        statusEl.textContent = '';
+        if (statusEl) {
+            statusEl.textContent = '';
+            statusEl.style.color = '';
+        }
 
-        fetch(restRoot + 'logs/clear', {
+        // Disable all log action buttons during the request.
+        var allBtns = document.querySelectorAll('#geo-forge-clear-logs, #geo-forge-reset-logs');
+        allBtns.forEach(function (b) { b.disabled = true; });
+
+        fetch(restRoot + endpoint, {
             method: 'POST',
             credentials: 'same-origin',
             headers: {
@@ -37,20 +42,53 @@
             .then(function (r) { return r.json(); })
             .then(function (body) {
                 if (body && body.success) {
-                    statusEl.textContent = '✅ ' + (i18n.cleared || 'Logs cleared.');
-                    statusEl.style.color = '#00a32a';
-                    setTimeout(function () { window.location.reload(); }, 600);
+                    var msg = (body && body.message) || successMessage;
+                    if (statusEl) {
+                        statusEl.textContent = '✅ ' + msg;
+                        statusEl.style.color = '#00a32a';
+                    }
+                    setTimeout(function () { window.location.reload(); }, 1000);
                 } else {
                     var msg = (body && body.error && body.error.message) || 'Failed.';
-                    statusEl.textContent = '❌ ' + msg;
-                    statusEl.style.color = '#d63638';
-                    btn.disabled = false;
+                    if (statusEl) {
+                        statusEl.textContent = '❌ ' + msg;
+                        statusEl.style.color = '#d63638';
+                    }
+                    allBtns.forEach(function (b) { b.disabled = false; });
                 }
             })
             .catch(function () {
-                statusEl.textContent = '❌ ' + (i18n.unknownError || 'Unknown error.');
-                statusEl.style.color = '#d63638';
-                btn.disabled = false;
+                if (statusEl) {
+                    statusEl.textContent = '❌ ' + (i18n.unknownError || 'Unknown error.');
+                    statusEl.style.color = '#d63638';
+                }
+                allBtns.forEach(function (b) { b.disabled = false; });
             });
-    });
+    }
+
+    // Clear Logs button — deletes all rows, keeps table structure.
+    var clearBtn = document.getElementById('geo-forge-clear-logs');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            postLogsAction(
+                'logs/clear',
+                i18n.confirmClear || 'Clear all log entries? This cannot be undone.',
+                i18n.cleared || 'Logs cleared.'
+            );
+        });
+    }
+
+    // Rebuild Table button — drops + recreates the table AND resets min_level option.
+    // Use this when the Logs page shows nothing despite recent plugin activity
+    // (typically caused by a stale 'warning' min_level option from a previous version).
+    var resetBtn = document.getElementById('geo-forge-reset-logs');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            postLogsAction(
+                'logs/reset',
+                'Rebuild the logs table? This will:\n• Delete ALL log entries\n• Reset the minimum log level to default (info)\n• Recreate the table structure\n\nUse this if logs are not appearing despite plugin activity.',
+                'Logs table rebuilt. Min level reset to default.'
+            );
+        });
+    }
 })();
