@@ -3,7 +3,7 @@ $fl=isset($_GET['level'])?Level::tryFrom(sanitize_text_field(wp_unslash($_GET['l
 $rw=Logger::recent(200,$fl);
 ?>
 <div class="geo-forge-wrap">
-<div class="gf-header"><h1>Logs <span class="gf-subtitle">Debug & error tracking</span></h1><p class="gf-muted">Auto-pruned after <?php echo(int)get_option('geo_forge_log_retention_days',30);?> days. Min level: <?php echo esc_html(get_option('geo_forge_log_min_level','warning'));?>.</p></div>
+<div class="gf-header"><h1>Logs <span class="gf-subtitle">Debug & error tracking</span></h1><p class="gf-muted">Auto-pruned after <?php echo(int)get_option('geo_forge_log_retention_days',30);?> days. Min level: <strong><?php echo esc_html(get_option('geo_forge_log_min_level','info'));?></strong> (change via <code>geo_forge_log_min_level</code> option).</p></div>
 
 <div class="gf-card">
 	<div class="gf-filter">

@@ -165,10 +165,13 @@ class Logger {
 
 	/**
 	 * Minimum severity from options. Anything below this is dropped silently.
+	 * Default `info` so normal operations (scan, save, regenerate, fix apply)
+	 * are visible in the Logs page. Set to `warning` via options table to
+	 * reduce noise on busy sites.
 	 */
 	private static function get_min_level(): Level {
-		$v = (string) get_option( 'geo_forge_log_min_level', 'warning' );
-		return Level::tryFrom( $v ) ?? Level::Warning;
+		$v = (string) get_option( 'geo_forge_log_min_level', 'info' );
+		return Level::tryFrom( $v ) ?? Level::Info;
 	}
 
 	/**
