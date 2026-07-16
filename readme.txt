@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      6.7
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.86
+Stable tag:        1.0.89
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,8 +124,23 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.89 =
+* New: 'Rebuild Table' button in Logs page — drops and recreates the logs table + resets min_level option to default (info). Fixes 'Logs page shows nothing' on existing installations.
+* New: REST endpoint POST /logs/reset.
+
+= 1.0.88 =
+* Diagnostic build for Score History Details debugging.
+
+= 1.0.87 =
+* BREAKING: Removed custom auto-updater (Updater.php). Future updates come exclusively from WordPress.org. Required for WP.org submission.
+* Removed all console.log statements from admin JS.
+* Simplified User-Agent header to standard plugin format.
+* Expanded Privacy section in readme.txt.
+* Rewrote uninstall.php to properly delete all plugin data (required by WP.org).
+* Fixed About tab hero title visibility on gradient background.
+
 = 1.0.86 =
-* Fix: About tab hero title now visible on purple gradient background.
+* Fix: About hero h2 title color now visible on purple gradient background.
 
 = 1.0.85 =
 * Fix: Settings Save button starts disabled, enables only when textarea is modified.
