@@ -20,14 +20,14 @@ $at=0;foreach($ch['series'] as $s)$at+=array_sum($s);
 
 <div class="gf-grid gf-grid-2" style="margin-bottom:12px;">
 	<div class="gf-card"><div class="gf-card-title">Traffic Sources</div>
-		<table><tr><td style="font-weight:500;">Well-known routes</td><td style="text-align:right;font-weight:600;"><?php echo$bs['well_known'];?></td><td class="gf-muted">llms.txt, security.txt</td></tr>
-		<tr><td style="font-weight:500;">Markdown requests</td><td style="text-align:right;font-weight:600;"><?php echo$bs['markdown'];?></td><td class="gf-muted">Accept: text/markdown</td></tr>
-		<tr><td style="font-weight:500;">Bot crawls</td><td style="text-align:right;font-weight:600;"><?php echo$bs['bot_ua'];?></td><td class="gf-muted">GPTBot, ClaudeBot etc.</td></tr>
-		<tr style="border-top:2px solid #e2e8f0;"><td style="font-weight:600;">Total</td><td style="text-align:right;font-weight:700;"><?php echo array_sum($bs);?></td><td></td></tr></table>
+		<table><tr><td style="font-weight:500;">Well-known routes</td><td style="text-align:right;font-weight:600;"><?php echo esc_html( (string) $bs['well_known'] ); ?></td><td class="gf-muted">llms.txt, security.txt</td></tr>
+		<tr><td style="font-weight:500;">Markdown requests</td><td style="text-align:right;font-weight:600;"><?php echo esc_html( (string) $bs['markdown'] ); ?></td><td class="gf-muted">Accept: text/markdown</td></tr>
+		<tr><td style="font-weight:500;">Bot crawls</td><td style="text-align:right;font-weight:600;"><?php echo esc_html( (string) $bs['bot_ua'] ); ?></td><td class="gf-muted">GPTBot, ClaudeBot etc.</td></tr>
+		<tr style="border-top:2px solid #e2e8f0;"><td style="font-weight:600;">Total</td><td style="text-align:right;font-weight:700;"><?php echo esc_html( (string) array_sum( $bs ) ); ?></td><td></td></tr></table>
 	</div>
 	<div class="gf-card"><div class="gf-card-title">Top Bot Families (24h)</div>
 		<?php if(empty($fm)):?><p class="gf-muted">No traffic yet. AI bots will appear after scanning.</p>
-		<?php else:?><table><?php foreach(array_slice($fm,0,8) as $f):?><tr><td><?php echo esc_html($f['name']);?></td><td style="text-align:right;font-weight:600;"><?php echo$f['count'];?></td></tr><?php endforeach;?></table><?php endif;?>
+		<?php else:?><table><?php foreach(array_slice($fm,0,8) as $f):?><tr><td><?php echo esc_html($f['name']);?></td><td style="text-align:right;font-weight:600;"><?php echo esc_html( (string) $f['count'] ); ?></td></tr><?php endforeach;?></table><?php endif;?>
 	</div>
 </div>
 

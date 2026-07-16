@@ -125,11 +125,11 @@ $check_models = array(
 	</div>
 	<div class="gf-card" style="padding:24px;">
 		<div class="gf-stat-label"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Status</div>
-		<div class="gf-stat"><?php echo null===$sc0?'—':"<span style='color:#16a34a'>$ps</span> <span style='font-size:14px;color:#94a3b8;font-weight:400;'>pass</span> · <span style='color:#dc2626'>$fl</span> <span style='font-size:14px;color:#94a3b8;font-weight:400;'>fail</span>";?></div>
+		<div class="gf-stat"><?php echo null===$sc0?'—':'<span style="color:#16a34a">' . esc_html( (string) $ps ) . '</span> <span style="font-size:14px;color:#94a3b8;font-weight:400;">pass</span> · <span style="color:#dc2626">' . esc_html( (string) $fl ) . '</span> <span style="font-size:14px;color:#94a3b8;font-weight:400;">fail</span>';?></div>
 	</div>
 	<div class="gf-card" style="padding:24px;">
 		<div class="gf-stat-label"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg> Grade</div>
-		<div class="gf-stat" style="color:<?php echo$grc;?>;font-size:28px;font-weight:800;"><?php echo$gr;?></div>
+		<div class="gf-stat" style="color:<?php echo esc_attr( $grc ); ?>;font-size:28px;font-weight:800;"><?php echo esc_html( $gr ); ?></div>
 	</div>
 </div>
 
@@ -137,7 +137,7 @@ $check_models = array(
 <div class="gf-grid gf-grid-3" style="margin-bottom:12px;">
 	<div class="gf-card"><div class="gf-card-title">Category Breakdown <span class="gf-badge gf-badge-blue"><?php echo count($ca);?></span></div>
 		<table><?php foreach($ca as $c):$e=(int)($c['earned']??0);$m=max(1,(int)($c['max']??1));$p=round($e/$m*100);$cl=$p>=80?'#16a34a':($p>=50?'#ca8a04':'#dc2626');$nm=$cat_names[$c['id']]??ucfirst((string)($c['id']??''));?>
-		<tr><td style="font-weight:500;font-size:12px;"><?php echo esc_html($nm);?></td><td><div class="gf-bar"><div class="gf-bar-fill" style="width:<?php echo$p;?>%;background:<?php echo$cl;?>;"></div></div></td><td style="width:36px;text-align:right;font-weight:600;font-size:12px;color:<?php echo$cl;?>;"><?php echo$p;?>%</td></tr>
+		<tr><td style="font-weight:500;font-size:12px;"><?php echo esc_html($nm);?></td><td><div class="gf-bar"><div class="gf-bar-fill" style="width:<?php echo esc_attr( (string) $p );?>%;background:<?php echo esc_attr($cl);?>;"></div></div></td><td style="width:36px;text-align:right;font-weight:600;font-size:12px;color:<?php echo esc_attr($cl);?>;"><?php echo esc_html( (string) $p );?>%</td></tr>
 		<?php endforeach;?></table>
 	</div>
 	<div style="grid-column:span 2;"><div class="gf-card" style="padding:0;"><div class="gf-card-title" style="padding:20px 20px 0 20px;">Check Results <span class="gf-badge gf-badge-blue"><?php echo count($ck);?></span></div>
@@ -190,8 +190,8 @@ $check_models = array(
 <?php if(count($ht)>=2):?>
 <div class="gf-card"><div class="gf-card-title">Score History <span class="gf-badge gf-badge-blue"><?php echo count($ht);?></span></div>
 <table><thead><tr><th>Time</th><th>Score</th><th>Grade</th><th>Change</th><th></th></tr></thead><tbody>
-<?php foreach($ht as $i=>$t):$pv=$i<count($ht)-1?$ht[$i+1]['total_score']:$t['total_score'];$up=$t['total_score']>$pv?'▲':($t['total_score']<$pv?'▼':'—');$cl=$t['total_score']>=80?'#16a34a':($t['total_score']>=50?'#ca8a04':'#dc2626');$lg=$gr_label($t['total_score']);?>
-<tr><td style="font-size:12px;"><?php echo esc_html(substr($t['created_at'],0,16));?></td><td style="font-weight:700;color:<?php echo$cl;?>;font-size:13px;"><?php echo$t['total_score'];?></td><td style="font-size:13px;font-weight:700;color:<?php echo$gr_color($t['total_score']);?>;"><?php echo$lg;?></td><td style="font-size:12px;color:<?php echo$up==='▲'?'#16a34a':($up==='▼'?'#dc2626':'#94a3b8');?>;"><?php echo$up;?> <?php echo abs($t['total_score']-$pv);?></td><td><button class="gf-btn gf-view-detail" style="font-size:11px;padding:3px 8px;" data-scan="<?php echo esc_attr($t['id']);?>">View Details</button></td></tr>
+<?php foreach($ht as $i=>$t):$pv=$i<count($ht)-1?$ht[$i+1]['total_score']:$t['total_score'];$up=$t['total_score']>$pv?'▲':($t['total_score']<$pv?'▼':'—');$cl=$t['total_score']>=80?'#16a34a':($t['total_score']>=50?'#ca8a04':'#dc2626');$lg=$gr_label($t['total_score']);$chg=(int)abs($t['total_score']-$pv);?>
+<tr><td style="font-size:12px;"><?php echo esc_html(substr($t['created_at'],0,16));?></td><td style="font-weight:700;color:<?php echo esc_attr($cl);?>;font-size:13px;"><?php echo esc_html( (string) $t['total_score'] ); ?></td><td style="font-size:13px;font-weight:700;color:<?php echo esc_attr($gr_color($t['total_score']));?>;"><?php echo esc_html($lg);?></td><td style="font-size:12px;color:<?php echo $up==='▲'?'#16a34a':($up==='▼'?'#dc2626':'#94a3b8');?>;"><?php echo esc_html($up);?> <?php echo esc_html( (string) $chg ); ?></td><td><button class="gf-btn gf-view-detail" style="font-size:11px;padding:3px 8px;" data-scan="<?php echo esc_attr($t['id']);?>">View Details</button></td></tr>
 <?php endforeach;?></tbody></table></div>
 <?php endif;?>
 

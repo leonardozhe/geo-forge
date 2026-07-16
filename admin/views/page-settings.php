@@ -61,7 +61,7 @@ $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_cur
 		<div style="display:flex;gap:8px;margin-bottom:8px;">
 			<button type="button" id="geo-forge-save-llms" class="gf-btn gf-btn-primary">Save</button>
 			<button type="button" id="geo-forge-regen-llms" class="gf-btn">Regenerate</button>
-			<span class="gf-muted"><?php echo strlen($lc);?> bytes</span>
+			<span class="gf-muted"><?php echo esc_html( (string) strlen( $lc ) ); ?> bytes</span>
 		</div>
 		<textarea id="geo-forge-llms-content" class="gf-editor" rows="16"><?php echo esc_textarea($lc);?></textarea>
 	</div>
@@ -88,8 +88,26 @@ $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_cur
 <div class="gf-tab-content" id="tab-about">
 	<?php
 	// Inline SVG line icons (20x20, stroke 2, currentColor) — keeps styling CSS-driven.
+	// Whitelist for wp_kses() so Plugin Check doesn't flag them.
 	$ico = function ( string $path ): string {
-		return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $path . '</svg>';
+		return wp_kses( '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $path . '</svg>', array(
+			'svg' => array(
+				'width'              => true,
+				'height'             => true,
+				'viewBox'           => true,
+				'fill'              => true,
+				'stroke'            => true,
+				'stroke-width'      => true,
+				'stroke-linecap'    => true,
+				'stroke-linejoin'   => true,
+				'aria-hidden'       => true,
+			),
+			'circle' => array( 'cx' => true, 'cy' => true, 'r' => true ),
+			'path'   => array( 'd' => true ),
+			'polyline' => array( 'points' => true ),
+			'rect'   => array( 'x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true ),
+			'line'   => array( 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true ),
+		) );
 	};
 	$ic = array(
 		'search'   => $ico( '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>' ),
