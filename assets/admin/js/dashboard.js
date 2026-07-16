@@ -7,7 +7,11 @@
     var restRoot = cfg.restRoot || '';
     var restNonce = cfg.restNonce || '';
 
-
+    // Diagnostic: log embedded data availability at startup
+    var embeddedScans = window.GeoForgeScans || null;
+    console.log('[GEO Forge Dashboard] init: restRoot=' + !!restRoot +
+        ', restNonce=' + !!restNonce +
+        ', embeddedScans=' + (embeddedScans ? Object.keys(embeddedScans).length + ' entries' : 'NOT PRESENT'));
     // Scan button
     document.querySelectorAll('#geo-forge-scan-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -55,17 +59,27 @@
 
         var scanId = btn.getAttribute('data-scan');
         var embedded = window.GeoForgeScans || {};
+        console.log('[GEO Forge Dashboard] View Details clicked: scanId=' + scanId +
+            ', embeddedKeys=' + Object.keys(embedded).join(',') +
+            ', embedded[scanId]=' + !!embedded[scanId] +
+            ', embedded[Number(scanId)]=' + !!embedded[Number(scanId)]);
         var scan = scanId ? embedded[scanId] || embedded[Number(scanId)] : null;
 
         if (scan && scan.checks_result) {
+            console.log('[GEO Forge Dashboard] using embedded data for scanId=' + scanId);
             renderScanDetail(content, scan);
             return;
         }
 
+        console.log('[GEO Forge Dashboard] no embedded data, falling back to REST');
         fetchScanDetail(scanId).then(function (s) {
             renderScanDetail(content, s);
         }).catch(function (err) {
-            content.innerHTML = '<p class="gf-muted">Failed to load: ' + (err.message || 'Unknown error') + '</p>';
+            console.error('[GEO Forge Dashboard] REST fallback failed:', err);
+            content.innerHTML = '<p class="gf-muted">Failed to load: ' + (err.message || 'Unknown error') + '</p>' +
+                '<p style="font-size:11px;color:#94a3b8;margin-top:8px;">scanId=' + scanId +
+                ' | embedded=' + (embeddedScans ? Object.keys(embeddedScans).length : 0) + ' entries' +
+                ' | restRoot=' + restRoot + '</p>';
         });
     });
 
