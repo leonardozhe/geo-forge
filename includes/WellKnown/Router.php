@@ -164,13 +164,13 @@ class Router {
 		}
 
 		try {
-			$ip_hash = hash( 'sha256', ( defined( 'AUTH_KEY' ) ? AUTH_KEY : '' ) . '|' . ( $_SERVER['REMOTE_ADDR'] ?? '' ) );
-			$host    = $_SERVER['HTTP_HOST'] ?? '';
-			$uri     = $_SERVER['REQUEST_URI'] ?? '/';
-			$method  = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+			$ip_hash = hash( 'sha256', ( defined( 'AUTH_KEY' ) ? AUTH_KEY : '' ) . '|' . sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ) ) );
+			$host    = sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ?? '' ) );
+			$uri     = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '/' ) );
+			$method  = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) );
 
 			// Detect bot family from UA.
-			$ua     = $_SERVER['HTTP_USER_AGENT'] ?? '';
+			$ua     = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' ) );
 			$family = BotFamily::detect( $ua );
 
 			$url = ( is_ssl() ? 'https' : 'http' ) . '://' . $host . $uri;

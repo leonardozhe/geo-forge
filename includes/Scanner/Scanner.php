@@ -63,6 +63,7 @@ class Scanner {
 				return $this->store_result( $response, $site_info );
 			}
 			Logger::warning( 'Scan response did not include a scanId.', array( 'response' => $response ) );
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new ApiException(
 				\GEO_Forge\Api\ErrorCode::InvalidResponse,
 				esc_html__( 'Scan response did not include a scanId.', 'geo-forge' ),
@@ -105,6 +106,7 @@ class Scanner {
 					'Scan failed on GEO KAMI side.',
 					array( 'scan_id' => $scan_id )
 				);
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 				throw new ApiException(
 					\GEO_Forge\Api\ErrorCode::Api,
 					esc_html__( 'Scan failed on GEO KAMI side.', 'geo-forge' ),
@@ -124,6 +126,7 @@ class Scanner {
 			array( 'scan_id' => $scan_id )
 		);
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		throw new \RuntimeException(
 			sprintf(
 				/* translators: %d: seconds */

@@ -1,4 +1,6 @@
-<?php if(!defined('ABSPATH'))exit;use GEO_Forge\Install\Installer;use GEO_Forge\WellKnown\LlmsTxt;use GEO_Forge\WellKnown\SecurityTxt;use GEO_Forge\WellKnown\RobotsTxt;
+<?php if(!defined('ABSPATH'))exit;
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+use GEO_Forge\Install\Installer;use GEO_Forge\WellKnown\LlmsTxt;use GEO_Forge\WellKnown\SecurityTxt;use GEO_Forge\WellKnown\RobotsTxt;
 $ak=(string)Installer::get_setting('api_key','');$ab=(string)Installer::get_setting('api_base','https://api.geokami.com');
 $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_current();$lu=home_url('/llms.txt');
 ?>
@@ -88,26 +90,16 @@ $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_cur
 <div class="gf-tab-content" id="tab-about">
 	<?php
 	// Inline SVG line icons (20x20, stroke 2, currentColor) — keeps styling CSS-driven.
-	// Whitelist for wp_kses() so Plugin Check doesn't flag them.
-	$ico = function ( string $path ): string {
-		return wp_kses( '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $path . '</svg>', array(
-			'svg' => array(
-				'width'              => true,
-				'height'             => true,
-				'viewBox'           => true,
-				'fill'              => true,
-				'stroke'            => true,
-				'stroke-width'      => true,
-				'stroke-linecap'    => true,
-				'stroke-linejoin'   => true,
-				'aria-hidden'       => true,
-			),
-			'circle' => array( 'cx' => true, 'cy' => true, 'r' => true ),
-			'path'   => array( 'd' => true ),
-			'polyline' => array( 'points' => true ),
-			'rect'   => array( 'x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true ),
-			'line'   => array( 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true ),
-		) );
+	$gf_svg_tags = array(
+		'svg' => array('width'=>true,'height'=>true,'viewBox'=>true,'fill'=>true,'stroke'=>true,'stroke-width'=>true,'stroke-linecap'=>true,'stroke-linejoin'=>true,'aria-hidden'=>true),
+		'circle' => array('cx'=>true,'cy'=>true,'r'=>true),
+		'path' => array('d'=>true),
+		'polyline' => array('points'=>true),
+		'rect' => array('x'=>true,'y'=>true,'width'=>true,'height'=>true,'rx'=>true),
+		'line' => array('x1'=>true,'y1'=>true,'x2'=>true,'y2'=>true),
+	);
+	$ico = function ( string $path ) use ( $gf_svg_tags ): string {
+		return wp_kses( '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $path . '</svg>', $gf_svg_tags );
 	};
 	$ic = array(
 		'search'   => $ico( '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>' ),
@@ -151,17 +143,17 @@ $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_cur
 
 	<div class="gf-about-grid3">
 		<div class="gf-card gf-about-action">
-			<div class="gf-about-icon"><?php echo $ic['search'];?></div>
+			<div class="gf-about-icon"><?php echo wp_kses( $ic['search'], $gf_svg_tags ); ?></div>
 			<h3>Scan</h3>
 			<p>One-click audit across 7 AI-readiness categories. Get a 0–100 score with a clear grade.</p>
 		</div>
 		<div class="gf-card gf-about-action">
-			<div class="gf-about-icon"><?php echo $ic['file'];?></div>
+			<div class="gf-about-icon"><?php echo wp_kses( $ic['file'], $gf_svg_tags ); ?></div>
 			<h3>Publish</h3>
 			<p>Auto-generate llms.txt, security.txt, AI-friendly robots.txt, and MCP/A2A agent cards.</p>
 		</div>
 		<div class="gf-card gf-about-action">
-			<div class="gf-about-icon"><?php echo $ic['wrench'];?></div>
+			<div class="gf-about-icon"><?php echo wp_kses( $ic['wrench'], $gf_svg_tags ); ?></div>
 			<h3>Fix</h3>
 			<p>One-click apply for top issues. Every change is snapshotted and fully reversible.</p>
 		</div>
@@ -169,40 +161,40 @@ $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_cur
 
 	<div class="gf-card">
 		<div class="gf-card-title" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-			<span style="color:#4338ca;"><?php echo $ic['sparkles'];?></span>
+			<span style="color:#4338ca;"><?php echo wp_kses( $ic['sparkles'], $gf_svg_tags ); ?></span>
 			What GEO Forge Covers
 		</div>
 		<div class="gf-about-caps">
 			<div class="gf-about-cap">
-				<div class="gf-about-cap-icon"><?php echo $ic['bot'];?></div>
+				<div class="gf-about-cap-icon"><?php echo wp_kses( $ic['bot'], $gf_svg_tags ); ?></div>
 				<div class="gf-about-cap-text"><strong>AI Readability</strong><span>llms.txt, structured data, semantic structure</span></div>
 			</div>
 			<div class="gf-about-cap">
-				<div class="gf-about-cap-icon"><?php echo $ic['globe'];?></div>
+				<div class="gf-about-cap-icon"><?php echo wp_kses( $ic['globe'], $gf_svg_tags ); ?></div>
 				<div class="gf-about-cap-text"><strong>Discoverability</strong><span>AI-friendly robots.txt, sitemap, indexing hints</span></div>
 			</div>
 			<div class="gf-about-cap">
-				<div class="gf-about-cap-icon"><?php echo $ic['file'];?></div>
+				<div class="gf-about-cap-icon"><?php echo wp_kses( $ic['file'], $gf_svg_tags ); ?></div>
 				<div class="gf-about-cap-text"><strong>Content Accessibility</strong><span>Markdown variants of key pages (About, FAQ)</span></div>
 			</div>
 			<div class="gf-about-cap">
-				<div class="gf-about-cap-icon"><?php echo $ic['shield'];?></div>
+				<div class="gf-about-cap-icon"><?php echo wp_kses( $ic['shield'], $gf_svg_tags ); ?></div>
 				<div class="gf-about-cap-text"><strong>Bot Access Control</strong><span>Granular AI bot permissions and rules</span></div>
 			</div>
 			<div class="gf-about-cap">
-				<div class="gf-about-cap-icon"><?php echo $ic['shield'];?></div>
+				<div class="gf-about-cap-icon"><?php echo wp_kses( $ic['shield'], $gf_svg_tags ); ?></div>
 				<div class="gf-about-cap-text"><strong>Security &amp; UX</strong><span>HTTPS, HSTS, security.txt, privacy headers</span></div>
 			</div>
 			<div class="gf-about-cap">
-				<div class="gf-about-cap-icon"><?php echo $ic['zap'];?></div>
+				<div class="gf-about-cap-icon"><?php echo wp_kses( $ic['zap'], $gf_svg_tags ); ?></div>
 				<div class="gf-about-cap-text"><strong>Protocol Discovery</strong><span>MCP server, A2A agent, OpenAPI endpoints</span></div>
 			</div>
 			<div class="gf-about-cap">
-				<div class="gf-about-cap-icon"><?php echo $ic['cart'];?></div>
+				<div class="gf-about-cap-icon"><?php echo wp_kses( $ic['cart'], $gf_svg_tags ); ?></div>
 				<div class="gf-about-cap-text"><strong>Commerce Signals</strong><span>aggregateRating, product schema, AI shopping</span></div>
 			</div>
 			<div class="gf-about-cap">
-				<div class="gf-about-cap-icon"><?php echo $ic['sparkles'];?></div>
+				<div class="gf-about-cap-icon"><?php echo wp_kses( $ic['sparkles'], $gf_svg_tags ); ?></div>
 				<div class="gf-about-cap-text"><strong>Continuous Monitoring</strong><span>Track AI traffic, score trends, fix regressions</span></div>
 			</div>
 		</div>

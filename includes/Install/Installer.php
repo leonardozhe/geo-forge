@@ -183,7 +183,7 @@ final class Installer {
 		global $wpdb;
 		$table = $wpdb->prefix . 'geo_forge_settings';
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$value = $wpdb->get_var(
 			$wpdb->prepare( "SELECT setting_value FROM {$table} WHERE setting_key = %s", $key )
 		);

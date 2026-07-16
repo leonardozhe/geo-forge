@@ -1,5 +1,6 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) { exit; }
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 
 use GEO_Forge\GeoForge;
 use GEO_Forge\Install\Installer;
@@ -135,12 +136,12 @@ $check_models = array(
 
 <?php if($sc0):?>
 <div class="gf-grid gf-grid-3" style="margin-bottom:12px;">
-	<div class="gf-card"><div class="gf-card-title">Category Breakdown <span class="gf-badge gf-badge-blue"><?php echo count($ca);?></span></div>
+	<div class="gf-card"><div class="gf-card-title">Category Breakdown <span class="gf-badge gf-badge-blue"><?php echo esc_html( (string) count( $ca ) ); ?></span></div>
 		<table><?php foreach($ca as $c):$e=(int)($c['earned']??0);$m=max(1,(int)($c['max']??1));$p=round($e/$m*100);$cl=$p>=80?'#16a34a':($p>=50?'#ca8a04':'#dc2626');$nm=$cat_names[$c['id']]??ucfirst((string)($c['id']??''));?>
 		<tr><td style="font-weight:500;font-size:12px;"><?php echo esc_html($nm);?></td><td><div class="gf-bar"><div class="gf-bar-fill" style="width:<?php echo esc_attr( (string) $p );?>%;background:<?php echo esc_attr($cl);?>;"></div></div></td><td style="width:36px;text-align:right;font-weight:600;font-size:12px;color:<?php echo esc_attr($cl);?>;"><?php echo esc_html( (string) $p );?>%</td></tr>
 		<?php endforeach;?></table>
 	</div>
-	<div style="grid-column:span 2;"><div class="gf-card" style="padding:0;"><div class="gf-card-title" style="padding:20px 20px 0 20px;">Check Results <span class="gf-badge gf-badge-blue"><?php echo count($ck);?></span></div>
+	<div style="grid-column:span 2;"><div class="gf-card" style="padding:0;"><div class="gf-card-title" style="padding:20px 20px 0 20px;">Check Results <span class="gf-badge gf-badge-blue"><?php echo esc_html( (string) count( $ck ) ); ?></span></div>
 
 		<!-- Fixed header -->
 		<div style="min-width:780px;">
@@ -172,7 +173,7 @@ $check_models = array(
 					<?php if($st==='pass'):?><span style="font-size:16px;color:#16a34a;">✓</span>
 					<?php elseif($st==='warn'):?><span style="font-size:16px;color:#ca8a04;">⚠</span>
 					<?php else:?><span style="font-size:16px;color:#dc2626;">✗</span><?php endif;?>
-					<span style="font-size:10px;font-weight:600;color:<?php echo$st==='pass'?'#16a34a':'#dc2626';?>;"><?php echo (int)$score_raw;?>/<?php echo (int)$max_raw;?></span>
+					<span style="font-size:10px;font-weight:600;color:<?php echo esc_attr( $st === 'pass' ? '#16a34a' : '#dc2626' ); ?>;"><?php echo esc_html( (string) (int) $score_raw ); ?>/<?php echo esc_html( (string) (int) $max_raw ); ?></span>
 				</div>
 			</td>
 			<td>
@@ -188,10 +189,10 @@ $check_models = array(
 <?php endif;?>
 
 <?php if(count($ht)>=2):?>
-<div class="gf-card"><div class="gf-card-title">Score History <span class="gf-badge gf-badge-blue"><?php echo count($ht);?></span></div>
+<div class="gf-card"><div class="gf-card-title">Score History <span class="gf-badge gf-badge-blue"><?php echo esc_html( (string) count( $ht ) ); ?></span></div>
 <table><thead><tr><th>Time</th><th>Score</th><th>Grade</th><th>Change</th><th></th></tr></thead><tbody>
 <?php foreach($ht as $i=>$t):$pv=$i<count($ht)-1?$ht[$i+1]['total_score']:$t['total_score'];$up=$t['total_score']>$pv?'▲':($t['total_score']<$pv?'▼':'—');$cl=$t['total_score']>=80?'#16a34a':($t['total_score']>=50?'#ca8a04':'#dc2626');$lg=$gr_label($t['total_score']);$chg=(int)abs($t['total_score']-$pv);?>
-<tr><td style="font-size:12px;"><?php echo esc_html(substr($t['created_at'],0,16));?></td><td style="font-weight:700;color:<?php echo esc_attr($cl);?>;font-size:13px;"><?php echo esc_html( (string) $t['total_score'] ); ?></td><td style="font-size:13px;font-weight:700;color:<?php echo esc_attr($gr_color($t['total_score']));?>;"><?php echo esc_html($lg);?></td><td style="font-size:12px;color:<?php echo $up==='▲'?'#16a34a':($up==='▼'?'#dc2626':'#94a3b8');?>;"><?php echo esc_html($up);?> <?php echo esc_html( (string) $chg ); ?></td><td><button class="gf-btn gf-view-detail" style="font-size:11px;padding:3px 8px;" data-scan="<?php echo esc_attr($t['id']);?>">View Details</button></td></tr>
+<tr><td style="font-size:12px;"><?php echo esc_html(substr($t['created_at'],0,16));?></td><td style="font-weight:700;color:<?php echo esc_attr($cl);?>;font-size:13px;"><?php echo esc_html( (string) $t['total_score'] ); ?></td><td style="font-size:13px;font-weight:700;color:<?php echo esc_attr($gr_color($t['total_score']));?>;"><?php echo esc_html($lg);?></td><td style="font-size:12px;color:<?php echo esc_attr( $up === '▲' ? '#16a34a' : ( $up === '▼' ? '#dc2626' : '#94a3b8' ) );?>;"><?php echo esc_html($up);?> <?php echo esc_html( (string) $chg ); ?></td><td><button class="gf-btn gf-view-detail" style="font-size:11px;padding:3px 8px;" data-scan="<?php echo esc_attr($t['id']);?>">View Details</button></td></tr>
 <?php endforeach;?></tbody></table></div>
 <?php endif;?>
 
@@ -200,7 +201,7 @@ $check_models = array(
 <?php if(!$hk):?>
 <div class="gf-card gf-promo"><h2>🚀 Get Started with GEO KAMI</h2><p>Free tier: 100 points (5 scans). No credit card required.</p>
 <div class="gf-grid gf-grid-3" style="margin:12px 0;"><div class="gf-card" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1);"><div class="gf-stat" style="font-size:22px;color:#fff;">🎁</div><div class="gf-muted" style="color:rgba(255,255,255,.8);">100 points</div></div><div class="gf-card" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1);"><div class="gf-stat" style="font-size:22px;color:#fff;">🔍</div><div class="gf-muted" style="color:rgba(255,255,255,.8);">5 scans</div></div><div class="gf-card" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1);"><div class="gf-stat" style="font-size:22px;color:#fff;">🔧</div><div class="gf-muted" style="color:rgba(255,255,255,.8);">Auto-fix</div></div></div>
-<a href="https://geokami.com/register?ref=geo-forge" target="_blank" class="gf-btn gf-btn-primary" style="background:#fff!important;color:#4338ca!important;border-color:#fff!important;">Get Free API Key</a></div>
+<a href="<?php echo esc_url( 'https://geokami.com/register?ref=geo-forge' ); ?>" target="_blank" class="gf-btn gf-btn-primary" style="background:#fff!important;color:#4338ca!important;border-color:#fff!important;">Get Free API Key</a></div>
 <?php endif;?>
 
 <div class="gf-detail-overlay" id="gf-detail-dialog"><div class="gf-detail-dialog"><button class="gf-detail-close" onclick="document.getElementById('gf-detail-dialog').classList.remove('open')">&times;</button><div id="gf-detail-content"></div></div></div>

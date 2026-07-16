@@ -1,15 +1,15 @@
 === GEO Forge ===
 Contributors:      geokami
-Tags:              woocommerce, ai, seo, llms.txt, chatgpt, perplexy, claude, mcp, structured-data
+Tags:              woocommerce, ai, seo, llms.txt, structured-data
 Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.89
+Stable tag:        1.0.90
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
-Forge your WooCommerce store for the AI era — one-click scan, fix, and monitor for AI agent discoverability (llms.txt, MCP, A2A, structured data, markdown negotiation).
+One-click AI visibility scan, fix, and monitor for WooCommerce stores. llms.txt, MCP, A2A, structured data.
 
 == Description ==
 
@@ -124,6 +124,14 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.90 =
+* Fix: Resolved all WordPress Plugin Check errors — proper output escaping (esc_html, esc_attr, wp_kses) on all view templates.
+* Fix: Replaced mt_rand() with wp_rand() for better randomness.
+* Fix: Sanitized all $_SERVER variables with sanitize_text_field(wp_unslash(...)).
+* Fix: Added $wpdb->prepare() for SQL queries with dynamic LIMIT values.
+* Fix: Prefixed all global-scope variables with plugin prefix per WordPress coding standards.
+* Fix: Reduced readme.txt tags to 5, shortened short description to under 150 chars.
+
 = 1.0.89 =
 * New: 'Rebuild Table' button in Logs page — drops and recreates the logs table + resets min_level option to default (info). Fixes 'Logs page shows nothing' on existing installations.
 * New: REST endpoint POST /logs/reset.
@@ -173,6 +181,9 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 * Fatal-error capture for plugin-originated errors only.
 
 == Upgrade Notice ==
+
+= 1.0.90 =
+WordPress Plugin Check compliance: all output escaping, SQL preparation, input sanitization, and variable naming fixed.
 
 = 1.0.86 =
 Visual fix for About tab + WordPress.org compliance preparation.

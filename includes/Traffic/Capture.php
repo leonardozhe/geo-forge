@@ -60,7 +60,7 @@ class Capture {
 
 		$ip_hash = self::hash_ip();
 		$url     = self::current_url();
-		$method  = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+		$method  = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) );
 
 		Store::record(
 			$detection['family'],
@@ -89,7 +89,7 @@ class Capture {
 		}
 
 		// 2. Markdown negotiation.
-		$accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+		$accept = sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT'] ?? '' ) );
 		if ( str_contains( $accept, 'text/markdown' ) || str_contains( $accept, 'text/x-markdown' ) ) {
 			return array(
 				'family' => self::family_from_ua(),
@@ -113,7 +113,7 @@ class Capture {
 	 * Match the current User-Agent against known bot patterns.
 	 */
 	private static function family_from_ua(): string {
-		$ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+		$ua = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' ) );
 		if ( '' === $ua ) {
 			return 'unknown';
 		}
@@ -129,7 +129,7 @@ class Capture {
 	 *   - never logged, never stored in plaintext
 	 */
 	private static function hash_ip(): string {
-		$ip   = $_SERVER['REMOTE_ADDR'] ?? '';
+		$ip   = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ) );
 		$salt = defined( 'AUTH_KEY' ) ? AUTH_KEY : 'geo-forge-default-salt';
 
 		if ( '' === $ip ) {
@@ -145,8 +145,8 @@ class Capture {
 	 */
 	private static function current_url(): string {
 		$scheme = is_ssl() ? 'https' : 'http';
-		$host   = $_SERVER['HTTP_HOST'] ?? '';
-		$uri    = $_SERVER['REQUEST_URI'] ?? '/';
+		$host   = sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ?? '' ) );
+		$uri    = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '/' ) );
 		return $scheme . '://' . $host . $uri;
 	}
 }

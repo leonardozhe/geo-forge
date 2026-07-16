@@ -136,12 +136,12 @@ class Store {
 		$sql .= ' ORDER BY recorded_at DESC';
 
 		if ( empty( $values ) ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$rows = $wpdb->get_results( $wpdb->prepare( $sql . ' LIMIT %d', $limit ), ARRAY_A );
 		} else {
 			$values[] = $limit;
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
-			$rows = $wpdb->get_results( $wpdb->prepare( $sql . ' LIMIT %d', $values ), ARRAY_A );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$rows = $wpdb->get_results( $wpdb->prepare( $sql . ' LIMIT %d', ...$values ), ARRAY_A );
 		}
 
 		return $rows ?? array();
@@ -158,7 +158,7 @@ class Store {
 		global $wpdb;
 		$table = $wpdb->prefix . self::TABLE;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT DATE(recorded_at) AS day, bot_family, COUNT(*) AS n
@@ -200,7 +200,7 @@ class Store {
 		global $wpdb;
 		$table = $wpdb->prefix . self::TABLE;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$total = (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT COUNT(*) FROM {$table} WHERE recorded_at >= DATE_SUB(%s, INTERVAL 1 DAY)",
@@ -208,7 +208,7 @@ class Store {
 			)
 		);
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$by_family = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT bot_family, COUNT(*) AS n FROM {$table}

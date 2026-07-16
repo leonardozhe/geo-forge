@@ -152,6 +152,7 @@ class Client {
 	 */
 	private function request_json( string $method, string $path, array $body = array() ): array {
 		if ( ! $this->has_api_key() && '/health' !== $path ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new ApiException( ErrorCode::Auth, esc_html__( 'GEO KAMI API key is not configured.', 'geo-forge' ) );
 		}
 
@@ -204,6 +205,7 @@ class Client {
 			// Map status → ErrorCode. 2xx returns null (success).
 			$error_code = ErrorCode::from_http_status( $status );
 			if ( null !== $error_code ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 				throw new ApiException(
 					$error_code,
 					sprintf(
@@ -225,6 +227,7 @@ class Client {
 			$decoded  = json_decode( $raw_body, true );
 
 			if ( ! is_array( $decoded ) ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 				throw new ApiException(
 					ErrorCode::InvalidResponse,
 					esc_html__( 'GEO KAMI returned a non-JSON response.', 'geo-forge' ),

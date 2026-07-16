@@ -231,9 +231,12 @@ class Logger {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" );
 		if ( $count > 50000 ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->query(
-				"DELETE FROM {$table} ORDER BY created_at ASC LIMIT " . (int) ( $count - 50000 )
+				$wpdb->prepare(
+					"DELETE FROM {$table} ORDER BY created_at ASC LIMIT %d",
+					(int) ( $count - 50000 )
+				)
 			);
 		}
 	}
@@ -254,6 +257,7 @@ class Logger {
 	 * Cheap — just walks debug_backtrace looking for our namespace.
 	 */
 	private static function guess_source(): string {
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
 		$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 8 );
 		foreach ( $trace as $frame ) {
 			$class = $frame['class'] ?? '';

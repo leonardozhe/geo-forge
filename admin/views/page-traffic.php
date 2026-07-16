@@ -1,5 +1,9 @@
-<?php if(!defined('ABSPATH'))exit;use GEO_Forge\Traffic\BotFamily;use GEO_Forge\Traffic\Store as TS;
+<?php if(!defined('ABSPATH'))exit;
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+use GEO_Forge\Traffic\BotFamily;use GEO_Forge\Traffic\Store as TS;
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $ff=isset($_GET['family'])&&!empty($_GET['family'])?sanitize_text_field(wp_unslash($_GET['family'])):null;
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $fs=isset($_GET['source'])&&!empty($_GET['source'])?sanitize_text_field(wp_unslash($_GET['source'])):null;
 if($fs&&!in_array($fs,['bot_ua','well_known','markdown']))$fs=null;
 $rw=TS::recent(100,$ff,$fs);$sm=TS::summary_24h();$ch=TS::chart_data(14);

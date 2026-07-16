@@ -1,5 +1,15 @@
-<?php if(!defined('ABSPATH'))exit;use GEO_Forge\Log\Level;use GEO_Forge\Log\Logger;
-$fl=isset($_GET['level'])?Level::tryFrom(sanitize_text_field(wp_unslash($_GET['level']))):null;
+<?php
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+if(!defined('ABSPATH'))exit;
+use GEO_Forge\Log\Level;
+use GEO_Forge\Log\Logger;
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+if(isset($_GET['level'])){
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$fl=Level::tryFrom(sanitize_text_field(wp_unslash($_GET['level'])));
+}else{
+$fl=null;
+}
 $rw=Logger::recent(200,$fl);
 ?>
 <div class="geo-forge-wrap">

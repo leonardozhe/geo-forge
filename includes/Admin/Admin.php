@@ -150,7 +150,7 @@ final class Admin {
 		$css_file = GEO_FORGE_DIR . 'assets/admin/css/admin.css';
 		if ( file_exists( $css_file ) ) {
 			echo '<style id="geo-forge-styles">';
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_get_contents
 			echo file_get_contents( $css_file ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '</style>';
 		}
@@ -161,6 +161,7 @@ final class Admin {
 	 */
 	public function enqueue_assets( string $hook ): void {
 		// Debug: log which page we're on
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['geo_forge_debug_js'] ) ) {
 			add_action( 'admin_notices', function() use ( $hook ) {
 				echo '<div class="notice notice-info"><p><strong>GEO Forge JS Debug:</strong> Hook = ' . esc_html( $hook ) . '</p></div>';
