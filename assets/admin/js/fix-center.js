@@ -6,6 +6,7 @@
     var cfg = window.GeoForgeFixer || {};
     var restRoot = cfg.restRoot || '';
     var restNonce = cfg.restNonce || '';
+    console.log('[GEO Forge Fixer] script loaded. restRoot=' + restRoot);
 
     function showStatus(message, isError) {
         var el = document.getElementById('geo-forge-fix-status');
@@ -50,18 +51,27 @@
                 var originalText = btn.textContent;
                 btn.disabled = true;
                 btn.textContent = '…';
+                console.log('[GEO Forge Fixer] ' + actionPath.replace('{id}', fixId) + ' clicked');
                 restFetch(actionPath.replace('{id}', fixId))
                     .then(function (res) {
+                        console.log('[GEO Forge Fixer] response:', res);
                         if (res.ok && res.body.success) {
-                            var newStatus = res.body.status || 'applied';
-                            updateRow(fixId, newStatus, res.body.applied_at || null);
                             showStatus(res.body.message || 'Done.', false);
+                            // Reload the page so all columns (status, applied_at, button states)
+                            // are re-rendered from the server. Small delay so user sees the toast.
+                            setTimeout(function () { location.reload(); }, 800);
                         } else {
                             showStatus((res.body && res.body.error && res.body.error.message) || 'Failed.', true);
+                            btn.disabled = false;
+                            btn.textContent = originalText;
                         }
                     })
-                    .catch(function () { showStatus('Network error.', true); })
-                    .finally(function () { btn.disabled = false; btn.textContent = originalText; });
+                    .catch(function (err) {
+                        console.error('[GEO Forge Fixer] fetch error:', err);
+                        showStatus('Network error.', true);
+                        btn.disabled = false;
+                        btn.textContent = originalText;
+                    });
             });
         });
     }
@@ -69,4 +79,5 @@
     bind('.geo-forge-fix-apply', 'fixes/{id}/apply');
     bind('.geo-forge-fix-verify', 'fixes/{id}/verify');
     bind('.geo-forge-fix-rollback', 'fixes/{id}/rollback');
+    console.log('[GEO Forge Fixer] listeners bound: apply=' + document.querySelectorAll('.geo-forge-fix-apply').length + ', verify=' + document.querySelectorAll('.geo-forge-fix-verify').length + ', rollback=' + document.querySelectorAll('.geo-forge-fix-rollback').length);
 })();

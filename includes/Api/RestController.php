@@ -59,6 +59,24 @@ class RestController {
 
 		register_rest_route(
 			self::NAMESPACE,
+			'/scan/(?P<id>\d+)',
+			array(
+				'methods'             => 'READABLE',
+				'callback'            => array( $this, 'handle_get_scan_by_id' ),
+				'permission_callback' => array( $this, 'check_admin_permission' ),
+				'args'                => array(
+					'id' => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'minimum'           => 1,
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
 			'/health-check',
 			array(
 				'methods'             => 'POST',
@@ -307,6 +325,30 @@ class RestController {
 				'success' => true,
 				'scan'    => null,
 			), 200 );
+		}
+
+		return new \WP_REST_Response( array(
+			'success' => true,
+			'scan'    => $this->format_scan_row( $row ),
+		), 200 );
+	}
+
+	/**
+	 * GET /scan/{id} — return a specific scan row by primary key.
+	 */
+	public function handle_get_scan_by_id( \WP_REST_Request $request ): \WP_REST_Response {
+		$id      = (int) $request->get_param( 'id' );
+		$scanner = new Scanner();
+		$row     = $scanner->get_scan_by_id( $id );
+
+		if ( null === $row ) {
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'error'   => array(
+					'code'    => 'scan_not_found',
+					'message' => __( 'Scan not found.', 'geo-forge' ),
+				),
+			), 404 );
 		}
 
 		return new \WP_REST_Response( array(

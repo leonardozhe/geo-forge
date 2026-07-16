@@ -238,4 +238,39 @@ class Scanner {
 		TransientCache::set( 'last_scan', $row );
 		return $row;
 	}
+
+	/**
+	 * Fetch a specific scan row by its ID.
+	 *
+	 * @param int $scan_id Primary key in the scans table.
+	 * @return array|null The scan row (with JSON fields decoded) or null if not found.
+	 */
+	public function get_scan_by_id( int $scan_id ): ?array {
+		if ( $scan_id <= 0 ) {
+			return null;
+		}
+
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}geo_forge_scans WHERE id = %d LIMIT 1",
+				$scan_id
+			),
+			ARRAY_A
+		);
+
+		if ( ! $row ) {
+			return null;
+		}
+
+		foreach ( array( 'category_scores', 'checks_result', 'suggestions' ) as $field ) {
+			if ( isset( $row[ $field ] ) && is_string( $row[ $field ] ) ) {
+				$decoded = json_decode( $row[ $field ], true );
+				$row[ $field ] = is_array( $decoded ) ? $decoded : array();
+			}
+		}
+
+		return $row;
+	}
 }
