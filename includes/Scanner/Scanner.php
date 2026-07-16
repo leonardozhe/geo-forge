@@ -65,7 +65,7 @@ class Scanner {
 			Logger::warning( 'Scan response did not include a scanId.', array( 'response' => $response ) );
 			throw new ApiException(
 				\GEO_Forge\Api\ErrorCode::InvalidResponse,
-				__( 'Scan response did not include a scanId.', 'geo-forge' ),
+				esc_html__( 'Scan response did not include a scanId.', 'geo-forge' ),
 				array( 'response' => $response )
 			);
 		}
@@ -107,7 +107,7 @@ class Scanner {
 				);
 				throw new ApiException(
 					\GEO_Forge\Api\ErrorCode::Api,
-					__( 'Scan failed on GEO KAMI side.', 'geo-forge' ),
+					esc_html__( 'Scan failed on GEO KAMI side.', 'geo-forge' ),
 					array( 'scan_id' => $scan_id, 'response' => $response )
 				);
 			}
@@ -118,7 +118,7 @@ class Scanner {
 		Logger::warning(
 			sprintf(
 				/* translators: %d: seconds */
-				__( 'Scan polling timed out after %d seconds.', 'geo-forge' ),
+				esc_html__( 'Scan polling timed out after %d seconds.', 'geo-forge' ),
 				$max_wait_seconds
 			),
 			array( 'scan_id' => $scan_id )
@@ -127,7 +127,7 @@ class Scanner {
 		throw new \RuntimeException(
 			sprintf(
 				/* translators: %d: seconds */
-				__( 'Scan did not complete within %d seconds.', 'geo-forge' ),
+				esc_html__( 'Scan did not complete within %d seconds.', 'geo-forge' ),
 				$max_wait_seconds
 			)
 		);

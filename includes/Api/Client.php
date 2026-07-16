@@ -152,7 +152,7 @@ class Client {
 	 */
 	private function request_json( string $method, string $path, array $body = array() ): array {
 		if ( ! $this->has_api_key() && '/health' !== $path ) {
-			throw new ApiException( ErrorCode::Auth, __( 'GEO KAMI API key is not configured.', 'geo-forge' ) );
+			throw new ApiException( ErrorCode::Auth, esc_html__( 'GEO KAMI API key is not configured.', 'geo-forge' ) );
 		}
 
 		$url = $this->api_base . $path;
@@ -208,7 +208,7 @@ class Client {
 					$error_code,
 					sprintf(
 						/* translators: 1: HTTP status, 2: response body */
-						__( 'GEO KAMI API error (HTTP %1$d): %2$s', 'geo-forge' ),
+						esc_html__( 'GEO KAMI API error (HTTP %1$d): %2$s', 'geo-forge' ),
 						$status,
 						wp_trim_words( wp_remote_retrieve_body( $response ), 20, '...' )
 					),
@@ -227,7 +227,7 @@ class Client {
 			if ( ! is_array( $decoded ) ) {
 				throw new ApiException(
 					ErrorCode::InvalidResponse,
-					__( 'GEO KAMI returned a non-JSON response.', 'geo-forge' ),
+					esc_html__( 'GEO KAMI returned a non-JSON response.', 'geo-forge' ),
 					array( 'raw_body' => $raw_body )
 				);
 			}

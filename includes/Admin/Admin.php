@@ -147,9 +147,13 @@ final class Admin {
 	 */
 	public function inject_css(): void {
 		// Inline CSS only — NO external CDN dependencies
-		echo '<style id="geo-forge-styles">';
-		readfile( GEO_FORGE_DIR . 'assets/admin/css/admin.css' );
-		echo '</style>';
+		$css_file = GEO_FORGE_DIR . 'assets/admin/css/admin.css';
+		if ( file_exists( $css_file ) ) {
+			echo '<style id="geo-forge-styles">';
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			echo file_get_contents( $css_file ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '</style>';
+		}
 	}
 
 	/**

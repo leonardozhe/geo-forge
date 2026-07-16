@@ -58,7 +58,7 @@ class Logger {
 		$wpdb->insert( $wpdb->prefix . self::TABLE_SUFFIX, $row );
 
 		// Lazy pruning — ~1% of writes trigger a cleanup.
-		if ( mt_rand( 1, 100 ) === 1 ) {
+		if ( wp_rand( 1, 100 ) === 1 ) {
 			self::prune();
 		}
 	}
@@ -128,7 +128,7 @@ class Logger {
 	 */
 	public static function clear(): void {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
 		$wpdb->query( "TRUNCATE TABLE `{$wpdb->prefix}" . self::TABLE_SUFFIX . '`' );
 	}
 
@@ -152,11 +152,11 @@ class Logger {
 		$table = $wpdb->prefix . self::TABLE_SUFFIX;
 
 		// Count rows before the rebuild (informational).
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows_before = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
 
 		// Drop the existing table.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query( "DROP TABLE IF EXISTS `{$table}`" );
 
 		// Recreate using dbDelta (same schema as Installer::create_tables).
@@ -218,7 +218,7 @@ class Logger {
 		$retention_days = (int) get_option( 'geo_forge_log_retention_days', self::RETENTION_DAYS );
 		$retention_days = max( 1, min( $retention_days, 365 ) );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query(
 			$wpdb->prepare(
 				"DELETE FROM {$table} WHERE created_at < DATE_SUB(%s, INTERVAL %d DAY)",
@@ -228,10 +228,10 @@ class Logger {
 		);
 
 		// Safety cap: if still > 50k rows after date pruning, drop oldest.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" );
 		if ( $count > 50000 ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
 			$wpdb->query(
 				"DELETE FROM {$table} ORDER BY created_at ASC LIMIT " . (int) ( $count - 50000 )
 			);
@@ -275,7 +275,7 @@ class Logger {
 	private static function request_id(): string {
 		static $id = null;
 		if ( null === $id ) {
-			$id = substr( md5( (string) mt_rand() . microtime( true ) ), 0, 12 );
+			$id = substr( md5( (string) wp_rand() . microtime( true ) ), 0, 12 );
 		}
 		return $id;
 	}

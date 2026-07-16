@@ -140,7 +140,7 @@ class Store {
 			$rows = $wpdb->get_results( $wpdb->prepare( $sql . ' LIMIT %d', $limit ), ARRAY_A );
 		} else {
 			$values[] = $limit;
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
 			$rows = $wpdb->get_results( $wpdb->prepare( $sql . ' LIMIT %d', $values ), ARRAY_A );
 		}
 
@@ -230,7 +230,7 @@ class Store {
 	 */
 	public static function clear(): void {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
 		$wpdb->query( "TRUNCATE TABLE `{$wpdb->prefix}" . self::TABLE . '`' );
 	}
 
@@ -240,6 +240,6 @@ class Store {
 	 */
 	private static function should_sample(): bool {
 		$rate = max( 1, (int) get_option( 'geo_forge_traffic_sample_rate', 10 ) );
-		return 0 === mt_rand( 0, $rate - 1 );
+		return 0 === wp_rand( 0, $rate - 1 );
 	}
 }
