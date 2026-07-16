@@ -105,9 +105,10 @@ $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_cur
 	?>
 	<style>
 		.gf-about-hero{background:linear-gradient(135deg,#4338ca 0%,#6d28d9 100%);color:#fff;border-radius:10px;padding:24px 28px;margin-bottom:14px;}
-		.gf-about-hero h2{margin:0 0 8px;font-size:17px;font-weight:700;}
-		.gf-about-hero p{margin:0;font-size:13px;line-height:1.6;color:rgba(255,255,255,.92);}
-		.gf-about-hero p strong{color:#fff;}
+		.gf-about-hero h2{margin:0 0 8px;font-size:17px;font-weight:700;color:#fff!important;}
+		.gf-about-hero p{margin:0;font-size:13px;line-height:1.6;color:rgba(255,255,255,.92)!important;}
+		.gf-about-hero p strong{color:#fff!important;}
+		.gf-about-hero a{color:#fff;text-decoration:underline;}
 		.gf-about-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
 		.gf-about-action{text-align:center;padding:22px 14px;}
 		.gf-about-action .gf-about-icon{width:40px;height:40px;border-radius:10px;background:#eef2ff;color:#4338ca;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;}
