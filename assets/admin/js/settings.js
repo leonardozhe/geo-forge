@@ -174,21 +174,37 @@
     function updateSaveBtnState(suffix) {
         var saveBtn = document.getElementById('geo-forge-save-' + suffix);
         var ta = document.getElementById('geo-forge-' + suffix + '-content');
-        if (!saveBtn || !ta) return;
-        var isDirty = ta.value !== (originalValues[suffix] || '');
+        if (!saveBtn || !ta) {
+            console.warn('[GEO Forge Settings] updateSaveBtnState: missing element for ' + suffix +
+                ' (saveBtn=' + !!saveBtn + ', ta=' + !!ta + ')');
+            return;
+        }
+        var baseline = originalValues[suffix] || '';
+        var isDirty = ta.value !== baseline;
         saveBtn.disabled = !isDirty;
-        console.log('[GEO Forge Settings] save-' + suffix + ' ' + (isDirty ? 'enabled' : 'disabled') + ' (dirty=' + isDirty + ')');
+        console.log('[GEO Forge Settings] save-' + suffix + ' ' + (isDirty ? 'ENABLED' : 'DISABLED') +
+            ' (dirty=' + isDirty + ', len=' + ta.value.length + ' vs baseline=' + baseline.length + ')');
     }
 
     // Initialize: store baseline values and disable all Save buttons.
-    ['llms', 'security', 'robots'].forEach(function (suffix) {
+    console.log('[GEO Forge Settings] Initializing Save-button state tracking...');
+    var suffixes = ['llms', 'security', 'robots'];
+    suffixes.forEach(function (suffix) {
         var ta = document.getElementById('geo-forge-' + suffix + '-content');
-        if (!ta) return;
-        originalValues[suffix] = ta.value;
         var saveBtn = document.getElementById('geo-forge-save-' + suffix);
-        if (saveBtn) saveBtn.disabled = true;
+        if (!ta) {
+            console.warn('[GEO Forge Settings] textarea not found: geo-forge-' + suffix + '-content');
+            return;
+        }
+        if (!saveBtn) {
+            console.warn('[GEO Forge Settings] save button not found: geo-forge-save-' + suffix);
+            return;
+        }
+        originalValues[suffix] = ta.value;
+        saveBtn.disabled = true;
         // Re-check on every keystroke
         ta.addEventListener('input', function () { updateSaveBtnState(suffix); });
+        console.log('[GEO Forge Settings] initialized ' + suffix + ': disabled Save button, stored baseline length=' + ta.value.length);
     });
-    console.log('[GEO Forge Settings] Save-button state tracking initialized');
+    console.log('[GEO Forge Settings] Save-button state tracking initialized for ' + suffixes.length + ' sections');
 })();

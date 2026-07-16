@@ -3,7 +3,7 @@
  * Plugin Name:       GEO Forge
  * Plugin URI:        https://geokami.com/geo-forge
  * Description:       Forge your WooCommerce store for the AI era — one-click scan, fix, and monitor for AI agent discoverability (llms.txt, MCP, A2A, structured data, markdown negotiation).
- * Version:           1.0.84
+ * Version:           1.0.85
  * Author:            GEO KAMI
  * Author URI:        https://geokami.com
  * License:           GPL v3+
@@ -42,7 +42,7 @@ if ( version_compare( PHP_VERSION, '8.1.0', '<' ) ) {
  * Constants.
  * Kept minimal — only what other files genuinely need.
  */
-define( 'GEO_FORGE_VERSION', '1.0.84' );
+define( 'GEO_FORGE_VERSION', '1.0.85' );
 define( 'GEO_FORGE_FILE', __FILE__ );
 define( 'GEO_FORGE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GEO_FORGE_URL', plugin_dir_url( __FILE__ ) );
@@ -52,10 +52,14 @@ define( 'GEO_FORGE_BASENAME', plugin_basename( __FILE__ ) );
  * Invalidate opcache for the plugin's PHP files on version change.
  * Without this, some hosts serve stale bytecode after an auto-update,
  * causing newly-registered REST routes to appear as "rest_no_route".
+ *
+ * Also runs one-time migrations tied to version changes (e.g. resetting
+ * an option whose default has changed).
  */
-if ( function_exists( 'opcache_invalidate' ) ) {
-	$cached_version = get_option( 'geo_forge_code_version', '0' );
-	if ( $cached_version !== GEO_FORGE_VERSION ) {
+$cached_version = get_option( 'geo_forge_code_version', '0' );
+if ( $cached_version !== GEO_FORGE_VERSION ) {
+	// 1. Invalidate opcache so new PHP files (incl. new REST routes) are loaded.
+	if ( function_exists( 'opcache_invalidate' ) ) {
 		$invalidate = function ( string $dir ) use ( &$invalidate ): void {
 			foreach ( glob( $dir . '*.php' ) as $file ) {
 				opcache_invalidate( $file, true );
@@ -65,8 +69,17 @@ if ( function_exists( 'opcache_invalidate' ) ) {
 			}
 		};
 		$invalidate( GEO_FORGE_DIR );
-		update_option( 'geo_forge_code_version', GEO_FORGE_VERSION, true );
 	}
+
+	// 2. Reset log min-level if it's still on the old 'warning' default.
+	//    v1.0.84+ default is 'info'. Old installations have 'warning' stored
+	//    in the options table, which causes the Logs page to appear empty.
+	$stored_min_level = get_option( 'geo_forge_log_min_level', '' );
+	if ( 'warning' === $stored_min_level ) {
+		delete_option( 'geo_forge_log_min_level' );
+	}
+
+	update_option( 'geo_forge_code_version', GEO_FORGE_VERSION, true );
 }
 
 /*
