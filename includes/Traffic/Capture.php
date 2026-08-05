@@ -37,6 +37,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Capture {
 
 	/**
+	 * User-Agent tokens used by GEO KAMI's own scan engine when it probes
+	 * the site during a scan (e.g. /.well-known/mcp.json discovery checks).
+	 * These are our own tooling, not external AI visitor traffic — never
+	 * record them so the Traffic page reflects real AI agents only.
+	 */
+	private const SCANNER_UA_TOKENS = array( 'geokami', 'agentready' );
+
+	/**
 	 * Wire the capture hook. Called from GeoForge::register_hooks().
 	 */
 	public static function register(): void {
@@ -83,6 +91,11 @@ class Capture {
 	 * @return array{family:BotFamily, source:string}|null
 	 */
 	private static function detect(): ?array {
+		// GEO KAMI's own scan engine probing the site — not AI visitor traffic.
+		if ( self::is_geokami_scanner() ) {
+			return null;
+		}
+
 		// 1. Well-known route (highest priority — always record).
 		$well_known = get_query_var( Router::QUERY_VAR, '' );
 		if ( '' !== $well_known ) {
@@ -123,6 +136,20 @@ class Capture {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Is this request from GEO KAMI's own scanner? Case-insensitive match
+	 * on the documented scanner user-agents (GEO-Kami-Scanner, AgentReadyScanner).
+	 */
+	private static function is_geokami_scanner(): bool {
+		$ua = strtolower( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' ) ) );
+		foreach ( self::SCANNER_UA_TOKENS as $geo_forge_token ) {
+			if ( str_contains( $ua, $geo_forge_token ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

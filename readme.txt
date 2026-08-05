@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.106
+Stable tag:        1.0.107
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,8 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.107 =
+* Fix: GEO KAMI's own scanner probes (GEO-Kami-Scanner / AgentReadyScanner user-agents) are no longer recorded as traffic — the Traffic page and the "Missing Content — LLM 404s" card now reflect only real external AI agents, not the plugin's own scan checks.
 = 1.0.106 =
 * UI: Cover is now enabled after Audit (pass or fail) — you decide whether to take over the SEO-owned file or keep the current output. Cover stays disabled only until the first Audit runs.
 = 1.0.105 =
