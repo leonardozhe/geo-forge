@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.100
+Stable tag:        1.0.101
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,10 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.101 =
+* Fix: Scan animation now shows only inside the Scan Now button (spinner + Scanning…) — the adjacent status text no longer duplicates it.
+* Fix: Scan timestamps stored in UTC and displayed in the WordPress timezone consistently (dashboard header + score history).
+* UI: Dashboard title shows the plugin version dynamically (GEO Forge v1.0.101).
 = 1.0.100 =
 * Fix: Score history now refreshes immediately after a scan — the cached history keys are properly invalidated on completion (previously the dashboard could show stale history for up to 5 minutes).
 * UI: Scan Now button shows an inline spinner + "Scanning…" while the scan runs.

@@ -37,6 +37,16 @@ class Scanner {
 	}
 
 	/**
+	 * Convert a UTC DB timestamp to the site's configured timezone.
+	 */
+	private static function to_wp_time( ?string $value ): ?string {
+		if ( '' === $value || null === $value ) {
+			return $value;
+		}
+		return get_date_from_gmt( $value );
+	}
+
+	/**
 	 * Run a full scan end-to-end.
 	 *
 	 * @param int $max_wait_seconds How long to poll before giving up.
@@ -249,6 +259,7 @@ class Scanner {
 
 		$row = array(
 			'scan_id'          => sanitize_text_field( $result['scanId'] ?? $result['id'] ?? '' ),
+			'created_at'       => current_time( 'mysql', true ), // always UTC in the DB
 			'total_score'      => (int) ( $result['totalScore'] ?? 0 ),
 			'grade'            => sanitize_text_field( $result['grade']['grade'] ?? '' ),
 			'grade_label'      => sanitize_text_field( $result['grade']['label'] ?? '' ),
@@ -349,6 +360,9 @@ class Scanner {
 			}
 		}
 
+		$row['created_at']   = self::to_wp_time( $row['created_at'] ?? null );
+		$row['completed_at'] = self::to_wp_time( $row['completed_at'] ?? null );
+
 		wp_cache_set( 'geo_forge_last_scan', $row, 'geo-forge', 300 );
 		return $row;
 	}
@@ -377,6 +391,11 @@ class Scanner {
 		);
 
 		$result = $rows ?: array();
+		foreach ( $result as &$row ) {
+			$row['created_at'] = self::to_wp_time( $row['created_at'] ?? null );
+		}
+		unset( $row );
+
 		wp_cache_set( $cache_key, $result, 'geo-forge', 300 );
 		return $result;
 	}
@@ -421,6 +440,9 @@ class Scanner {
 				$row[ $field ] = is_array( $decoded ) ? $decoded : array();
 			}
 		}
+
+		$row['created_at']   = self::to_wp_time( $row['created_at'] ?? null );
+		$row['completed_at'] = self::to_wp_time( $row['completed_at'] ?? null );
 
 		wp_cache_set( $cache_key, $row, 'geo-forge', 300 );
 		return $row;

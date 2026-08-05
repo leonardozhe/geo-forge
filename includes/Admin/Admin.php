@@ -157,6 +157,21 @@ final class Admin {
 	}
 
 	/**
+	 * Resolve the current admin JS file for a module. Files follow the
+	 * {base}-{suffix}.js convention; the suffix changes only when the file's
+	 * content changes (cache-busting for edge caches that ignore query
+	 * strings). The actual file on disk is globbed so plugin version bumps
+	 * never break the reference.
+	 */
+	private function js_file( string $base ): string {
+		$candidates = glob( GEO_FORGE_DIR . 'assets/admin/js/' . $base . '-*.js' );
+		if ( ! empty( $candidates ) ) {
+			return GEO_FORGE_URL . 'assets/admin/js/' . basename( $candidates[0] );
+		}
+		return GEO_FORGE_URL . 'assets/admin/js/' . $base . '.js';
+	}
+
+	/**
 	 * Enqueue JS. Only on our own pages.
 	 */
 	public function enqueue_assets( string $hook ): void {
@@ -192,7 +207,7 @@ final class Admin {
 		if ( str_contains( $hook, 'geo-forge-settings' ) ) {
 			wp_enqueue_script(
 				'geo-forge-settings',
-				GEO_FORGE_URL . 'assets/admin/js/settings-' . GEO_FORGE_VERSION . '.js',
+				$this->js_file( 'settings' ),
 				array(),
 				GEO_FORGE_VERSION,
 				true
@@ -203,7 +218,7 @@ final class Admin {
 		if ( str_contains( $hook, 'geo-forge-logs' ) ) {
 			wp_enqueue_script(
 				'geo-forge-logs',
-				GEO_FORGE_URL . 'assets/admin/js/logs-' . GEO_FORGE_VERSION . '.js',
+				$this->js_file( 'logs' ),
 				array(),
 				GEO_FORGE_VERSION,
 				true
@@ -219,7 +234,7 @@ final class Admin {
 		if ( str_contains( $hook, 'geo-forge-fixes' ) ) {
 			wp_enqueue_script(
 				'geo-forge-fixer',
-				GEO_FORGE_URL . 'assets/admin/js/fix-center-' . GEO_FORGE_VERSION . '.js',
+				$this->js_file( 'fix-center' ),
 				array(),
 				GEO_FORGE_VERSION,
 				true
@@ -231,7 +246,7 @@ final class Admin {
 		if ( 'toplevel_page_geo-forge' === $hook ) {
 			wp_enqueue_script(
 				'geo-forge-dashboard',
-				GEO_FORGE_URL . 'assets/admin/js/dashboard-' . GEO_FORGE_VERSION . '.js',
+				$this->js_file( 'dashboard' ),
 				array(),
 				GEO_FORGE_VERSION,
 				true

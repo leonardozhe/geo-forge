@@ -49,7 +49,7 @@
             return;
         }
         renderScanBtn(btn, 'scanning', scanPollCount);
-        if (statusEl) { statusEl.textContent = 'Scanning… (' + scanPollCount + ')'; }
+        if (statusEl) { statusEl.textContent = ''; }
 
         fetch(restRoot + 'scan/status', {
             credentials: 'same-origin',
@@ -78,7 +78,7 @@
             stopScanPolling();
             renderScanBtn(btn, 'scanning');
             var statusEl = document.getElementById('geo-forge-scan-status');
-            if (statusEl) { statusEl.textContent = 'Starting scan…'; statusEl.style.color = '#64748b'; }
+            if (statusEl) { statusEl.textContent = ''; }
             fetch(restRoot + 'scan', {
                 method: 'POST', credentials: 'same-origin',
                 headers: { 'X-WP-Nonce': restNonce, 'Content-Type': 'application/json' }

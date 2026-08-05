@@ -89,7 +89,7 @@ $geo_forge_check_models = array(
 
 <div class="gf-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
 	<div>
-		<h1>Dashboard <span class="gf-subtitle">GEO Forge</span></h1>
+		<h1>Dashboard <span class="gf-subtitle">GEO Forge v<?php echo esc_html( GEO_FORGE_VERSION ); ?></span></h1>
 		<?php if($geo_forge_lt):?><span class="gf-muted">Last scan: <?php echo esc_html($geo_forge_lt);?></span><?php endif;?>
 	</div>
 	<div style="display:flex;align-items:center;gap:12px;">
