@@ -6,7 +6,7 @@ $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_cur
 $has_key=( '' !== $ak );
 $auto_regen=(string)Installer::get_setting('auto_regen_llms','yes');
 $auto_scan=(string)Installer::get_setting('auto_scan_enabled','yes');
-$gf_freq=(string)Installer::get_setting('scan_frequency','daily');
+$gf_freq=(string)Installer::get_setting('scan_frequency','daily');$gf_langs=(string)Installer::get_setting('llms_languages','');
 $gf_next_run=wp_next_scheduled(Scheduler::EVENT_REGENERATE);
 $gf_notice=get_transient('geo_forge_settings_notice');
 if( is_array( $gf_notice ) ){delete_transient('geo_forge_settings_notice');}
@@ -94,6 +94,12 @@ if( is_array( $gf_notice ) ){delete_transient('geo_forge_settings_notice');}
 				<option value="twicedaily" <?php selected( $gf_freq, 'twicedaily' );?>>Twice daily</option>
 				<option value="weekly" <?php selected( $gf_freq, 'weekly' );?>>Weekly</option>
 			</select>
+		</div>
+
+		<div class="gf-form-group">
+			<label for="geo_forge_llms_languages"><?php esc_html_e( 'Additional llms.txt languages', 'geo-forge' );?></label>
+			<input type="text" id="geo_forge_llms_languages" name="geo_forge_llms_languages" value="<?php echo esc_attr( $gf_langs );?>" placeholder="zh_CN,ja,fr"/>
+			<div class="gf-hint"><?php esc_html_e( 'Comma-separated locales. Each one gets a /llms-{locale}.txt variant.', 'geo-forge' );?></div>
 		</div>
 
 		<button type="submit" class="gf-btn gf-btn-primary">Save Settings</button>

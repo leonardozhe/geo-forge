@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.94
+Stable tag:        1.0.95
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,9 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.95 =
+* New: Async scans — the Scan Now button starts a scan and polls /scan/status instead of holding the request open; scheduled scans no longer block wp-cron (initiate + single follow-up event).
+* New: Multilingual llms.txt — configure extra locales (e.g. zh_CN,ja) in Settings → Automation to get /llms-{locale}.txt variants with localized headings and store URLs (Polylang/WPML aware).
 = 1.0.94 =
 * New: Scheduled jobs — daily regeneration of llms.txt, llms-full.txt, security.txt and robots.txt (local, no points consumed), plus optional scheduled GEO KAMI scans. Configurable under Settings → Automation.
 * New: llms-full.txt route with a complete product index (sitemap + full list linked from llms.txt).

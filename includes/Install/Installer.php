@@ -165,6 +165,7 @@ final class Installer {
 
 		$keys = array(
 			'api_key', 'api_base', 'auto_regen_llms', 'auto_scan_enabled', 'scan_frequency',
+			'llms_languages',
 			'auto_fix_enabled', 'auto_fix_risk_level', 'notify_score_drop',
 			'notify_threshold', 'log_min_level', 'log_retention_days',
 			'traffic_sample_rate',
@@ -238,6 +239,7 @@ final class Installer {
 		$defaults = array(
 			'geo_forge_api_base'            => 'https://api.geokami.com',
 			'geo_forge_auto_regen_llms'     => 'yes',
+			'geo_forge_llms_languages'     => '',
 			'geo_forge_auto_scan_enabled'   => 'yes',
 			'geo_forge_scan_frequency'      => 'daily',
 			'geo_forge_auto_fix_enabled'    => 'no',

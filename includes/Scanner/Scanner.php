@@ -27,6 +27,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Scanner {
 
+	/** Stores the in-flight async scan id (see start_scan()/check_scan_status()). */
+	private const PENDING_OPTION = 'geo_forge_pending_scan';
+
 	private Client $api;
 
 	public function __construct( ?Client $api = null ) {
@@ -79,6 +82,109 @@ class Scanner {
 			'pointsCost' => $response['pointsCost'] ?? 0,
 			'result'     => $result,
 		), $site_info );
+	}
+
+	/**
+	 * Start a scan asynchronously: initiate and return immediately.
+	 * The result is persisted later by check_scan_status() when the API
+	 * reports 'completed'.
+	 *
+	 * @return array{success:bool, scan_id?:string, status:string}
+	 *
+	 * @throws ApiException On API errors (propagated from Client).
+	 */
+	public function start_scan(): array {
+		$site_info = $this->collect_site_info();
+
+		Logger::info(
+			'Starting async scan.',
+			array( 'domain' => $site_info['domain'] )
+		);
+
+		$response = $this->api->initiate_scan( $site_info['domain'], false );
+		$scan_id  = sanitize_text_field( $response['scanId'] ?? '' );
+
+		if ( '' === $scan_id ) {
+			// Synchronous response — result embedded.
+			if ( isset( $response['result'] ) && is_array( $response['result'] ) ) {
+				$this->store_result( $response, $site_info );
+				return array(
+					'success' => true,
+					'scan_id' => sanitize_text_field( $response['scanId'] ?? '' ),
+					'status'  => 'completed',
+				);
+			}
+			Logger::warning( 'Scan response did not include a scanId.', array( 'response' => $response ) );
+			throw new ApiException(
+				esc_html( \GEO_Forge\Api\ErrorCode::InvalidResponse->value ),
+				esc_html__( 'Scan response did not include a scanId.', 'geo-forge' ),
+				array( 'response' => esc_html( wp_json_encode( $response ) ) )
+			);
+		}
+
+		update_option( self::PENDING_OPTION, array(
+			'scan_id'    => $scan_id,
+			'started_at' => current_time( 'mysql' ),
+		), false );
+
+		return array(
+			'success' => true,
+			'scan_id' => $scan_id,
+			'status'  => 'running',
+		);
+	}
+
+	/**
+	 * Check the in-flight scan once and persist the result when finished.
+	 *
+	 * @return array{status:string, scan_id?:string, row?:array, message?:string}
+	 */
+	public function check_scan_status(): array {
+		$pending = get_option( self::PENDING_OPTION, array() );
+		$scan_id = is_array( $pending ) ? sanitize_text_field( $pending['scan_id'] ?? '' ) : '';
+
+		if ( '' === $scan_id ) {
+			return array( 'status' => 'idle' );
+		}
+
+		try {
+			$response = $this->api->get_scan_result( $scan_id );
+		} catch ( ApiException $e ) {
+			delete_option( self::PENDING_OPTION );
+			Logger::warning(
+				'Pending scan status check failed: ' . $e->getMessage(),
+				array( 'scan_id' => $scan_id, 'code' => $e->getCodeEnum()->value )
+			);
+			return array( 'status' => 'error', 'message' => $e->getMessage() );
+		}
+
+		$status = sanitize_text_field( $response['status'] ?? '' );
+
+		if ( 'completed' === $status ) {
+			$row = $this->store_result( array(
+				'scanId'     => $scan_id,
+				'pointsCost' => $response['pointsCost'] ?? 0,
+				'result'     => $response['result'] ?? $response,
+			), $this->collect_site_info() );
+			delete_option( self::PENDING_OPTION );
+			return array(
+				'status'  => 'completed',
+				'scan_id' => $scan_id,
+				'row'     => $row,
+			);
+		}
+
+		if ( 'failed' === $status ) {
+			delete_option( self::PENDING_OPTION );
+			Logger::error( 'Scan failed on GEO KAMI side.', array( 'scan_id' => $scan_id ) );
+			return array(
+				'status'  => 'failed',
+				'scan_id' => $scan_id,
+				'message' => esc_html__( 'Scan failed on GEO KAMI side.', 'geo-forge' ),
+			);
+		}
+
+		return array( 'status' => 'running', 'scan_id' => $scan_id );
 	}
 
 	/**

@@ -39,6 +39,9 @@ class Router {
 	/** Query var we register to carry the route name through WP's rewrite layer. */
 	public const QUERY_VAR = 'geo_forge_well_known';
 
+	/** Query var carrying the locale for llms-{locale}.txt. */
+	public const LANG_QUERY_VAR = 'geo_forge_llms_lang';
+
 	/**
 	 * Map of route name → URL regex (matched against REQUEST_URI after WP normalization).
 	 * Adding a new route: add entry here + a handler in dispatch().
@@ -46,11 +49,12 @@ class Router {
 	private const ROUTES = array(
 		'llms_txt'      => '^llms\.txt/?$',
 		'llms_full_txt' => '^llms-full\.txt/?$',
+		'llms_lang_txt' => '^llms-([a-z]{2}(_[A-Z]{2})?)\.txt/?$',
 		'security_txt'  => '^\.well-known/security\.txt/?$',
 	);
 
 	/** Tracks the current set of registered routes — used for flush-on-upgrade detection. */
-	private const ROUTES_VERSION = 3;
+	private const ROUTES_VERSION = 4;
 
 	/**
 	 * Wire everything up. Called from GeoForge::register_hooks().
@@ -67,9 +71,13 @@ class Router {
 	 */
 	public static function register_rewrite_rules(): void {
 		foreach ( self::ROUTES as $name => $regex ) {
+			$target = 'index.php?' . self::QUERY_VAR . '=' . $name;
+			if ( 'llms_lang_txt' === $name ) {
+				$target .= '&' . self::LANG_QUERY_VAR . '=$matches[1]';
+			}
 			add_rewrite_rule(
 				$regex,
-				'index.php?' . self::QUERY_VAR . '=' . $name,
+				$target,
 				'top'
 			);
 		}
@@ -83,6 +91,7 @@ class Router {
 	 */
 	public static function register_query_vars( array $vars ): array {
 		$vars[] = self::QUERY_VAR;
+		$vars[] = self::LANG_QUERY_VAR;
 		return $vars;
 	}
 
@@ -95,7 +104,16 @@ class Router {
 			return;
 		}
 
-		PluginLogger::debug( 'Well-known route hit.', array( 'route' => $route ) );
+		// Language variants only exist for locales configured in Settings.
+		$locale = '';
+		if ( 'llms_lang_txt' === $route ) {
+			$locale = sanitize_text_field( get_query_var( self::LANG_QUERY_VAR, '' ) );
+			if ( ! in_array( $locale, LlmsTxt::languages(), true ) ) {
+				return;
+			}
+		}
+
+		PluginLogger::debug( 'Well-known route hit.', array( 'route' => $route, 'locale' => $locale ) );
 
 		// Log the hit to traffic (since Capture runs at priority 999 and never
 		// reaches well-known routes dispatched at priority 1).
@@ -112,6 +130,11 @@ class Router {
 
 			case 'llms_full_txt':
 				$content      = LlmsTxt::serve_full();
+				$content_type = 'text/plain; charset=utf-8';
+				break;
+
+			case 'llms_lang_txt':
+				$content      = LlmsTxt::serve_lang( $locale );
 				$content_type = 'text/plain; charset=utf-8';
 				break;
 

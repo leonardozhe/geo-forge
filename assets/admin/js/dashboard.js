@@ -6,30 +6,87 @@
     var cfg = window.GeoForgeDashboard || {};
     var restRoot = cfg.restRoot || '';
     var restNonce = cfg.restNonce || '';
-    // Scan button
+    // Scan button — async: POST /scan returns immediately, then we poll
+    // GET /scan/status every few seconds until the scan completes.
+    var scanPollTimer = null;
+    var scanPollCount = 0;
+    var SCAN_POLL_INTERVAL = 4000;
+    var SCAN_POLL_MAX = 40; // ~160s ceiling
+
+    function stopScanPolling() {
+        if (scanPollTimer) { clearInterval(scanPollTimer); scanPollTimer = null; }
+        scanPollCount = 0;
+    }
+
+    function scanDone(btn, statusEl) {
+        btn.disabled = false;
+        if (statusEl) { statusEl.textContent = '✅ Done — refreshing...'; statusEl.style.color = '#16a34a'; }
+        setTimeout(function () { location.reload(); }, 800);
+    }
+
+    function scanFailed(btn, statusEl, msg) {
+        btn.disabled = false;
+        if (statusEl) { statusEl.textContent = '❌ ' + (msg || 'Scan failed.'); statusEl.style.color = '#dc2626'; }
+    }
+
+    function pollScanStatus(btn, statusEl) {
+        scanPollCount++;
+        if (scanPollCount > SCAN_POLL_MAX) {
+            stopScanPolling();
+            btn.disabled = false;
+            if (statusEl) { statusEl.textContent = '⚠️ Scan still running — check back shortly.'; statusEl.style.color = '#d97706'; }
+            return;
+        }
+        if (statusEl) { statusEl.textContent = 'Scanning… (' + scanPollCount + ')'; }
+
+        fetch(restRoot + 'scan/status', {
+            credentials: 'same-origin',
+            headers: { 'X-WP-Nonce': restNonce }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (body) {
+            if (!body || !body.success) { throw new Error('Bad status response'); }
+            if (body.status === 'completed') {
+                stopScanPolling();
+                scanDone(btn, statusEl);
+            } else if (body.status === 'failed' || body.status === 'error') {
+                stopScanPolling();
+                scanFailed(btn, statusEl, body.message);
+            }
+        })
+        .catch(function () {
+            stopScanPolling();
+            btn.disabled = false;
+            if (statusEl) { statusEl.textContent = '❌ Network error'; statusEl.style.color = '#dc2626'; }
+        });
+    }
+
     document.querySelectorAll('#geo-forge-scan-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
+            stopScanPolling();
             btn.disabled = true;
             var statusEl = document.getElementById('geo-forge-scan-status');
-            if (statusEl) { statusEl.textContent = 'Scanning...'; statusEl.style.color = '#64748b'; }
+            if (statusEl) { statusEl.textContent = 'Starting scan…'; statusEl.style.color = '#64748b'; }
             fetch(restRoot + 'scan', {
                 method: 'POST', credentials: 'same-origin',
                 headers: { 'X-WP-Nonce': restNonce, 'Content-Type': 'application/json' }
             })
             .then(function (r) { return r.json(); })
             .then(function (body) {
-                btn.disabled = false;
-                if (body && body.success) {
-                    if (statusEl) { statusEl.textContent = '✅ Done — refreshing...'; statusEl.style.color = '#16a34a'; }
-                    setTimeout(function () { location.reload(); }, 800);
-                } else {
+                if (!body || !body.success) {
                     var msg = (body && body.error && body.error.message) || 'Scan failed.';
-                    if (statusEl) { statusEl.textContent = '❌ ' + msg; statusEl.style.color = '#dc2626'; }
+                    scanFailed(btn, statusEl, msg);
+                    return;
                 }
+                if (body.status === 'completed') {
+                    scanDone(btn, statusEl);
+                    return;
+                }
+                scanPollCount = 0;
+                scanPollTimer = setInterval(function () { pollScanStatus(btn, statusEl); }, SCAN_POLL_INTERVAL);
             })
-            .catch(function (err) {
-                btn.disabled = false;
-                if (statusEl) { statusEl.textContent = '❌ Network error'; statusEl.style.color = '#dc2626'; }
+            .catch(function () {
+                scanFailed(btn, statusEl, 'Network error');
             });
         });
     });

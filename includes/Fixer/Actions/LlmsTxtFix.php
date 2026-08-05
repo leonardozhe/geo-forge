@@ -49,8 +49,7 @@ class LlmsTxtFix implements FixInterface {
 	}
 
 	public function apply(): array {
-		$content = LlmsTxt::regenerate();
-		LlmsTxt::regenerate_full();
+		$content = LlmsTxt::regenerate_all();
 
 		return array(
 			'success'      => true,

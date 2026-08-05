@@ -52,5 +52,6 @@ flush_rewrite_rules();
 
 // --- Clear scheduled hooks ---
 wp_clear_scheduled_hook( 'geo_forge_daily_scan' );
+wp_clear_scheduled_hook( 'geo_forge_finalize_scan' );
 wp_clear_scheduled_hook( 'geo_forge_regenerate_llms' );
 wp_clear_scheduled_hook( 'geo_forge_weekly_report' );

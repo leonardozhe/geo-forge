@@ -12,6 +12,7 @@ namespace GEO_Forge\Admin;
 
 use GEO_Forge\Cron\Scheduler;
 use GEO_Forge\Install\Installer;
+use GEO_Forge\WellKnown\LlmsTxt;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -53,6 +54,17 @@ final class Settings {
 
 		$auto_regen = isset( $_POST['geo_forge_auto_regen_llms'] ) ? 'yes' : 'no';
 		$auto_scan  = isset( $_POST['geo_forge_auto_scan_enabled'] ) ? 'yes' : 'no';
+
+		// Extra llms.txt languages, e.g. "zh_CN,ja,fr". Keep only valid locales.
+		$clean_languages = array();
+		if ( isset( $_POST['geo_forge_llms_languages'] ) ) {
+			foreach ( explode( ',', sanitize_text_field( wp_unslash( $_POST['geo_forge_llms_languages'] ) ) ) as $piece ) {
+				$piece = trim( $piece );
+				if ( preg_match( '/^[a-z]{2}(_[A-Z]{2})?$/', $piece ) ) {
+					$clean_languages[] = $piece;
+				}
+			}
+		}
 		$frequency  = isset( $_POST['geo_forge_scan_frequency'] )
 			? sanitize_text_field( wp_unslash( $_POST['geo_forge_scan_frequency'] ) )
 			: 'daily';
@@ -80,11 +92,17 @@ final class Settings {
 		Installer::set_setting( 'auto_regen_llms', $auto_regen );
 		Installer::set_setting( 'auto_scan_enabled', $auto_scan );
 		Installer::set_setting( 'scan_frequency', $frequency );
+		Installer::set_setting( 'llms_languages', implode( ',', $clean_languages ) );
 
 		// 6. Keep scheduled jobs in sync with the new settings.
 		Scheduler::schedule();
 
-		// 7. Done.
+		// 7. Generate any newly configured llms.txt language variants now.
+		foreach ( $clean_languages as $locale ) {
+			LlmsTxt::regenerate_lang( $locale );
+		}
+
+		// 8. Done.
 		self::redirect_with_notice( 'updated', __( 'Settings saved.', 'geo-forge' ) );
 	}
 

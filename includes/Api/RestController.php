@@ -49,6 +49,16 @@ class RestController {
 
 		register_rest_route(
 			self::NAMESPACE,
+			'/scan/status',
+			array(
+				'methods'             => 'READABLE',
+				'callback'            => array( $this, 'handle_scan_status' ),
+				'permission_callback' => array( $this, 'check_admin_permission' ),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
 			'/scan/last',
 			array(
 				'methods'             => 'READABLE',
@@ -282,22 +292,19 @@ class RestController {
 	}
 
 	/**
-	 * POST /scan — trigger a scan synchronously and return the result row.
+	 * POST /scan — start a scan asynchronously and return immediately.
+	 * The client polls GET /scan/status until it reports 'completed'.
 	 */
 	public function handle_trigger_scan(): \WP_REST_Response {
 		try {
-			Logger::info( 'Scan triggered via REST.' );
+			Logger::info( 'Scan triggered via REST (async).' );
 			$scanner = new Scanner();
-			$row     = $scanner->run_scan();
-
-			Logger::info(
-				'Scan completed.',
-				array( 'score' => (int) ( $row['total_score'] ?? 0 ), 'grade' => $row['grade'] ?? '' )
-			);
+			$result  = $scanner->start_scan();
 
 			return new \WP_REST_Response( array(
 				'success' => true,
-				'scan'    => $this->format_scan_row( $row ),
+				'scan_id' => $result['scan_id'] ?? '',
+				'status'  => $result['status'] ?? 'running',
 			), 200 );
 		} catch ( ApiException $e ) {
 			Logger::error(
@@ -321,6 +328,32 @@ class RestController {
 				),
 			), 504 );
 		}
+	}
+
+	/**
+	 * GET /scan/status — poll the in-flight scan; persists + returns the
+	 * result row once the API reports completion.
+	 */
+	public function handle_scan_status(): \WP_REST_Response {
+		$scanner = new Scanner();
+		$status  = $scanner->check_scan_status();
+
+		$payload = array(
+			'success' => true,
+			'status'  => $status['status'] ?? 'idle',
+		);
+
+		if ( ! empty( $status['scan_id'] ) ) {
+			$payload['scan_id'] = $status['scan_id'];
+		}
+		if ( ! empty( $status['row'] ) ) {
+			$payload['scan'] = $this->format_scan_row( $status['row'] );
+		}
+		if ( ! empty( $status['message'] ) ) {
+			$payload['message'] = $status['message'];
+		}
+
+		return new \WP_REST_Response( $payload, 200 );
 	}
 
 	/**
@@ -519,8 +552,7 @@ class RestController {
 	 */
 	public function handle_regenerate_llms_txt(): \WP_REST_Response {
 		try {
-			$content = LlmsTxt::regenerate();
-			LlmsTxt::regenerate_full();
+			$content = LlmsTxt::regenerate_all();
 			return new \WP_REST_Response( array(
 				'success' => true,
 				'content' => $content,

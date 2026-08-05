@@ -34,6 +34,7 @@ final class Scheduler {
 
 	public const EVENT_REGENERATE = 'geo_forge_regenerate_llms';
 	public const EVENT_SCAN       = 'geo_forge_daily_scan';
+	public const EVENT_FINALIZE   = 'geo_forge_finalize_scan';
 
 	/** Transient prefix for the per-event re-entrancy lock. */
 	private const LOCK_TRANSIENT = 'geo_forge_cron_lock_';
@@ -45,6 +46,7 @@ final class Scheduler {
 		add_filter( 'cron_schedules', array( self::class, 'add_schedules' ) );
 		add_action( self::EVENT_REGENERATE, array( self::class, 'run_regenerate' ) );
 		add_action( self::EVENT_SCAN, array( self::class, 'run_scan' ) );
+		add_action( self::EVENT_FINALIZE, array( self::class, 'run_finalize_scan' ) );
 
 		// Self-heal after upgrades: schedule once per plugin version, on any
 		// request (Installer::activate() only runs for admins).
@@ -98,6 +100,8 @@ final class Scheduler {
 	public static function clear(): void {
 		wp_clear_scheduled_hook( self::EVENT_REGENERATE );
 		wp_clear_scheduled_hook( self::EVENT_SCAN );
+		wp_clear_scheduled_hook( self::EVENT_FINALIZE );
+		delete_option( 'geo_forge_pending_scan' );
 	}
 
 	/**
@@ -138,8 +142,7 @@ final class Scheduler {
 			$generated = array();
 
 			if ( ! LlmsTxt::is_manual() ) {
-				LlmsTxt::regenerate();
-				LlmsTxt::regenerate_full();
+				LlmsTxt::regenerate_all();
 				$generated[] = 'llms.txt';
 			}
 
@@ -186,19 +189,45 @@ final class Scheduler {
 		}
 
 		try {
+			// Initiate async — no long-running polling inside wp-cron.
 			$scanner = new Scanner( $api );
-			$row     = $scanner->run_scan( 30 );
-			Logger::info(
-				'Scheduled scan completed.',
-				array( 'score' => (int) ( $row['total_score'] ?? 0 ) )
-			);
+			$started = $scanner->start_scan();
+
+			if ( empty( $started['scan_id'] ) ) {
+				Logger::warning( 'Scheduled scan did not return a scan id.', array( 'started' => $started ) );
+				return;
+			}
+
+			// Collect the result a few minutes later via a single follow-up event.
+			wp_schedule_single_event( time() + 4 * MINUTE_IN_SECONDS, self::EVENT_FINALIZE );
+			Logger::info( 'Scheduled scan initiated.', array( 'scan_id' => $started['scan_id'] ) );
 		} catch ( \Throwable $e ) {
 			Logger::warning(
-				'Scheduled scan failed: ' . $e->getMessage(),
+				'Scheduled scan failed to start: ' . $e->getMessage(),
 				array( 'exception' => get_class( $e ) )
 			);
 		} finally {
 			self::release_lock( self::EVENT_SCAN );
+		}
+	}
+
+	/**
+	 * Persist the result of a scheduled scan started earlier.
+	 */
+	public static function run_finalize_scan(): void {
+		try {
+			$scanner = new Scanner();
+			$status  = $scanner->check_scan_status();
+
+			Logger::info(
+				'Scheduled scan finalized.',
+				array( 'status' => $status['status'] ?? 'unknown' )
+			);
+		} catch ( \Throwable $e ) {
+			Logger::warning(
+				'Scheduled scan finalize failed: ' . $e->getMessage(),
+				array( 'exception' => get_class( $e ) )
+			);
 		}
 	}
 
