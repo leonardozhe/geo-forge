@@ -31,7 +31,7 @@
         if (!row) return;
         var statusCell = row.querySelector('.geo-forge-fix-status-cell');
         if (statusCell) {
-            var labels = { applied: '✅ Applied', verified: '✅✅ Verified', rolled_back: '⏪ Rolled back', failed: '❌ Failed', pending: '○ Pending' };
+            var labels = { applied: '✅ Applied', verified: '✅✅ Verified', rolled_back: '⏪ Rolled back', failed: '❌ Failed', pending: '○ Pending', covered: '👁 Audit mode' };
             statusCell.textContent = labels[status] || status;
         }
         var isApplied = status === 'applied' || status === 'verified';

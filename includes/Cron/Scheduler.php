@@ -19,6 +19,7 @@
 namespace GEO_Forge\Cron;
 
 use GEO_Forge\Api\Client;
+use GEO_Forge\Compat\SeoDetector;
 use GEO_Forge\Install\Installer;
 use GEO_Forge\Log\Logger;
 use GEO_Forge\Scanner\Scanner;
@@ -141,9 +142,16 @@ final class Scheduler {
 		try {
 			$generated = array();
 
-			if ( ! LlmsTxt::is_manual() ) {
-				LlmsTxt::regenerate_all();
-				$generated[] = 'llms.txt';
+			// Audit mode: skip surfaces another plugin / physical file owns.
+			if ( 'geo-forge' === SeoDetector::llms_txt_owner() ) {
+				if ( ! LlmsTxt::is_manual() ) {
+					LlmsTxt::regenerate_all();
+					$generated[] = 'llms.txt';
+				}
+			} else {
+				Logger::info(
+					'Scheduled llms.txt regeneration skipped — managed by ' . SeoDetector::owner_label( SeoDetector::llms_txt_owner() ) . '.'
+				);
 			}
 
 			if ( ! SecurityTxt::is_manual() ) {
@@ -151,9 +159,15 @@ final class Scheduler {
 				$generated[] = 'security.txt';
 			}
 
-			if ( ! RobotsTxt::is_manual() ) {
-				RobotsTxt::regenerate();
-				$generated[] = 'robots.txt';
+			if ( 'geo-forge' === SeoDetector::robots_txt_owner() ) {
+				if ( ! RobotsTxt::is_manual() ) {
+					RobotsTxt::regenerate();
+					$generated[] = 'robots.txt';
+				}
+			} else {
+				Logger::info(
+					'Scheduled robots.txt regeneration skipped — managed by ' . SeoDetector::owner_label( SeoDetector::robots_txt_owner() ) . '.'
+				);
 			}
 
 			Logger::info(

@@ -22,6 +22,7 @@
 
 namespace GEO_Forge\WellKnown;
 
+use GEO_Forge\Compat\SeoDetector;
 use GEO_Forge\Log\Logger as PluginLogger;
 use GEO_Forge\Traffic\BotFamily;
 use GEO_Forge\Traffic\Store;
@@ -70,7 +71,15 @@ class Router {
 	 * Register rewrite rules. One per well-known route.
 	 */
 	public static function register_rewrite_rules(): void {
+		// If another plugin (Rank Math) or a physical file already owns
+		// /llms.txt, don't register a competing route — audit only.
+		$owns_llms = 'geo-forge' === SeoDetector::llms_txt_owner();
+
 		foreach ( self::ROUTES as $name => $regex ) {
+			if ( ! $owns_llms && in_array( $name, array( 'llms_txt', 'llms_lang_txt' ), true ) ) {
+				continue;
+			}
+
 			$target = 'index.php?' . self::QUERY_VAR . '=' . $name;
 			if ( 'llms_lang_txt' === $name ) {
 				$target .= '&' . self::LANG_QUERY_VAR . '=$matches[1]';
@@ -101,6 +110,12 @@ class Router {
 	public static function dispatch(): void {
 		$route = get_query_var( self::QUERY_VAR, '' );
 		if ( '' === $route || ! array_key_exists( $route, self::ROUTES ) ) {
+			return;
+		}
+
+		// Audit mode: another plugin or a physical file owns /llms.txt.
+		if ( in_array( $route, array( 'llms_txt', 'llms_lang_txt' ), true )
+			&& 'geo-forge' !== SeoDetector::llms_txt_owner() ) {
 			return;
 		}
 

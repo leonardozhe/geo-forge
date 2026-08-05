@@ -1,4 +1,5 @@
 <?php if(!defined('ABSPATH'))exit;
+use GEO_Forge\Compat\SeoDetector;
 use GEO_Forge\Cron\Scheduler;
 use GEO_Forge\Install\Installer;use GEO_Forge\WellKnown\LlmsTxt;use GEO_Forge\WellKnown\SecurityTxt;use GEO_Forge\WellKnown\RobotsTxt;
 $ak=(string)Installer::get_setting('api_key','');$ab=(string)Installer::get_setting('api_base','https://api.geokami.com');
@@ -7,7 +8,7 @@ $has_key=( '' !== $ak );
 $auto_regen=(string)Installer::get_setting('auto_regen_llms','yes');
 $auto_scan=(string)Installer::get_setting('auto_scan_enabled','yes');
 $gf_freq=(string)Installer::get_setting('scan_frequency','daily');$gf_langs=(string)Installer::get_setting('llms_languages','');
-$gf_next_run=wp_next_scheduled(Scheduler::EVENT_REGENERATE);
+$gf_next_run=wp_next_scheduled(Scheduler::EVENT_REGENERATE);$sd_plugin=SeoDetector::active_plugin();$sd_llms=SeoDetector::llms_txt_owner();$sd_robots=SeoDetector::robots_txt_owner();
 $gf_notice=get_transient('geo_forge_settings_notice');
 if( is_array( $gf_notice ) ){delete_transient('geo_forge_settings_notice');}
 ?>
@@ -50,6 +51,18 @@ if( is_array( $gf_notice ) ){delete_transient('geo_forge_settings_notice');}
 
 <?php if( RobotsTxt::physical_file_exists() ):?>
 <div class="notice notice-warning"><p><?php esc_html_e( 'A physical robots.txt exists in your site root — the server serves it instead of the WordPress / GEO Forge version.', 'geo-forge' );?></p></div>
+<?php endif;?>
+
+<?php if( '' !== $sd_plugin || 'geo-forge' !== $sd_llms || 'geo-forge' !== $sd_robots ):?>
+<div class="gf-card">
+	<div class="gf-card-title">SEO Compatibility</div>
+	<table class="striped" style="font-size:13px;">
+		<tr><td><strong><?php esc_html_e( 'Detected SEO plugin', 'geo-forge' );?></strong></td><td><?php echo '' !== $sd_plugin ? esc_html( SeoDetector::plugin_label( $sd_plugin ) ) : esc_html__( 'None', 'geo-forge' );?></td></tr>
+		<tr><td><strong><?php esc_html_e( 'llms.txt', 'geo-forge' );?></strong></td><td><?php echo esc_html( SeoDetector::owner_label( $sd_llms ) );?> — <?php echo 'geo-forge' === $sd_llms ? esc_html__( 'GEO Forge generates it.', 'geo-forge' ) : esc_html__( 'audit-only mode: GEO Forge will not overwrite it.', 'geo-forge' );?></td></tr>
+		<tr><td><strong><?php esc_html_e( 'robots.txt', 'geo-forge' );?></strong></td><td><?php echo esc_html( SeoDetector::owner_label( $sd_robots ) );?> — <?php echo 'geo-forge' === $sd_robots ? esc_html__( 'GEO Forge appends AI bot rules.', 'geo-forge' ) : esc_html__( 'audit-only mode: GEO Forge will not modify it.', 'geo-forge' );?></td></tr>
+		<tr><td><strong><?php esc_html_e( 'security.txt', 'geo-forge' );?></strong></td><td><?php esc_html_e( 'GEO Forge (no SEO plugin provides this).', 'geo-forge' );?></td></tr>
+	</table>
+</div>
 <?php endif;?>
 
 <div class="gf-card">
@@ -109,6 +122,12 @@ if( is_array( $gf_notice ) ){delete_transient('geo_forge_settings_notice');}
 
 <div class="gf-tab-content" id="tab-content">
 	<div id="geo-forge-editor-status" class="gf-notice" style="display:none;"></div>
+<?php if( 'geo-forge' !== $sd_llms ):?>
+<div class="notice notice-warning"><p><?php echo esc_html( sprintf( __( 'llms.txt is managed by %s — GEO Forge is in audit-only mode here. The editor below is informational only.', 'geo-forge' ), SeoDetector::owner_label( $sd_llms ) ) );?></p></div>
+<?php endif;?>
+<?php if( 'geo-forge' !== $sd_robots ):?>
+<div class="notice notice-warning"><p><?php echo esc_html( sprintf( __( 'robots.txt is managed by %s — GEO Forge is in audit-only mode and will not add AI bot rules.', 'geo-forge' ), SeoDetector::owner_label( $sd_robots ) ) );?></p></div>
+<?php endif;?>
 	<div class="gf-card">
 		<div class="gf-card-title">llms.txt</div>
 		<div class="gf-muted" style="margin-bottom:8px;">Served at <code><?php echo esc_html($lu);?></code></div>

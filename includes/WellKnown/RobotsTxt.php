@@ -11,6 +11,8 @@
 
 namespace GEO_Forge\WellKnown;
 
+use GEO_Forge\Compat\SeoDetector;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -21,9 +23,15 @@ class RobotsTxt {
 	private const SOURCE_OPTION = 'geo_forge_robots_txt_ai_rules_source';
 
 	/**
-	 * Register the robots.txt filter.
+	 * Register the robots.txt filter — only when GEO Forge owns robots.txt.
+	 * If a major SEO plugin or a physical file manages it, we switch to
+	 * audit-only mode and never fight for the output.
 	 */
 	public static function register(): void {
+		if ( 'geo-forge' !== SeoDetector::robots_txt_owner() ) {
+			return;
+		}
+
 		add_filter( 'robots_txt', array( self::class, 'filter_robots_txt' ), 30, 2 );
 	}
 

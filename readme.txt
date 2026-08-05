@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.95
+Stable tag:        1.0.96
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,8 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.96 =
+* New: Major SEO plugin detection (Rank Math / Yoast / SEOPress / AIOSEO). When another plugin or a physical file already manages llms.txt or robots.txt, GEO Forge switches that fix to audit-only mode — it stops registering competing routes, stops writing content, and flags the status as "Covered" in Optimizations and Settings instead of fighting for the output.
 = 1.0.95 =
 * New: Async scans — the Scan Now button starts a scan and polls /scan/status instead of holding the request open; scheduled scans no longer block wp-cron (initiate + single follow-up event).
 * New: Multilingual llms.txt — configure extra locales (e.g. zh_CN,ja) in Settings → Automation to get /llms-{locale}.txt variants with localized headings and store URLs (Polylang/WPML aware).

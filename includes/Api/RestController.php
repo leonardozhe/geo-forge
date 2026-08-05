@@ -19,6 +19,7 @@
 namespace GEO_Forge\Api;
 
 use GEO_Forge\Api\ApiException;
+use GEO_Forge\Compat\SeoDetector;
 use GEO_Forge\Fixer\Fixer;
 use GEO_Forge\GeoForge;
 use GEO_Forge\Log\Level;
@@ -528,6 +529,20 @@ class RestController {
 	 * POST /well-known/llms-txt — save user-edited content.
 	 */
 	public function handle_save_llms_txt( \WP_REST_Request $request ): \WP_REST_Response {
+		if ( 'geo-forge' !== SeoDetector::llms_txt_owner() ) {
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'error'   => array(
+					'code'    => 'audit_only',
+					'message' => sprintf(
+						/* translators: %s: owner label */
+						__( 'llms.txt is managed by %s — GEO Forge audits only and did not save.', 'geo-forge' ),
+						SeoDetector::owner_label( SeoDetector::llms_txt_owner() )
+					),
+				),
+			), 400 );
+		}
+
 		$content = (string) $request->get_param( 'content' );
 		LlmsTxt::save( $content );
 
@@ -551,6 +566,20 @@ class RestController {
 	 * POST /well-known/llms-txt/regenerate — rebuild from store data.
 	 */
 	public function handle_regenerate_llms_txt(): \WP_REST_Response {
+		if ( 'geo-forge' !== SeoDetector::llms_txt_owner() ) {
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'error'   => array(
+					'code'    => 'audit_only',
+					'message' => sprintf(
+						/* translators: %s: owner label */
+						__( 'llms.txt is managed by %s — GEO Forge audits only and did not regenerate.', 'geo-forge' ),
+						SeoDetector::owner_label( SeoDetector::llms_txt_owner() )
+					),
+				),
+			), 400 );
+		}
+
 		try {
 			$content = LlmsTxt::regenerate_all();
 			return new \WP_REST_Response( array(
@@ -610,6 +639,20 @@ class RestController {
 	/* ---- robots.txt handlers ---- */
 
 	public function handle_save_robots_txt( \WP_REST_Request $request ): \WP_REST_Response {
+		if ( 'geo-forge' !== SeoDetector::robots_txt_owner() ) {
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'error'   => array(
+					'code'    => 'audit_only',
+					'message' => sprintf(
+						/* translators: %s: owner label */
+						__( 'robots.txt is managed by %s — GEO Forge audits only and did not save.', 'geo-forge' ),
+						SeoDetector::owner_label( SeoDetector::robots_txt_owner() )
+					),
+				),
+			), 400 );
+		}
+
 		$content = (string) $request->get_param( 'content' );
 		RobotsTxt::save( $content );
 		return new \WP_REST_Response( array(
@@ -626,6 +669,20 @@ class RestController {
 	}
 
 	public function handle_regenerate_robots_txt(): \WP_REST_Response {
+		if ( 'geo-forge' !== SeoDetector::robots_txt_owner() ) {
+			return new \WP_REST_Response( array(
+				'success' => false,
+				'error'   => array(
+					'code'    => 'audit_only',
+					'message' => sprintf(
+						/* translators: %s: owner label */
+						__( 'robots.txt is managed by %s — GEO Forge audits only and did not regenerate.', 'geo-forge' ),
+						SeoDetector::owner_label( SeoDetector::robots_txt_owner() )
+					),
+				),
+			), 400 );
+		}
+
 		try {
 			$content = RobotsTxt::regenerate();
 			return new \WP_REST_Response( array(

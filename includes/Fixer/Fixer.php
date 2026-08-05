@@ -18,6 +18,7 @@ namespace GEO_Forge\Fixer;
 
 use GEO_Forge\Api\ApiException;
 use GEO_Forge\Api\Client;
+use GEO_Forge\Compat\SeoDetector;
 use GEO_Forge\Log\Logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -58,6 +59,19 @@ class Fixer {
 				'status'      => $this->resolve_status( $fix ),
 				'applied_at'  => $this->last_applied_at( $id ),
 			);
+
+			if ( 'covered' === $out[ $id ]['status'] ) {
+				$owner = match ( $id ) {
+					'llms_txt'  => SeoDetector::llms_txt_owner(),
+					'robots_txt'=> SeoDetector::robots_txt_owner(),
+					default     => 'external',
+				};
+				$out[ $id ]['note'] = sprintf(
+					/* translators: %s: owner label */
+					__( 'Managed by %s — GEO Forge audits only and will not overwrite it.', 'geo-forge' ),
+					SeoDetector::owner_label( $owner )
+				);
+			}
 		}
 
 		uasort(
@@ -98,7 +112,7 @@ class Fixer {
 			return array( 'success' => false, 'message' => $e->getMessage() );
 		}
 
-		$status = ! empty( $result['success'] ) ? 'applied' : 'failed';
+		$status = ! empty( $result['success'] ) ? ( $result['status'] ?? 'applied' ) : 'failed';
 		$score  = (int) ( $result['score_change'] ?? 0 );
 		$error  = ! empty( $result['success'] ) ? null : ( $result['message'] ?? '' );
 

@@ -11,6 +11,7 @@
 
 namespace GEO_Forge\Fixer\Actions;
 
+use GEO_Forge\Compat\SeoDetector;
 use GEO_Forge\Fixer\FixInterface;
 use GEO_Forge\WellKnown\LlmsTxt;
 
@@ -45,10 +46,25 @@ class LlmsTxtFix implements FixInterface {
 	}
 
 	public function get_status(): string {
+		if ( 'geo-forge' !== SeoDetector::llms_txt_owner() ) {
+			return 'covered';
+		}
 		return '' === LlmsTxt::get_current() ? 'pending' : 'applied';
 	}
 
 	public function apply(): array {
+		if ( 'geo-forge' !== SeoDetector::llms_txt_owner() ) {
+			return array(
+				'success' => true,
+				'status'  => 'covered',
+				'message' => sprintf(
+					/* translators: %s: owner label */
+					__( 'llms.txt is managed by %s — GEO Forge audits only and did not overwrite it.', 'geo-forge' ),
+					SeoDetector::owner_label( SeoDetector::llms_txt_owner() )
+				),
+			);
+		}
+
 		$content = LlmsTxt::regenerate_all();
 
 		return array(
@@ -59,6 +75,13 @@ class LlmsTxtFix implements FixInterface {
 	}
 
 	public function rollback(): array {
+		if ( 'geo-forge' !== SeoDetector::llms_txt_owner() ) {
+			return array(
+				'success' => true,
+				'message' => __( 'llms.txt is managed elsewhere — nothing to roll back (audit mode).', 'geo-forge' ),
+			);
+		}
+
 		delete_option( 'geo_forge_llms_txt' );
 		delete_option( 'geo_forge_llms_full_txt' );
 		delete_option( 'geo_forge_llms_txt_source' );

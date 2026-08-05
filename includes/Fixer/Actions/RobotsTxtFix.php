@@ -9,6 +9,7 @@
 
 namespace GEO_Forge\Fixer\Actions;
 
+use GEO_Forge\Compat\SeoDetector;
 use GEO_Forge\Fixer\FixInterface;
 use GEO_Forge\WellKnown\RobotsTxt;
 
@@ -43,10 +44,25 @@ class RobotsTxtFix implements FixInterface {
 	}
 
 	public function get_status(): string {
+		if ( 'geo-forge' !== SeoDetector::robots_txt_owner() ) {
+			return 'covered';
+		}
 		return '' === RobotsTxt::get_current() ? 'pending' : 'applied';
 	}
 
 	public function apply(): array {
+		if ( 'geo-forge' !== SeoDetector::robots_txt_owner() ) {
+			return array(
+				'success' => true,
+				'status'  => 'covered',
+				'message' => sprintf(
+					/* translators: %s: owner label */
+					__( 'robots.txt is managed by %s — GEO Forge audits only and did not modify it.', 'geo-forge' ),
+					SeoDetector::owner_label( SeoDetector::robots_txt_owner() )
+				),
+			);
+		}
+
 		RobotsTxt::regenerate();
 
 		return array(
@@ -57,6 +73,13 @@ class RobotsTxtFix implements FixInterface {
 	}
 
 	public function rollback(): array {
+		if ( 'geo-forge' !== SeoDetector::robots_txt_owner() ) {
+			return array(
+				'success' => true,
+				'message' => __( 'robots.txt is managed elsewhere — nothing to roll back (audit mode).', 'geo-forge' ),
+			);
+		}
+
 		RobotsTxt::rollback();
 		return array(
 			'success' => true,
