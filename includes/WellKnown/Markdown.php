@@ -90,6 +90,19 @@ class Markdown {
 		if ( '' === $slug ) {
 			return null;
 		}
+
+		// Homepage aliases — /index.md, /home.md, /front.md serve the front
+		// page, which is what "md variants of key pages" scanners probe.
+		if ( in_array( $slug, array( 'index', 'home', 'front' ), true ) ) {
+			$front_id = (int) get_option( 'page_on_front' );
+			if ( $front_id ) {
+				$front = get_post( $front_id );
+				if ( $front instanceof \WP_Post && 'publish' === $front->post_status ) {
+					return $front;
+				}
+			}
+		}
+
 		foreach ( array( 'product', 'page', 'post' ) as $post_type ) {
 			$post = get_page_by_path( $slug, OBJECT, $post_type );
 			if ( $post instanceof \WP_Post && 'publish' === $post->post_status ) {

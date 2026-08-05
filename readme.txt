@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.113
+Stable tag:        1.0.114
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,8 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.114 =
+* New: .md variants also serve the homepage via /index.md, /home.md and /front.md — helps "md variants of key pages" checks.
 = 1.0.113 =
 * Fix: Markdown negotiation now hooks `wp` priority 5 — `.md` variants were being 301-redirected to the homepage by Rank Math redirections (wp priority 10/11) before the plugin could serve them.
 = 1.0.112 =
