@@ -416,6 +416,15 @@ class Markdown {
 	 */
 	private static function record_traffic( int $bytes ): void {
 		$ua = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' ) );
+
+		// GEO KAMI's own scanner probes are our tooling, not AI visitor traffic.
+		$normalized = strtolower( str_replace( array( '-', ' ', '_' ), '', $ua ) );
+		foreach ( array( 'geokami', 'agentready' ) as $token ) {
+			if ( str_contains( $normalized, $token ) ) {
+				return;
+			}
+		}
+
 		Store::record(
 			BotFamily::detect( $ua ),
 			'markdown',

@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.116
+Stable tag:        1.0.117
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,8 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.117 =
+* Fix: markdown delivery traffic excludes GEO KAMI's own scanner probes, consistent with the traffic capture exclusion.
 = 1.0.116 =
 * New: successful markdown deliveries are now recorded in Traffic (source=markdown, status 200, response size) so the Traffic page reflects real markdown reads, not just failed/HTML fallbacks.
 = 1.0.115 =
