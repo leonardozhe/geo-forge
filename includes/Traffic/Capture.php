@@ -144,6 +144,9 @@ class Capture {
 	 */
 	private static function is_geokami_scanner(): bool {
 		$ua = strtolower( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' ) ) );
+		// Normalize away hyphens/spaces so GEO-Kami-Scanner, GeoKamiBot and
+		// "GEO KAMI Scanner" all match the same token.
+		$ua = str_replace( array( '-', ' ', '_' ), '', $ua );
 		foreach ( self::SCANNER_UA_TOKENS as $geo_forge_token ) {
 			if ( str_contains( $ua, $geo_forge_token ) ) {
 				return true;
