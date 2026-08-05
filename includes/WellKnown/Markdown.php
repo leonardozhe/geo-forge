@@ -16,6 +16,9 @@
 
 namespace GEO_Forge\WellKnown;
 
+use GEO_Forge\Traffic\BotFamily;
+use GEO_Forge\Traffic\Store;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -407,12 +410,53 @@ class Markdown {
 	}
 
 	/**
+	 * Record a successful markdown delivery in Traffic (source=markdown,
+	 * status 200). Without this, served markdown never reaches the Traffic
+	 * page because output() exits before the capture hook runs.
+	 */
+	private static function record_traffic( int $bytes ): void {
+		$ua = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' ) );
+		Store::record(
+			BotFamily::detect( $ua ),
+			'markdown',
+			self::current_url(),
+			200,
+			self::hash_ip(),
+			'GET',
+			$bytes
+		);
+	}
+
+	/**
+	 * Hash the remote IP with the per-site salt (same scheme as Traffic\Capture).
+	 */
+	private static function hash_ip(): string {
+		$ip   = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ) );
+		$salt = defined( 'AUTH_KEY' ) ? AUTH_KEY : 'geo-forge-default-salt';
+		if ( '' === $ip ) {
+			return str_repeat( '0', 64 );
+		}
+		return hash( 'sha256', $salt . '|' . $ip );
+	}
+
+	/**
+	 * Current request URL.
+	 */
+	private static function current_url(): string {
+		$scheme = is_ssl() ? 'https' : 'http';
+		$host   = sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ?? '' ) );
+		$uri    = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '/' ) );
+		return $scheme . '://' . $host . $uri;
+	}
+
+	/**
 	 * Send the markdown response with negotiation-aware headers.
 	 */
 	private static function output( string $markdown ): void {
 		if ( '' === $markdown ) {
 			return;
 		}
+		self::record_traffic( strlen( $markdown ) );
 		status_header( 200 );
 		header( 'Content-Type: text/markdown; charset=utf-8' );
 		header( 'Vary: Accept' );
