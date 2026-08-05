@@ -28,11 +28,14 @@ class Markdown {
 	private const SIGNAL = 'Content-Signal: ai-train=yes, search=yes, ai-input=yes';
 
 	/**
-	 * Register the negotiation hook. Runs after Router (priority 1) so
-	 * well-known routes keep priority, before normal page render.
+	 * Register the negotiation hook. Runs on `wp` at priority 5 — after the
+	 * main query is resolved but BEFORE Rank Math's redirections (wp p10/p11),
+	 * which would otherwise 301 `.md` URLs to the homepage before we can serve
+	 * them. Accept/`.md` requests never reach template_redirect on sites where
+	 * Rank Math redirection is active, so `wp` is the reliable place to act.
 	 */
 	public static function register(): void {
-		add_action( 'template_redirect', array( self::class, 'maybe_serve' ), 5 );
+		add_action( 'wp', array( self::class, 'maybe_serve' ), 5 );
 	}
 
 	public static function is_enabled(): bool {

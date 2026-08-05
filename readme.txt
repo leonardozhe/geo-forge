@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.112
+Stable tag:        1.0.113
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,8 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.113 =
+* Fix: Markdown negotiation now hooks `wp` priority 5 — `.md` variants were being 301-redirected to the homepage by Rank Math redirections (wp priority 10/11) before the plugin could serve them.
 = 1.0.112 =
 * New: Content-Signal header (ai-train=yes, search=yes, ai-input=yes — maximum visibility) emitted on all pages; toggle in Settings → AI Content Delivery.
 * New: Markdown negotiation — products and pages are served as clean markdown when AI agents send Accept: text/markdown, plus /{slug}.md variants; toggle in Settings → AI Content Delivery and Fix Center.
