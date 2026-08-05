@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.97
+Stable tag:        1.0.98
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,8 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.98 =
+* Fix: Admin JS now uses version-stamped filenames so Cloudflare (with "Ignore query string") and other edge caches always pick up updated scripts instead of serving stale copies for weeks.
 = 1.0.97 =
 * New: Covered (audit) mode workflow — when another plugin or a physical file manages llms.txt / robots.txt, run Audit to check the output against GEO Forge's standard, then Cover (override) when it falls short or Ignore when it's fine. No more blind "don't fight": the decision is explicit and reversible.
 * New: Traffic → Recent Activity pagination (prev/next + page count, keeps bot family / source filters).

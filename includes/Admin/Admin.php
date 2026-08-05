@@ -192,7 +192,7 @@ final class Admin {
 		if ( str_contains( $hook, 'geo-forge-settings' ) ) {
 			wp_enqueue_script(
 				'geo-forge-settings',
-				GEO_FORGE_URL . 'assets/admin/js/settings.js',
+				GEO_FORGE_URL . 'assets/admin/js/settings-' . GEO_FORGE_VERSION . '.js',
 				array(),
 				GEO_FORGE_VERSION,
 				true
@@ -203,7 +203,7 @@ final class Admin {
 		if ( str_contains( $hook, 'geo-forge-logs' ) ) {
 			wp_enqueue_script(
 				'geo-forge-logs',
-				GEO_FORGE_URL . 'assets/admin/js/logs.js',
+				GEO_FORGE_URL . 'assets/admin/js/logs-' . GEO_FORGE_VERSION . '.js',
 				array(),
 				GEO_FORGE_VERSION,
 				true
@@ -219,7 +219,7 @@ final class Admin {
 		if ( str_contains( $hook, 'geo-forge-fixes' ) ) {
 			wp_enqueue_script(
 				'geo-forge-fixer',
-				GEO_FORGE_URL . 'assets/admin/js/fix-center.js',
+				GEO_FORGE_URL . 'assets/admin/js/fix-center-' . GEO_FORGE_VERSION . '.js',
 				array(),
 				GEO_FORGE_VERSION,
 				true
@@ -231,7 +231,7 @@ final class Admin {
 		if ( 'toplevel_page_geo-forge' === $hook ) {
 			wp_enqueue_script(
 				'geo-forge-dashboard',
-				GEO_FORGE_URL . 'assets/admin/js/dashboard.js',
+				GEO_FORGE_URL . 'assets/admin/js/dashboard-' . GEO_FORGE_VERSION . '.js',
 				array(),
 				GEO_FORGE_VERSION,
 				true
