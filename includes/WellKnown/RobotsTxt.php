@@ -17,13 +17,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class RobotsTxt {
 
-	private const OPTION = 'geo_forge_robots_txt_ai_rules';
+	private const OPTION        = 'geo_forge_robots_txt_ai_rules';
+	private const SOURCE_OPTION = 'geo_forge_robots_txt_ai_rules_source';
 
 	/**
 	 * Register the robots.txt filter.
 	 */
 	public static function register(): void {
-		add_filter( 'robots_txt', array( self::class, 'filter_robots_txt' ), 10, 2 );
+		add_filter( 'robots_txt', array( self::class, 'filter_robots_txt' ), 30, 2 );
 	}
 
 	/**
@@ -93,7 +94,8 @@ class RobotsTxt {
 	 */
 	public static function regenerate(): string {
 		$rules = self::generate();
-		update_option( self::OPTION, $rules );
+		update_option( self::OPTION, $rules, false );
+		update_option( self::SOURCE_OPTION, 'generated', false );
 		return $rules;
 	}
 
@@ -101,7 +103,8 @@ class RobotsTxt {
 	 * Save user-edited rules.
 	 */
 	public static function save( string $rules ): void {
-		update_option( self::OPTION, $rules );
+		update_option( self::OPTION, $rules, false );
+		update_option( self::SOURCE_OPTION, 'manual', false );
 	}
 
 	/**
@@ -116,5 +119,21 @@ class RobotsTxt {
 	 */
 	public static function rollback(): void {
 		delete_option( self::OPTION );
+		delete_option( self::SOURCE_OPTION );
+	}
+
+	/**
+	 * Was the AI-bot block last written by the user via the editor?
+	 */
+	public static function is_manual(): bool {
+		return 'manual' === get_option( self::SOURCE_OPTION, '' );
+	}
+
+	/**
+	 * Is there a physical robots.txt in the web root? If so the web server
+	 * serves it directly and the robots_txt filter never runs.
+	 */
+	public static function physical_file_exists(): bool {
+		return file_exists( ABSPATH . 'robots.txt' );
 	}
 }

@@ -45,11 +45,12 @@ class Router {
 	 */
 	private const ROUTES = array(
 		'llms_txt'      => '^llms\.txt/?$',
+		'llms_full_txt' => '^llms-full\.txt/?$',
 		'security_txt'  => '^\.well-known/security\.txt/?$',
 	);
 
 	/** Tracks the current set of registered routes — used for flush-on-upgrade detection. */
-	private const ROUTES_VERSION = 2;
+	private const ROUTES_VERSION = 3;
 
 	/**
 	 * Wire everything up. Called from GeoForge::register_hooks().
@@ -107,6 +108,11 @@ class Router {
 			case 'llms_txt':
 				$content      = LlmsTxt::serve();
 				$content_type = 'text/plain; charset=utf-8'; // llms.txt spec mandates text/plain
+				break;
+
+			case 'llms_full_txt':
+				$content      = LlmsTxt::serve_full();
+				$content_type = 'text/plain; charset=utf-8';
 				break;
 
 			case 'security_txt':

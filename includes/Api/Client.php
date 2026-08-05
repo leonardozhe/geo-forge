@@ -39,7 +39,14 @@ class Client {
 		int $max_retries = 3
 	) {
 		$this->api_base    = '' !== $api_base ? untrailingslashit( $api_base ) : (string) Installer::get_setting( 'api_base', 'https://api.geokami.com' );
-		$this->api_key     = $api_key ?: (string) Installer::get_setting( 'api_key', '' );
+
+		// API keys are encrypted at rest (see Installer::encrypt_secret()).
+		// Legacy plaintext values are migrated on first use.
+		$stored_key = (string) Installer::get_setting( 'api_key', '' );
+		$this->api_key = $api_key ?: Installer::decrypt_secret( $stored_key );
+		if ( '' === $api_key && '' !== $stored_key && ! str_starts_with( $stored_key, Installer::ENCRYPT_PREFIX ) ) {
+			Installer::set_setting( 'api_key', Installer::encrypt_secret( $this->api_key ) );
+		}
 		$this->timeout     = $timeout;
 		$this->max_retries = $max_retries;
 	}

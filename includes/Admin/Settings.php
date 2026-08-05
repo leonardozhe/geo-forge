@@ -10,6 +10,7 @@
 
 namespace GEO_Forge\Admin;
 
+use GEO_Forge\Cron\Scheduler;
 use GEO_Forge\Install\Installer;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -21,6 +22,8 @@ final class Settings {
 	private const FORM_ACTION = 'geo_forge_save_settings';
 	private const NONCE_FIELD = 'geo_forge_settings_nonce';
 	private const REDIRECT_TO = 'geo-forge-settings';
+
+	private const SCAN_FREQUENCIES = array( 'daily', 'twicedaily', 'weekly' );
 
 	/** Wire the handler in. Called from Admin::register(). */
 	public static function register(): void {
@@ -48,6 +51,15 @@ final class Settings {
 			? esc_url_raw( wp_unslash( $_POST['geo_forge_api_base'] ) )
 			: 'https://api.geokami.com';
 
+		$auto_regen = isset( $_POST['geo_forge_auto_regen_llms'] ) ? 'yes' : 'no';
+		$auto_scan  = isset( $_POST['geo_forge_auto_scan_enabled'] ) ? 'yes' : 'no';
+		$frequency  = isset( $_POST['geo_forge_scan_frequency'] )
+			? sanitize_text_field( wp_unslash( $_POST['geo_forge_scan_frequency'] ) )
+			: 'daily';
+		if ( ! in_array( $frequency, self::SCAN_FREQUENCIES, true ) ) {
+			$frequency = 'daily';
+		}
+
 		// 4. Light validation on the key shape.
 		if ( '' !== $api_key && ! preg_match( '/^gk_[A-Za-z0-9]{32,}$/', $api_key ) ) {
 			self::redirect_with_notice( 'error', __( 'API key must start with `gk_` followed by at least 32 alphanumeric characters.', 'geo-forge' ) );
@@ -59,11 +71,20 @@ final class Settings {
 			return;
 		}
 
-		// 5. Persist to both settings table AND wp_options (backward compat).
-		Installer::set_setting( 'api_key', $api_key );
+		// 5. Persist. The API key is encrypted at rest; an empty field means
+		//    "keep the existing key" — never overwrite with blank.
+		if ( '' !== $api_key ) {
+			Installer::set_setting( 'api_key', Installer::encrypt_secret( $api_key ) );
+		}
 		Installer::set_setting( 'api_base', '' !== $api_base ? $api_base : 'https://api.geokami.com' );
+		Installer::set_setting( 'auto_regen_llms', $auto_regen );
+		Installer::set_setting( 'auto_scan_enabled', $auto_scan );
+		Installer::set_setting( 'scan_frequency', $frequency );
 
-		// 6. Done.
+		// 6. Keep scheduled jobs in sync with the new settings.
+		Scheduler::schedule();
+
+		// 7. Done.
 		self::redirect_with_notice( 'updated', __( 'Settings saved.', 'geo-forge' ) );
 	}
 
@@ -78,8 +99,8 @@ final class Settings {
 
 		$url = add_query_arg(
 			array(
-				'page'                    => self::REDIRECT_TO,
-				'geo_forge_notice'        => 1,
+				'page'             => self::REDIRECT_TO,
+				'geo_forge_notice' => 1,
 			),
 			admin_url( 'admin.php' )
 		);

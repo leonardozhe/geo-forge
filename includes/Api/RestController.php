@@ -520,6 +520,7 @@ class RestController {
 	public function handle_regenerate_llms_txt(): \WP_REST_Response {
 		try {
 			$content = LlmsTxt::regenerate();
+			LlmsTxt::regenerate_full();
 			return new \WP_REST_Response( array(
 				'success' => true,
 				'content' => $content,

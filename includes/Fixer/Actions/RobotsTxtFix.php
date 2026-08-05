@@ -31,7 +31,7 @@ class RobotsTxtFix implements FixInterface {
 	}
 
 	public function get_risk_level(): string {
-		return 'none';
+		return 'low'; // modifies the public robots.txt output
 	}
 
 	public function get_priority(): int {

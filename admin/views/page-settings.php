@@ -1,7 +1,15 @@
 <?php if(!defined('ABSPATH'))exit;
+use GEO_Forge\Cron\Scheduler;
 use GEO_Forge\Install\Installer;use GEO_Forge\WellKnown\LlmsTxt;use GEO_Forge\WellKnown\SecurityTxt;use GEO_Forge\WellKnown\RobotsTxt;
 $ak=(string)Installer::get_setting('api_key','');$ab=(string)Installer::get_setting('api_base','https://api.geokami.com');
 $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_current();$lu=home_url('/llms.txt');
+$has_key=( '' !== $ak );
+$auto_regen=(string)Installer::get_setting('auto_regen_llms','yes');
+$auto_scan=(string)Installer::get_setting('auto_scan_enabled','yes');
+$gf_freq=(string)Installer::get_setting('scan_frequency','daily');
+$gf_next_run=wp_next_scheduled(Scheduler::EVENT_REGENERATE);
+$gf_notice=get_transient('geo_forge_settings_notice');
+if( is_array( $gf_notice ) ){delete_transient('geo_forge_settings_notice');}
 ?>
 <div class="geo-forge-wrap">
 <div class="gf-header"><h1>Settings <span class="gf-subtitle">GEO Forge</span></h1></div>
@@ -13,7 +21,7 @@ $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_cur
 </div>
 
 <div class="gf-tab-content active" id="tab-api">
-<?php if(!$ak):?>
+<?php if(!$has_key):?>
 <div class="gf-card gf-promo">
 	<div class="gf-card-title" style="color:#fff;">🔑 Get Your GEO KAMI API Key</div>
 	<p>Sign up for free and get 100 points (5 comprehensive scans).</p>
@@ -28,6 +36,22 @@ $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_cur
 
 <?php settings_errors('geo_forge');?>
 
+<?php if( is_array( $gf_notice ) ):?>
+<div class="notice notice-<?php echo 'error' === $gf_notice['type'] ? 'error' : 'success';?>"><p><?php echo esc_html( $gf_notice['message'] );?></p></div>
+<?php endif;?>
+
+<?php if( '' === (string) get_option('permalink_structure','') ):?>
+<div class="notice notice-warning"><p><?php esc_html_e( 'Pretty permalinks are required for the virtual /llms.txt and /.well-known/* routes. Enable them under Settings → Permalinks.', 'geo-forge' );?></p></div>
+<?php endif;?>
+
+<?php if( LlmsTxt::physical_file_exists() ):?>
+<div class="notice notice-warning"><p><?php esc_html_e( 'A physical llms.txt exists in your site root — the server serves it instead of the GEO Forge virtual route.', 'geo-forge' );?></p></div>
+<?php endif;?>
+
+<?php if( RobotsTxt::physical_file_exists() ):?>
+<div class="notice notice-warning"><p><?php esc_html_e( 'A physical robots.txt exists in your site root — the server serves it instead of the WordPress / GEO Forge version.', 'geo-forge' );?></p></div>
+<?php endif;?>
+
 <div class="gf-card">
 	<form method="post" action="<?php echo esc_url(admin_url('admin-post.php'));?>">
 		<?php wp_nonce_field('geo_forge_save_settings','geo_forge_settings_nonce');?>
@@ -36,17 +60,40 @@ $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_cur
 		<div class="gf-form-group">
 			<label for="geo_forge_api_key">GEO KAMI API Key</label>
 			<div class="gf-form-inline">
-				<input type="password" id="geo_forge_api_key" name="geo_forge_api_key" value="<?php echo esc_attr($ak);?>" placeholder="gk_xxxxxxxxxxxxxxx" style="flex:1;"/>
+				<input type="password" id="geo_forge_api_key" name="geo_forge_api_key" placeholder="<?php echo esc_attr( $has_key ? '•••••••••••••••• (saved)' : 'gk_xxxxxxxxxxxxxxx' );?>" style="flex:1;"/>
 				<button type="button" id="geo-forge-health-btn" class="gf-btn">Health Check</button>
 				<span id="geo-forge-health-status" style="font-size:12px;"></span>
 			</div>
-			<div class="gf-hint">35-character API key starting with gk_.</div>
+			<div class="gf-hint"><?php esc_html_e( 'Stored encrypted. Leave blank to keep the existing key.', 'geo-forge' );?></div>
 		</div>
 
 		<div class="gf-form-group">
 			<label for="geo_forge_api_base">API Base URL</label>
 			<input type="url" id="geo_forge_api_base" name="geo_forge_api_base" value="<?php echo esc_attr($ab);?>"/>
 			<div class="gf-hint">Default: https://api.geokami.com</div>
+		</div>
+
+		<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;"/>
+
+		<div class="gf-card-title">Automation</div>
+
+		<div class="gf-form-group">
+			<label><input type="checkbox" name="geo_forge_auto_regen_llms" value="1" <?php checked( $auto_regen, 'yes' );?>/> <?php esc_html_e( 'Regenerate llms.txt, llms-full.txt, security.txt and robots.txt daily', 'geo-forge' );?></label>
+			<div class="gf-hint"><?php esc_html_e( 'Local only — no GEO KAMI points used. Files you edited by hand are kept.', 'geo-forge' );?><?php if( $gf_next_run ):?> <?php esc_html_e( 'Next run:', 'geo-forge' );?> <?php echo esc_html( wp_date( get_option('date_format') . ' ' . get_option('time_format'), $gf_next_run ) );?><?php endif;?></div>
+		</div>
+
+		<div class="gf-form-group">
+			<label><input type="checkbox" name="geo_forge_auto_scan_enabled" value="1" <?php checked( $auto_scan, 'yes' );?>/> <?php esc_html_e( 'Enable scheduled GEO KAMI scans', 'geo-forge' );?></label>
+			<div class="gf-hint"><?php esc_html_e( 'Consumes scan points from your GEO KAMI account.', 'geo-forge' );?></div>
+		</div>
+
+		<div class="gf-form-group">
+			<label for="geo_forge_scan_frequency"><?php esc_html_e( 'Scan frequency', 'geo-forge' );?></label>
+			<select id="geo_forge_scan_frequency" name="geo_forge_scan_frequency">
+				<option value="daily" <?php selected( $gf_freq, 'daily' );?>>Daily</option>
+				<option value="twicedaily" <?php selected( $gf_freq, 'twicedaily' );?>>Twice daily</option>
+				<option value="weekly" <?php selected( $gf_freq, 'weekly' );?>>Weekly</option>
+			</select>
 		</div>
 
 		<button type="submit" class="gf-btn gf-btn-primary">Save Settings</button>

@@ -60,6 +60,7 @@ class SecurityTxtFix implements FixInterface {
 
 	public function rollback(): array {
 		delete_option( 'geo_forge_security_txt' );
+		delete_option( 'geo_forge_security_txt_source' );
 		return array(
 			'success' => true,
 			'message' => __( 'security.txt removed.', 'geo-forge' ),

@@ -11,6 +11,7 @@
 namespace GEO_Forge;
 
 use GEO_Forge\Admin\Admin;
+use GEO_Forge\Cron\Scheduler;
 use GEO_Forge\Api\RestController;
 use GEO_Forge\Fixer\Actions\ContentSignalsFix;
 use GEO_Forge\Fixer\Actions\LlmsTxtFix;
@@ -76,6 +77,9 @@ final class GeoForge {
 		// Capture fatals in our own code. Registered early — runs on every request,
 		// including cron and REST. Cheap when there's no fatal.
 		ErrorCapture::register();
+
+		// Scheduled jobs: periodic llms.txt regeneration + optional auto-scan.
+		Scheduler::register();
 
 		// Virtual routes for /.well-known/* and /llms.txt.
 		Router::register();

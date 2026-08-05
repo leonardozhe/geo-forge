@@ -40,7 +40,7 @@ class ContentSignals {
 		$last_scan = (string) get_option( 'geo_forge_last_scan_time', '' );
 
 		echo '<meta name="geo_forge:ai_ready" content="true" />' . "\n";
-		echo '<meta name="geo_forge:scan_version" content="1.0" />' . "\n";
+		echo '<meta name="geo_forge:scan_version" content="' . esc_attr( GEO_FORGE_VERSION ) . '" />' . "\n";
 
 		if ( ! empty( $last_scan ) ) {
 			echo '<meta name="geo_forge:last_scan" content="' . esc_attr( $last_scan ) . '" />' . "\n";

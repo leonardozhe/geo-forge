@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.93
+Stable tag:        1.0.94
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,14 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.94 =
+* New: Scheduled jobs — daily regeneration of llms.txt, llms-full.txt, security.txt and robots.txt (local, no points consumed), plus optional scheduled GEO KAMI scans. Configurable under Settings → Automation.
+* New: llms-full.txt route with a complete product index (sitemap + full list linked from llms.txt).
+* Fix: SEO plugin compatibility — robots.txt AI rules now append after Rank Math / Yoast output instead of being overwritten.
+* Fix: Structured data now merges aggregateRating into WooCommerce's Product schema (and Rank Math's schema graph) instead of emitting a duplicate JSON-LD block.
+* Fix: API key is now encrypted at rest; the Settings page no longer echoes it back.
+* Fix: llms.txt / security.txt / robots.txt options are no longer autoloaded (performance).
+* Fix: Settings page shows save confirmation and compatibility warnings (physical files, plain permalinks).
 = 1.0.93 =
 * Fix: All view files now use full `geo_forge_` prefix (WordPress standard) instead of `gf_`.
 * Fix: Added wp_cache_get/set to all SELECT queries in Logger.php (reset, prune, recent).

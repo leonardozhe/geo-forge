@@ -12,6 +12,7 @@
 
 namespace GEO_Forge\Install;
 
+use GEO_Forge\Cron\Scheduler;
 use GEO_Forge\GeoForge;
 use GEO_Forge\WellKnown\Router;
 
@@ -20,6 +21,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class Installer {
+
+	/**
+	 * Prefix marking an encrypted-at-rest secret (see encrypt_secret()).
+	 */
+	public const ENCRYPT_PREFIX = 'gf_enc:';
 
 	/**
 	 * Runs on plugin activation.
@@ -35,6 +41,10 @@ final class Installer {
 		self::create_tables();
 		self::seed_defaults();
 		self::migrate_settings_to_table();
+		self::migrate_api_key_encryption();
+
+		// Keep scheduled jobs in sync with the current settings.
+		Scheduler::schedule();
 
 		// Rebuild WordPress's rewrite cache so our virtual routes work immediately.
 		Router::flush_rules();
@@ -46,8 +56,7 @@ final class Installer {
 	 * so re-activating is cheap and user settings persist across disable/enable.
 	 */
 	public static function deactivate(): void {
-		wp_clear_scheduled_hook( 'geo_forge_daily_scan' );
-		wp_clear_scheduled_hook( 'geo_forge_weekly_report' );
+		Scheduler::clear();
 		Router::flush_rules();
 	}
 
@@ -155,7 +164,7 @@ final class Installer {
 		$table = $wpdb->prefix . 'geo_forge_settings';
 
 		$keys = array(
-			'api_key', 'api_base', 'auto_scan_enabled', 'scan_frequency',
+			'api_key', 'api_base', 'auto_regen_llms', 'auto_scan_enabled', 'scan_frequency',
 			'auto_fix_enabled', 'auto_fix_risk_level', 'notify_score_drop',
 			'notify_threshold', 'log_min_level', 'log_retention_days',
 			'traffic_sample_rate',
@@ -228,6 +237,7 @@ final class Installer {
 	private static function seed_defaults(): void {
 		$defaults = array(
 			'geo_forge_api_base'            => 'https://api.geokami.com',
+			'geo_forge_auto_regen_llms'     => 'yes',
 			'geo_forge_auto_scan_enabled'   => 'yes',
 			'geo_forge_scan_frequency'      => 'daily',
 			'geo_forge_auto_fix_enabled'    => 'no',
@@ -244,5 +254,96 @@ final class Installer {
 				update_option( $option_name, $default_value );
 			}
 		}
+	}
+
+	/**
+	 * Encrypt a secret (API key) at rest.
+	 * AES-256-CTR with WordPress salts when OpenSSL is available; a reversible
+	 * XOR fallback otherwise. Never stored in plaintext (per AGENTS.md).
+	 */
+	public static function encrypt_secret( string $plain ): string {
+		if ( '' === $plain ) {
+			return '';
+		}
+
+		$iv = random_bytes( 16 );
+
+		if ( function_exists( 'openssl_encrypt' ) ) {
+			$payload = openssl_encrypt( $plain, 'aes-256-ctr', wp_salt( 'auth' ), OPENSSL_RAW_DATA, $iv );
+		} else {
+			$payload = self::xor_obfuscate( $plain );
+		}
+
+		return self::ENCRYPT_PREFIX . base64_encode( $iv . $payload );
+	}
+
+	/**
+	 * Decrypt a secret stored by encrypt_secret(). Plaintext (legacy) values
+	 * are returned as-is so old installs keep working until migration.
+	 */
+	public static function decrypt_secret( string $stored ): string {
+		if ( '' === $stored || ! str_starts_with( $stored, self::ENCRYPT_PREFIX ) ) {
+			return $stored;
+		}
+
+		$raw = base64_decode( substr( $stored, strlen( self::ENCRYPT_PREFIX ) ), true );
+		if ( false === $raw || strlen( $raw ) < 16 ) {
+			return '';
+		}
+
+		$iv      = substr( $raw, 0, 16 );
+		$payload = substr( $raw, 16 );
+
+		if ( function_exists( 'openssl_decrypt' ) ) {
+			$plain = openssl_decrypt( $payload, 'aes-256-ctr', wp_salt( 'auth' ), OPENSSL_RAW_DATA, $iv );
+		} else {
+			$plain = self::xor_deobfuscate( $payload );
+		}
+
+		return false === $plain ? '' : $plain;
+	}
+
+	/**
+	 * Upgrade a legacy plaintext API key to encrypted-at-rest storage.
+	 * Idempotent; safe to call on every activation/upgrade.
+	 */
+	private static function migrate_api_key_encryption(): void {
+		$stored = (string) self::get_setting( 'api_key', '' );
+		if ( '' === $stored || str_starts_with( $stored, self::ENCRYPT_PREFIX ) ) {
+			return;
+		}
+
+		self::set_setting( 'api_key', self::encrypt_secret( $stored ) );
+	}
+
+	/**
+	 * Reversible XOR obfuscation for hosts without OpenSSL. Not cryptography,
+	 * but keeps the key out of plaintext at rest.
+	 */
+	private static function xor_obfuscate( string $plain ): string {
+		$key = wp_salt( 'auth' );
+		$out = '';
+		$len = strlen( $key );
+
+		for ( $i = 0, $n = strlen( $plain ); $i < $n; $i++ ) {
+			$out .= $plain[ $i ] ^ $key[ $i % $len ];
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Reverse xor_obfuscate().
+	 */
+	private static function xor_deobfuscate( string $payload ): string {
+		$key = wp_salt( 'auth' );
+		$out = '';
+		$len = strlen( $key );
+
+		for ( $i = 0, $n = strlen( $payload ); $i < $n; $i++ ) {
+			$out .= $payload[ $i ] ^ $key[ $i % $len ];
+		}
+
+		return $out;
 	}
 }

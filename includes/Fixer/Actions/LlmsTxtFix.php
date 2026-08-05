@@ -3,8 +3,8 @@
  * Fix action: llms.txt.
  *
  * Wraps the existing WellKnown\LlmsTxt generator. Apply = regenerate + save.
- * Rollback = delete the stored option (the virtual route returns an empty
- * spec-valid document in that case — see LlmsTxt::serve()).
+ * Rollback = delete the stored options (the virtual route returns a minimal
+ * placeholder document in that case — see LlmsTxt::serve()).
  *
  * @package GEO_Forge
  */
@@ -50,6 +50,7 @@ class LlmsTxtFix implements FixInterface {
 
 	public function apply(): array {
 		$content = LlmsTxt::regenerate();
+		LlmsTxt::regenerate_full();
 
 		return array(
 			'success'      => true,
@@ -60,6 +61,8 @@ class LlmsTxtFix implements FixInterface {
 
 	public function rollback(): array {
 		delete_option( 'geo_forge_llms_txt' );
+		delete_option( 'geo_forge_llms_full_txt' );
+		delete_option( 'geo_forge_llms_txt_source' );
 		return array(
 			'success' => true,
 			'message' => __( 'llms.txt removed.', 'geo-forge' ),

@@ -21,7 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class SecurityTxt {
 
-	private const OPTION = 'geo_forge_security_txt';
+	private const OPTION        = 'geo_forge_security_txt';
+	private const SOURCE_OPTION = 'geo_forge_security_txt_source';
 
 	/**
 	 * Serve stored content. Returns a minimal RFC-compliant document if
@@ -82,7 +83,8 @@ class SecurityTxt {
 	 */
 	public static function regenerate(): string {
 		$content = self::generate();
-		update_option( self::OPTION, $content );
+		update_option( self::OPTION, $content, false );
+		update_option( self::SOURCE_OPTION, 'generated', false );
 
 		Logger::info(
 			'security.txt regenerated.',
@@ -97,11 +99,19 @@ class SecurityTxt {
 	 */
 	public static function save( string $content ): void {
 		$lines = array_map( 'rtrim', explode( "\n", $content ) );
-		update_option( self::OPTION, implode( "\n", $lines ) );
+		update_option( self::OPTION, implode( "\n", $lines ), false );
+		update_option( self::SOURCE_OPTION, 'manual', false );
 		Logger::info( 'security.txt saved from editor.', array( 'bytes' => strlen( $content ) ) );
 	}
 
 	public static function get_current(): string {
 		return (string) get_option( self::OPTION, '' );
+	}
+
+	/**
+	 * Was security.txt last written by the user via the editor?
+	 */
+	public static function is_manual(): bool {
+		return 'manual' === get_option( self::SOURCE_OPTION, '' );
 	}
 }
