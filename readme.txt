@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.114
+Stable tag:        1.0.115
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,8 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.115 =
+* Fix: markdown product price/categories decode HTML entities (&#36;18.95 → $18.95).
 = 1.0.114 =
 * New: .md variants also serve the homepage via /index.md, /home.md and /front.md — helps "md variants of key pages" checks.
 = 1.0.113 =

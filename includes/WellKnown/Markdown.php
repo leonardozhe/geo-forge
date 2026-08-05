@@ -140,7 +140,7 @@ class Markdown {
 
 		$price = $product->get_price();
 		if ( '' !== $price && null !== $price ) {
-			$lines[] = '**Price:** ' . wp_strip_all_tags( wc_price( $price ) );
+			$lines[] = '**Price:** ' . html_entity_decode( wp_strip_all_tags( wc_price( $price ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 			$lines[] = '';
 		}
 
@@ -157,7 +157,7 @@ class Markdown {
 
 		$categories = wc_get_product_category_list( $product->get_id(), ', ' );
 		if ( $categories ) {
-			$lines[] = '**Categories:** ' . wp_strip_all_tags( $categories );
+			$lines[] = '**Categories:** ' . html_entity_decode( wp_strip_all_tags( $categories ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 			$lines[] = '';
 		}
 
