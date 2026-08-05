@@ -62,11 +62,15 @@ class Capture {
 		$url     = self::current_url();
 		$method  = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) );
 
+		// Record the real outcome. 404s are high-value signals — the agent
+		// asked for something we don't provide.
+		$status = is_404() ? 404 : 200;
+
 		Store::record(
 			$detection['family'],
 			$detection['source'],
 			$url,
-			200, // intended status at this point
+			$status,
 			$ip_hash,
 			(string) $method,
 			null
@@ -82,6 +86,18 @@ class Capture {
 		// 1. Well-known route (highest priority — always record).
 		$well_known = get_query_var( Router::QUERY_VAR, '' );
 		if ( '' !== $well_known ) {
+			return array(
+				'family' => self::family_from_ua(),
+				'source' => 'well_known',
+			);
+		}
+
+		// 1b. Well-known-style paths we do NOT serve (e.g. /.well-known/mcp.json,
+		//     a2a.json, llm*.txt variants) — AI agents probing for data we don't
+		//     provide. Recorded as well_known so the Traffic page can flag them.
+		$path = (string) ( wp_parse_url( self::current_url(), PHP_URL_PATH ) ?? '' );
+		if ( preg_match( '#(^|/)\.well-known/[A-Za-z0-9._-]+(\.json|\.txt)?$#', $path )
+			|| preg_match( '#/llm?s?[-A-Za-z0-9._]*\.txt$#', $path ) ) {
 			return array(
 				'family' => self::family_from_ua(),
 				'source' => 'well_known',

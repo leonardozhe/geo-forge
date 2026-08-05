@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.101
+Stable tag:        1.0.102
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,9 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.102 =
+* New: Traffic monitors LLM 404s — AI agents' requests for content we don't provide (e.g. /.well-known/mcp.json, markdown variants) are recorded and highlighted in a "Missing Content — LLM 404s" card on the Traffic page.
+* UI: Scan Now button progress now shows an estimated percentage (e.g. 42%) instead of a poll counter.
 = 1.0.101 =
 * Fix: Scan animation now shows only inside the Scan Now button (spinner + Scanning…) — the adjacent status text no longer duplicates it.
 * Fix: Scan timestamps stored in UTC and displayed in the WordPress timezone consistently (dashboard header + score history).

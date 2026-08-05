@@ -52,8 +52,9 @@ class Store {
 		string $method = 'GET',
 		?int $response_bytes = null
 	): void {
-		// Apply sampling for regular bot traffic.
-		if ( ! in_array( $source, self::ALWAYS_RECORD, true ) && ! self::should_sample() ) {
+		// Apply sampling for regular bot traffic. 404s are always recorded —
+		// they signal content AI agents want but we don't provide.
+		if ( $status < 400 && ! in_array( $source, self::ALWAYS_RECORD, true ) && ! self::should_sample() ) {
 			return;
 		}
 
@@ -222,6 +223,48 @@ class Store {
 		) ?? array();
 
 		$result = array( 'rows' => $rows, 'total' => $total, 'pages' => max( 1, $pages ) );
+		wp_cache_set( $cache_key, $result, 'geo-forge', 60 );
+		return $result;
+	}
+
+	/**
+	 * Recent AI requests that ended in 404 — data agents asked for but we
+	 * didn't provide. Newest first.
+	 *
+	 * @param int         $limit  Max rows (clamped 1–100).
+	 * @param string|null $family Filter by bot family.
+	 * @return array<int,array<string,mixed>>
+	 */
+	public static function not_found( int $limit = 20, ?string $family = null ): array {
+		global $wpdb;
+		$limit = max( 1, min( $limit, 100 ) );
+
+		$cache_key = 'geo_forge_traffic_404_' . $limit . '_' . ( $family ?? 'all' );
+		$cached    = wp_cache_get( $cache_key, 'geo-forge' );
+		if ( false !== $cached && is_array( $cached ) ) {
+			return $cached;
+		}
+
+		if ( null !== $family ) {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$wpdb->prefix}geo_forge_traffic WHERE response_status >= 400 AND bot_family = %s ORDER BY recorded_at DESC LIMIT %d",
+					$family,
+					$limit
+				),
+				ARRAY_A
+			);
+		} else {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$wpdb->prefix}geo_forge_traffic WHERE response_status >= 400 ORDER BY recorded_at DESC LIMIT %d",
+					$limit
+				),
+				ARRAY_A
+			);
+		}
+
+		$result = $rows ?? array();
 		wp_cache_set( $cache_key, $result, 'geo-forge', 60 );
 		return $result;
 	}

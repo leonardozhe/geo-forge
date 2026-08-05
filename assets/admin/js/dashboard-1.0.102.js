@@ -18,10 +18,10 @@
         scanPollCount = 0;
     }
 
-    function renderScanBtn(btn, state, count) {
+    function renderScanBtn(btn, state, pct) {
         if (!btn) return;
         if (state === 'scanning') {
-            btn.innerHTML = '<span class="gf-spinner"></span> Scanning…' + (count ? ' (' + count + ')' : '');
+            btn.innerHTML = '<span class="gf-spinner"></span> Scanning…' + (pct ? ' ' + pct + '%' : '');
             btn.disabled = true;
         } else {
             btn.textContent = 'Scan Now';
@@ -48,7 +48,10 @@
             if (statusEl) { statusEl.textContent = '⚠️ Scan still running — check back shortly.'; statusEl.style.color = '#d97706'; }
             return;
         }
-        renderScanBtn(btn, 'scanning', scanPollCount);
+        // Estimated progress: the API has no progress field, so interpolate
+        // over the poll ceiling (160s) and cap at 99% until it completes.
+        var pct = Math.min(99, Math.round(scanPollCount * 100 / SCAN_POLL_MAX));
+        renderScanBtn(btn, 'scanning', pct);
         if (statusEl) { statusEl.textContent = ''; }
 
         fetch(restRoot + 'scan/status', {

@@ -9,7 +9,7 @@ if($fs&&!in_array($fs,['bot_ua','well_known','markdown']))$fs=null;
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $tp=isset($_GET['tpage'])?max(1,absint(wp_unslash($_GET['tpage']))):1;
 $rpg=TS::page(50,$tp,$ff,$fs);$rws=$rpg['rows'];$rtt=(int)$rpg['total'];$rpp=(int)$rpg['pages'];
-$rw=TS::recent(100,$ff,$fs);$sm=TS::summary_24h();$ch=TS::chart_data(14);
+$rw=TS::recent(100,$ff,$fs);$sm=TS::summary_24h();$ch=TS::chart_data(14);$nf=TS::not_found(20,$ff);
 $th=$sm['total_24h'];$ub=count($sm['by_family']);
 $bs=['well_known'=>0,'markdown'=>0,'bot_ua'=>0];foreach($rw as $r)if(isset($bs[$r['source']]))$bs[$r['source']]++;
 $fm=[];foreach($sm['by_family'] as $e)$fm[]=['name'=>BotFamily::label($e['bot_family']),'count'=>(int)$e['n']];
@@ -37,6 +37,18 @@ $at=0;foreach($ch['series'] as $s)$at+=array_sum($s);
 		<?php else:?><table><?php foreach(array_slice($fm,0,8) as $f):?><tr><td><?php echo esc_html($f['name']);?></td><td style="text-align:right;font-weight:600;"><?php echo esc_html( (string) $f['count'] ); ?></td></tr><?php endforeach;?></table><?php endif;?>
 	</div>
 </div>
+
+<?php if ( ! empty( $nf ) ) : ?>
+<div class="gf-card" style="border-color:#dc2626;border-left:3px solid #dc2626;">
+	<div class="gf-card-title">❌ Missing Content — LLM 404s <span class="gf-badge" style="background:#dc2626;color:#fff;"><?php echo esc_html( (string) count( $nf ) ); ?></span></div>
+	<p class="gf-muted" style="margin-bottom:8px;"><?php esc_html_e( 'AI agents requested these URLs but we returned 404 — data they wanted that isn\'t provided (e.g. MCP/A2A cards, markdown variants). Adding these can improve your GEO score.', 'geo-forge' ); ?></p>
+	<table class="striped"><thead><tr><th>Time</th><th>Bot</th><th>Source</th><th>Requested URL</th></tr></thead><tbody>
+	<?php foreach ( $nf as $geo_forge_r ) : ?>
+	<tr><td style="font-size:11px;"><?php echo esc_html( $geo_forge_r['recorded_at'] ); ?></td><td><?php echo esc_html( BotFamily::label( (string) $geo_forge_r['bot_family'] ) ); ?></td><td style="font-size:12px;"><?php echo esc_html( $geo_forge_r['source'] ); ?></td><td style="max-width:380px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#dc2626;"><?php echo esc_html( $geo_forge_r['request_url'] ); ?></td></tr>
+	<?php endforeach; ?>
+	</tbody></table>
+</div>
+<?php endif; ?>
 
 <div class="gf-card">
 	<div class="gf-card-title">Recent Activity</div>
