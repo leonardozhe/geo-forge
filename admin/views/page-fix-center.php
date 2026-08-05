@@ -21,6 +21,7 @@ $geo_forge_si  = static function ( $s ) {
 		'rolled_back' => '⏪',
 		'failed'      => '❌',
 		'covered'     => '👁',
+		'ignored'     => '🚫',
 		default       => '○',
 	};
 };
@@ -43,6 +44,15 @@ foreach ( $geo_forge_fs as $geo_forge_f ) {
 <div class="gf-header"><h1>Optimizations <span class="gf-subtitle">Fix now to improve your AI score</span></h1><p class="gf-muted">These optimizations can be applied immediately on your server. Each fix records a snapshot and can be rolled back.</p></div>
 <div id="geo-forge-fix-status" class="gf-notice" style="display:none;"><p></p></div>
 
+<?php $geo_forge_covered = array_filter( $geo_forge_fs, static fn( $f ) => 'covered' === $f['status'] ); ?>
+<?php if ( count( $geo_forge_covered ) > 0 ) : ?>
+<div class="notice notice-info"><p><?php echo esc_html( sprintf(
+	/* translators: %d: number of covered optimizations */
+	_n( '%d optimization is managed by another plugin or a physical file — GEO Forge is in audit-only mode and will not overwrite it.', '%d optimizations are managed by another plugin or a physical file — GEO Forge is in audit-only mode and will not overwrite them.', count( $geo_forge_covered ), 'geo-forge' ),
+	count( $geo_forge_covered )
+) ); ?></p></div>
+<?php endif; ?>
+
 <?php if ( empty( $geo_forge_gp ) ) : ?>
 <div class="gf-card"><p class="gf-muted">No optimization actions registered.</p></div>
 <?php else : ?>
@@ -56,14 +66,22 @@ foreach ( $geo_forge_fs as $geo_forge_f ) {
 	<?php $geo_forge_id = esc_attr( $geo_forge_fx2['id'] ); ?>
 	<?php $geo_forge_ap = in_array( $geo_forge_fx2['status'], array( 'applied', 'verified' ), true ); ?>
 	<tr data-fix-id="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>">
-		<td><strong style="font-size:13px;"><?php echo esc_html( $geo_forge_fx2['label'] ); ?></strong><br><span class="gf-muted"><?php echo esc_html( $geo_forge_fx2['description'] ); ?></span><?php if ( ! empty( $geo_forge_fx2['note'] ) ) : ?><br><span style="font-size:11px;color:#ca8a04;"><?php echo esc_html( $geo_forge_fx2['note'] ); ?></span><?php endif; ?></td>
+		<td><strong style="font-size:13px;"><?php echo esc_html( $geo_forge_fx2['label'] ); ?></strong><br><span class="gf-muted"><?php echo esc_html( $geo_forge_fx2['description'] ); ?></span><?php if ( ! empty( $geo_forge_fx2['audit'] ) ) : ?><br><span style="font-size:11px;color:<?php echo ! empty( $geo_forge_fx2['audit']['pass'] ) ? '#16a34a' : '#dc2626'; ?>;"><?php echo esc_html( ( ! empty( $geo_forge_fx2['audit']['pass'] ) ? '✅ ' : '❌ ' ) . $geo_forge_fx2['audit']['message'] . ' (' . $geo_forge_fx2['audit']['checked_at'] . ')' ); ?></span><?php endif; ?><?php if ( ! empty( $geo_forge_fx2['note'] ) ) : ?><br><span style="font-size:11px;color:#ca8a04;"><?php echo esc_html( $geo_forge_fx2['note'] ); ?></span><?php endif; ?></td>
 		<td><span style="color:<?php echo esc_attr( $geo_forge_rc( $geo_forge_fx2['risk_level'] ) ); ?>;font-weight:600;font-size:12px;"><?php echo esc_html( ucfirst( $geo_forge_fx2['risk_level'] ) ); ?></span></td>
-		<td class="geo-forge-fix-status-cell"><?php echo esc_html( $geo_forge_si( $geo_forge_fx2['status'] ) . ' ' . ucfirst( $geo_forge_fx2['status'] ) ); ?></td>
+		<td class="geo-forge-fix-status-cell"><?php echo esc_html( match ( $geo_forge_fx2['status'] ) { 'covered' => '👁 Audit mode', 'ignored' => '🚫 Ignored', default => $geo_forge_si( $geo_forge_fx2['status'] ) . ' ' . ucfirst( $geo_forge_fx2['status'] ) } ); ?></td>
 		<td class="gf-muted"><?php echo esc_html( $geo_forge_fx2['applied_at'] ?? '—' ); ?></td>
 		<td style="white-space:nowrap;">
+			<?php if ( 'covered' === $geo_forge_fx2['status'] ) : $geo_forge_can_cover = isset( $geo_forge_fx2['audit'] ) && empty( $geo_forge_fx2['audit']['pass'] ); ?>
+			<button class="gf-btn geo-forge-fix-audit" data-fix="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>"><?php esc_html_e( 'Audit', 'geo-forge' ); ?></button>
+			<button class="gf-btn geo-forge-fix-cover" data-fix="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>" title="<?php esc_attr_e( 'Take over after a failed audit', 'geo-forge' ); ?>" <?php disabled( ! $geo_forge_can_cover ); ?>><?php esc_html_e( 'Cover', 'geo-forge' ); ?></button>
+			<button class="gf-btn geo-forge-fix-ignore" data-fix="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>"><?php esc_html_e( 'Ignore', 'geo-forge' ); ?></button>
+			<?php elseif ( 'ignored' === $geo_forge_fx2['status'] ) : ?>
+			<button class="gf-btn geo-forge-fix-rollback" data-fix="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>"><?php esc_html_e( 'Undo ignore', 'geo-forge' ); ?></button>
+			<?php else : ?>
 			<button class="gf-btn gf-btn-primary geo-forge-fix-apply" data-fix="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>" <?php disabled( $geo_forge_ap ); ?>>Apply</button>
 			<button class="gf-btn geo-forge-fix-verify" data-fix="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>" <?php disabled( ! $geo_forge_ap ); ?>>Verify</button>
 			<button class="gf-btn geo-forge-fix-rollback" data-fix="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>" <?php disabled( ! $geo_forge_ap ); ?>>Undo</button>
+			<?php endif; ?>
 		</td>
 	</tr>
 	<?php endforeach; ?></tbody></table>

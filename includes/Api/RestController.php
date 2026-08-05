@@ -266,7 +266,7 @@ class RestController {
 			)
 		);
 
-		$fix_actions = array( 'apply', 'rollback', 'verify' );
+		$fix_actions = array( 'apply', 'rollback', 'verify', 'audit', 'cover', 'ignore' );
 		foreach ( $fix_actions as $action ) {
 			register_rest_route(
 				self::NAMESPACE,
@@ -739,6 +739,9 @@ class RestController {
 			'apply'    => $fixer->apply( $id ),
 			'rollback' => $fixer->rollback( $id ),
 			'verify'   => $fixer->verify( $id ),
+			'audit'    => $fixer->audit( $id ),
+			'cover'    => $fixer->cover( $id ),
+			'ignore'   => $fixer->ignore( $id ),
 			default    => array( 'success' => false, 'message' => __( 'Unknown action.', 'geo-forge' ) ),
 		};
 
@@ -769,7 +772,7 @@ class RestController {
 	 */
 	private function resolve_action( \WP_REST_Request $request ): string {
 		$route = $request->get_route();
-		foreach ( array( 'apply', 'rollback', 'verify' ) as $candidate ) {
+		foreach ( array( 'apply', 'rollback', 'verify', 'audit', 'cover', 'ignore' ) as $candidate ) {
 			if ( str_ends_with( (string) $route, '/' . $candidate ) ) {
 				return $candidate;
 			}

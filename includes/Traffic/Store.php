@@ -166,6 +166,67 @@ class Store {
 	}
 
 	/**
+	 * Paginated recent traffic rows, newest first.
+	 *
+	 * @param int         $per_page Rows per page (clamped 1–200).
+	 * @param int         $page     1-based page number.
+	 * @param string|null $family   Filter by bot family (e.g. 'openai', 'anthropic').
+	 * @param string|null $source   Filter by source ('bot_ua'|'well_known'|'markdown').
+	 * @return array{rows:array<int,array<string,mixed>>, total:int, pages:int}
+	 */
+	public static function page( int $per_page = 50, int $page = 1, ?string $family = null, ?string $source = null ): array {
+		global $wpdb;
+		$per_page = max( 1, min( $per_page, 200 ) );
+		$page     = max( 1, $page );
+		$offset   = ( $page - 1 ) * $per_page;
+
+		$where  = '';
+		$params = array();
+		if ( null !== $family && null !== $source ) {
+			$where  = ' WHERE bot_family = %s AND source = %s';
+			$params = array( $family, $source );
+		} elseif ( null !== $family ) {
+			$where  = ' WHERE bot_family = %s';
+			$params = array( $family );
+		} elseif ( null !== $source ) {
+			$where  = ' WHERE source = %s';
+			$params = array( $source );
+		}
+
+		$cache_key = 'geo_forge_traffic_page_' . $per_page . '_' . $page . '_' . ( $family ?? 'all' ) . '_' . ( $source ?? 'all' );
+		$cached    = wp_cache_get( $cache_key, 'geo-forge' );
+		if ( false !== $cached && is_array( $cached ) && isset( $cached['total'] ) ) {
+			return $cached;
+		}
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $where is a fixed whitelist.
+		$total = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM {$wpdb->prefix}geo_forge_traffic{$where}",
+			$params
+		) );
+
+		// Clamp out-of-range pages (e.g. after a filter change).
+		$pages  = (int) ceil( $total / $per_page );
+		if ( $page > $pages && $pages > 0 ) {
+			$page   = $pages;
+			$offset = ( $page - 1 ) * $per_page;
+		}
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $where is a fixed whitelist.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}geo_forge_traffic{$where} ORDER BY recorded_at DESC LIMIT %d OFFSET %d",
+				array_merge( $params, array( $per_page, $offset ) )
+			),
+			ARRAY_A
+		) ?? array();
+
+		$result = array( 'rows' => $rows, 'total' => $total, 'pages' => max( 1, $pages ) );
+		wp_cache_set( $cache_key, $result, 'geo-forge', 60 );
+		return $result;
+	}
+
+	/**
 	 * Aggregate counts per bot family, per day, for the last N days.
 	 * Used by the dashboard chart.
 	 *

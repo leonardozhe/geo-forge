@@ -60,17 +60,25 @@ class Fixer {
 				'applied_at'  => $this->last_applied_at( $id ),
 			);
 
-			if ( 'covered' === $out[ $id ]['status'] ) {
+			if ( in_array( $out[ $id ]['status'], array( 'covered', 'ignored' ), true ) ) {
 				$owner = match ( $id ) {
 					'llms_txt'  => SeoDetector::llms_txt_owner(),
 					'robots_txt'=> SeoDetector::robots_txt_owner(),
 					default     => 'external',
 				};
-				$out[ $id ]['note'] = sprintf(
-					/* translators: %s: owner label */
-					__( 'Managed by %s — GEO Forge audits only and will not overwrite it.', 'geo-forge' ),
-					SeoDetector::owner_label( $owner )
-				);
+
+				$audit = get_option( 'geo_forge_audit_' . $id, array() );
+				if ( is_array( $audit ) && isset( $audit['pass'] ) ) {
+					$out[ $id ]['audit'] = $audit;
+				}
+
+				$out[ $id ]['note'] = 'ignored' === $out[ $id ]['status']
+					? __( 'Ignored — GEO Forge will not touch this file.', 'geo-forge' )
+					: sprintf(
+						/* translators: %s: owner label */
+						__( 'Managed by %s — run Audit to check it, then Cover (override) or Ignore.', 'geo-forge' ),
+						SeoDetector::owner_label( $owner )
+					);
 			}
 		}
 
@@ -128,6 +136,92 @@ class Fixer {
 				'Fix failed to apply.',
 				array( 'fix_id' => $id, 'message' => $error )
 			);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Audit a covered fix — check whether the externally-managed output
+	 * meets GEO Forge's standard. Never writes anything.
+	 *
+	 * @return array{success:bool, pass?:bool, message?:string}
+	 */
+	public function audit( string $id ): array {
+		$fix = $this->registry[ $id ] ?? null;
+		if ( null === $fix ) {
+			return array( 'success' => false, 'message' => __( 'Unknown fix.', 'geo-forge' ) );
+		}
+		if ( ! method_exists( $fix, 'audit' ) ) {
+			return array( 'success' => false, 'message' => __( 'This fix does not support auditing.', 'geo-forge' ) );
+		}
+
+		try {
+			return $fix->audit();
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Audit threw: ' . $e->getMessage(), array( 'fix_id' => $id, 'exception' => get_class( $e ) ) );
+			return array( 'success' => false, 'message' => $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Cover (override) a fix currently managed by another plugin or a
+	 * physical file. Only meaningful after an audit shows it below standard.
+	 *
+	 * @return array{success:bool, message:string, status?:string}
+	 */
+	public function cover( string $id ): array {
+		$fix = $this->registry[ $id ] ?? null;
+		if ( null === $fix ) {
+			return array( 'success' => false, 'message' => __( 'Unknown fix.', 'geo-forge' ) );
+		}
+		if ( ! method_exists( $fix, 'cover' ) ) {
+			return array( 'success' => false, 'message' => __( 'This fix does not support covering.', 'geo-forge' ) );
+		}
+
+		try {
+			$result = $fix->cover();
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Cover threw: ' . $e->getMessage(), array( 'fix_id' => $id, 'exception' => get_class( $e ) ) );
+			return array( 'success' => false, 'message' => $e->getMessage() );
+		}
+
+		$status = ! empty( $result['success'] ) ? ( $result['status'] ?? 'applied' ) : 'failed';
+		$this->record_fix(
+			$id,
+			$status,
+			0,
+			array(),
+			empty( $result['success'] ) ? ( $result['message'] ?? '' ) : null
+		);
+
+		return $result;
+	}
+
+	/**
+	 * Mark a covered fix as ignored — the user accepts the external output
+	 * and GEO Forge will not touch it.
+	 *
+	 * @return array{success:bool, message:string, status?:string}
+	 */
+	public function ignore( string $id ): array {
+		$fix = $this->registry[ $id ] ?? null;
+		if ( null === $fix ) {
+			return array( 'success' => false, 'message' => __( 'Unknown fix.', 'geo-forge' ) );
+		}
+		if ( ! method_exists( $fix, 'ignore' ) ) {
+			return array( 'success' => false, 'message' => __( 'This fix does not support ignoring.', 'geo-forge' ) );
+		}
+
+		try {
+			$result = $fix->ignore();
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Ignore threw: ' . $e->getMessage(), array( 'fix_id' => $id, 'exception' => get_class( $e ) ) );
+			return array( 'success' => false, 'message' => $e->getMessage() );
+		}
+
+		if ( ! empty( $result['success'] ) ) {
+			$this->record_fix( $id, 'ignored', 0, null, null );
 		}
 
 		return $result;

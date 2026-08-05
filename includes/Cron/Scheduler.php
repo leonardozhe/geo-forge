@@ -142,8 +142,11 @@ final class Scheduler {
 		try {
 			$generated = array();
 
-			// Audit mode: skip surfaces another plugin / physical file owns.
-			if ( 'geo-forge' === SeoDetector::llms_txt_owner() ) {
+			// Audit mode: skip surfaces another plugin / physical file owns
+			// (unless the user explicitly chose to override via Cover).
+			$llms_owned = 'geo-forge' === SeoDetector::llms_txt_owner()
+				|| 'yes' === get_option( 'geo_forge_override_llms_txt', '' );
+			if ( $llms_owned ) {
 				if ( ! LlmsTxt::is_manual() ) {
 					LlmsTxt::regenerate_all();
 					$generated[] = 'llms.txt';
@@ -159,7 +162,9 @@ final class Scheduler {
 				$generated[] = 'security.txt';
 			}
 
-			if ( 'geo-forge' === SeoDetector::robots_txt_owner() ) {
+			$robots_owned = 'geo-forge' === SeoDetector::robots_txt_owner()
+				|| 'yes' === get_option( 'geo_forge_override_robots_txt', '' );
+			if ( $robots_owned ) {
 				if ( ! RobotsTxt::is_manual() ) {
 					RobotsTxt::regenerate();
 					$generated[] = 'robots.txt';

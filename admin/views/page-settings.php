@@ -58,8 +58,8 @@ if( is_array( $gf_notice ) ){delete_transient('geo_forge_settings_notice');}
 	<div class="gf-card-title">SEO Compatibility</div>
 	<table class="striped" style="font-size:13px;">
 		<tr><td><strong><?php esc_html_e( 'Detected SEO plugin', 'geo-forge' );?></strong></td><td><?php echo '' !== $sd_plugin ? esc_html( SeoDetector::plugin_label( $sd_plugin ) ) : esc_html__( 'None', 'geo-forge' );?></td></tr>
-		<tr><td><strong><?php esc_html_e( 'llms.txt', 'geo-forge' );?></strong></td><td><?php echo esc_html( SeoDetector::owner_label( $sd_llms ) );?> — <?php echo 'geo-forge' === $sd_llms ? esc_html__( 'GEO Forge generates it.', 'geo-forge' ) : esc_html__( 'audit-only mode: GEO Forge will not overwrite it.', 'geo-forge' );?></td></tr>
-		<tr><td><strong><?php esc_html_e( 'robots.txt', 'geo-forge' );?></strong></td><td><?php echo esc_html( SeoDetector::owner_label( $sd_robots ) );?> — <?php echo 'geo-forge' === $sd_robots ? esc_html__( 'GEO Forge appends AI bot rules.', 'geo-forge' ) : esc_html__( 'audit-only mode: GEO Forge will not modify it.', 'geo-forge' );?></td></tr>
+		<tr><td><strong><?php esc_html_e( 'llms.txt', 'geo-forge' );?></strong></td><td><?php echo esc_html( SeoDetector::owner_label( $sd_llms ) );?> — <?php echo 'geo-forge' === $sd_llms ? esc_html__( 'GEO Forge generates it.', 'geo-forge' ) : esc_html__( 'audit → Cover (override) / Ignore.', 'geo-forge' );?></td></tr>
+		<tr><td><strong><?php esc_html_e( 'robots.txt', 'geo-forge' );?></strong></td><td><?php echo esc_html( SeoDetector::owner_label( $sd_robots ) );?> — <?php echo 'geo-forge' === $sd_robots ? esc_html__( 'GEO Forge appends AI bot rules.', 'geo-forge' ) : esc_html__( 'audit → Cover (override) / Ignore.', 'geo-forge' );?></td></tr>
 		<tr><td><strong><?php esc_html_e( 'security.txt', 'geo-forge' );?></strong></td><td><?php esc_html_e( 'GEO Forge (no SEO plugin provides this).', 'geo-forge' );?></td></tr>
 	</table>
 </div>

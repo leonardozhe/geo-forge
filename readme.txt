@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.96
+Stable tag:        1.0.97
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,9 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.97 =
+* New: Covered (audit) mode workflow — when another plugin or a physical file manages llms.txt / robots.txt, run Audit to check the output against GEO Forge's standard, then Cover (override) when it falls short or Ignore when it's fine. No more blind "don't fight": the decision is explicit and reversible.
+* New: Traffic → Recent Activity pagination (prev/next + page count, keeps bot family / source filters).
 = 1.0.96 =
 * New: Major SEO plugin detection (Rank Math / Yoast / SEOPress / AIOSEO). When another plugin or a physical file already manages llms.txt or robots.txt, GEO Forge switches that fix to audit-only mode — it stops registering competing routes, stops writing content, and flags the status as "Covered" in Optimizations and Settings instead of fighting for the output.
 = 1.0.95 =

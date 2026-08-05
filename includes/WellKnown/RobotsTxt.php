@@ -28,7 +28,9 @@ class RobotsTxt {
 	 * audit-only mode and never fight for the output.
 	 */
 	public static function register(): void {
-		if ( 'geo-forge' !== SeoDetector::robots_txt_owner() ) {
+		// Yield to other owners unless the user explicitly chose to override.
+		if ( 'geo-forge' !== SeoDetector::robots_txt_owner()
+			&& 'yes' !== get_option( 'geo_forge_override_robots_txt', '' ) ) {
 			return;
 		}
 

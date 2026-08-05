@@ -72,8 +72,10 @@ class Router {
 	 */
 	public static function register_rewrite_rules(): void {
 		// If another plugin (Rank Math) or a physical file already owns
-		// /llms.txt, don't register a competing route — audit only.
-		$owns_llms = 'geo-forge' === SeoDetector::llms_txt_owner();
+		// /llms.txt, don't register a competing route — unless the user
+		// explicitly chose to override (Cover).
+		$owns_llms = 'geo-forge' === SeoDetector::llms_txt_owner()
+			|| 'yes' === get_option( 'geo_forge_override_llms_txt', '' );
 
 		foreach ( self::ROUTES as $name => $regex ) {
 			if ( ! $owns_llms && in_array( $name, array( 'llms_txt', 'llms_lang_txt' ), true ) ) {
@@ -113,9 +115,11 @@ class Router {
 			return;
 		}
 
-		// Audit mode: another plugin or a physical file owns /llms.txt.
+		// Audit mode: another plugin or a physical file owns /llms.txt
+		// (unless the user chose to override).
 		if ( in_array( $route, array( 'llms_txt', 'llms_lang_txt' ), true )
-			&& 'geo-forge' !== SeoDetector::llms_txt_owner() ) {
+			&& 'geo-forge' !== SeoDetector::llms_txt_owner()
+			&& 'yes' !== get_option( 'geo_forge_override_llms_txt', '' ) ) {
 			return;
 		}
 

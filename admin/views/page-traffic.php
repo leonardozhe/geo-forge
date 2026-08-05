@@ -6,6 +6,9 @@ $ff=isset($_GET['family'])&&!empty($_GET['family'])?sanitize_text_field(wp_unsla
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $fs=isset($_GET['source'])&&!empty($_GET['source'])?sanitize_text_field(wp_unslash($_GET['source'])):null;
 if($fs&&!in_array($fs,['bot_ua','well_known','markdown']))$fs=null;
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$tp=isset($_GET['tpage'])?max(1,absint(wp_unslash($_GET['tpage']))):1;
+$rpg=TS::page(50,$tp,$ff,$fs);$rws=$rpg['rows'];$rtt=(int)$rpg['total'];$rpp=(int)$rpg['pages'];
 $rw=TS::recent(100,$ff,$fs);$sm=TS::summary_24h();$ch=TS::chart_data(14);
 $th=$sm['total_24h'];$ub=count($sm['by_family']);
 $bs=['well_known'=>0,'markdown'=>0,'bot_ua'=>0];foreach($rw as $r)if(isset($bs[$r['source']]))$bs[$r['source']]++;
@@ -48,9 +51,16 @@ $at=0;foreach($ch['series'] as $s)$at+=array_sum($s);
 		</select>
 	</form>
 	<table class="striped"><thead><tr><th>Time</th><th>Bot</th><th>Source</th><th>URL</th><th>Status</th></tr></thead><tbody>
-	<?php if(empty($rw)):?><tr><td colspan="5" class="gf-muted" style="padding:20px;">No traffic yet. AI agents will start appearing after your site is scanned and optimized.</td></tr>
-	<?php else:foreach(array_slice($rw,0,50) as $r):$bot_family_str=(string)$r['bot_family'];$ok=((int)$r['response_status'])<400;?>
+	<?php if(empty($rws)):?><tr><td colspan="5" class="gf-muted" style="padding:20px;">No traffic yet. AI agents will start appearing after your site is scanned and optimized.</td></tr>
+	<?php else:foreach($rws as $r):$bot_family_str=(string)$r['bot_family'];$ok=((int)$r['response_status'])<400;?>
 	<tr><td style="font-size:11px;"><?php echo esc_html($r['recorded_at']);?></td><td><?php echo esc_html(BotFamily::label($bot_family_str));?></td><td style="font-size:12px;"><?php echo esc_html($r['source']);?></td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;"><?php echo esc_html($r['request_url']);?></td><td><span style="color:<?php echo$ok?'#16a34a':'#dc2626';?>;"><?php echo$ok?'✅':'❌';?></span></td></tr>
 	<?php endforeach;endif;?></tbody></table>
+	<?php if ( $rpp > 1 ) : $gf_base = remove_query_arg( 'tpage', add_query_arg( array( 'page' => 'geo-forge-traffic' ), admin_url( 'admin.php' ) ) ); if ( $ff ) { $gf_base = add_query_arg( 'family', $ff, $gf_base ); } if ( $fs ) { $gf_base = add_query_arg( 'source', $fs, $gf_base ); } ?>
+	<div style="display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;">
+		<?php if ( $tp > 1 ) : ?><a class="gf-btn" href="<?php echo esc_url( add_query_arg( 'tpage', $tp - 1, $gf_base ) ); ?>">← <?php esc_html_e( 'Prev', 'geo-forge' ); ?></a><?php else : ?><span class="gf-btn" style="opacity:.4;pointer-events:none;">← <?php esc_html_e( 'Prev', 'geo-forge' ); ?></span><?php endif; ?>
+		<span class="gf-muted"><?php echo esc_html( sprintf( /* translators: 1: current page, 2: total pages, 3: total records */ __( 'Page %1$d of %2$d · %3$d records', 'geo-forge' ), $tp, $rpp, $rtt ) ); ?></span>
+		<?php if ( $tp < $rpp ) : ?><a class="gf-btn" href="<?php echo esc_url( add_query_arg( 'tpage', $tp + 1, $gf_base ) ); ?>"><?php esc_html_e( 'Next', 'geo-forge' ); ?> →</a><?php else : ?><span class="gf-btn" style="opacity:.4;pointer-events:none;"><?php esc_html_e( 'Next', 'geo-forge' ); ?> →</span><?php endif; ?>
+	</div>
+	<?php endif; ?>
 </div>
 </div>

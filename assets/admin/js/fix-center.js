@@ -31,7 +31,7 @@
         if (!row) return;
         var statusCell = row.querySelector('.geo-forge-fix-status-cell');
         if (statusCell) {
-            var labels = { applied: '✅ Applied', verified: '✅✅ Verified', rolled_back: '⏪ Rolled back', failed: '❌ Failed', pending: '○ Pending', covered: '👁 Audit mode' };
+            var labels = { applied: '✅ Applied', verified: '✅✅ Verified', rolled_back: '⏪ Rolled back', failed: '❌ Failed', pending: '○ Pending', covered: '👁 Audit mode', ignored: '🚫 Ignored' };
             statusCell.textContent = labels[status] || status;
         }
         var isApplied = status === 'applied' || status === 'verified';
@@ -75,4 +75,7 @@
     bind('.geo-forge-fix-apply', 'fixes/{id}/apply');
     bind('.geo-forge-fix-verify', 'fixes/{id}/verify');
     bind('.geo-forge-fix-rollback', 'fixes/{id}/rollback');
+    bind('.geo-forge-fix-audit', 'fixes/{id}/audit');
+    bind('.geo-forge-fix-cover', 'fixes/{id}/cover');
+    bind('.geo-forge-fix-ignore', 'fixes/{id}/ignore');
 })();

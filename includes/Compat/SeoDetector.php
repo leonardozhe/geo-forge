@@ -94,14 +94,30 @@ final class SeoDetector {
 
 	/**
 	 * Who owns /robots.txt?
-	 * 'geo-forge' | major-plugin slug | 'physical'
+	 * 'geo-forge' | 'rank-math' | 'physical'
+	 *
+	 * GEO Forge only yields when something actually replaces the output:
+	 * a physical file, or Rank Math with custom robots content. Plugins that
+	 * append (Yoast) or fall back to WordPress defaults don't conflict —
+	 * GEO Forge appends AI bot rules after them at priority 30.
 	 */
 	public static function robots_txt_owner(): string {
 		if ( file_exists( ABSPATH . 'robots.txt' ) ) {
 			return 'physical';
 		}
-		$plugin = self::active_plugin();
-		return '' !== $plugin ? $plugin : 'geo-forge';
+
+		if ( self::PLUGIN_RANK_MATH === self::active_plugin() && class_exists( 'RankMath\Helper' ) ) {
+			try {
+				if ( (string) \RankMath\Helper::get_settings( 'general.robots_txt_content' ) ) {
+					return self::PLUGIN_RANK_MATH;
+				}
+			} catch ( \Throwable $e ) {
+				// Unknown state — be conservative and don't fight.
+				return self::PLUGIN_RANK_MATH;
+			}
+		}
+
+		return 'geo-forge';
 	}
 
 	/**
