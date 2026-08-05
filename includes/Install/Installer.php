@@ -254,6 +254,8 @@ final class Installer {
 			'geo_forge_auto_scan_enabled'   => 'yes',
 			'geo_forge_scan_frequency'      => 'daily',
 			'geo_forge_auto_fix_enabled'    => 'no',
+			'geo_forge_content_signals_enabled' => 'yes',
+			'geo_forge_markdown_enabled'    => 'yes',
 			'geo_forge_auto_fix_risk_level' => 'low',
 			'geo_forge_notify_score_drop'   => 'yes',
 			'geo_forge_notify_threshold'    => 50,

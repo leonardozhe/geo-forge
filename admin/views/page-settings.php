@@ -6,6 +6,8 @@ $ak=(string)Installer::get_setting('api_key','');$ab=(string)Installer::get_sett
 $lc=LlmsTxt::get_current();$sc=SecurityTxt::get_current();$rc=RobotsTxt::get_current();$lu=home_url('/llms.txt');
 $has_key=( '' !== $ak );
 $auto_regen=(string)Installer::get_setting('auto_regen_llms','yes');
+$cs=(string)Installer::get_setting('content_signals_enabled','no');
+$md=(string)Installer::get_setting('markdown_enabled','no');
 $auto_scan=(string)Installer::get_setting('auto_scan_enabled','yes');
 $gf_freq=(string)Installer::get_setting('scan_frequency','daily');$gf_langs=(string)Installer::get_setting('llms_languages','');
 $gf_next_run=wp_next_scheduled(Scheduler::EVENT_REGENERATE);$sd_plugin=SeoDetector::active_plugin();$sd_llms=SeoDetector::llms_txt_owner();$sd_robots=SeoDetector::robots_txt_owner();
@@ -113,6 +115,20 @@ if( is_array( $gf_notice ) ){delete_transient('geo_forge_settings_notice');}
 			<label for="geo_forge_llms_languages"><?php esc_html_e( 'Additional llms.txt languages', 'geo-forge' );?></label>
 			<input type="text" id="geo_forge_llms_languages" name="geo_forge_llms_languages" value="<?php echo esc_attr( $gf_langs );?>" placeholder="zh_CN,ja,fr"/>
 			<div class="gf-hint"><?php esc_html_e( 'Comma-separated locales. Each one gets a /llms-{locale}.txt variant.', 'geo-forge' );?></div>
+		</div>
+
+		<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;"/>
+
+		<div class="gf-card-title">AI Content Delivery</div>
+
+		<div class="gf-form-group">
+			<label><input type="checkbox" name="geo_forge_content_signals_enabled" value="1" <?php checked( $cs, 'yes' );?>/> <?php esc_html_e( 'Emit Content-Signal header (AI usage policy)', 'geo-forge' );?></label>
+			<div class="gf-hint"><?php esc_html_e( 'All pages send Content-Signal: ai-train=yes, search=yes, ai-input=yes — maximum AI visibility (OpenAI/Anthropic/Google/Perplexity standard).', 'geo-forge' );?></div>
+		</div>
+
+		<div class="gf-form-group">
+			<label><input type="checkbox" name="geo_forge_markdown_enabled" value="1" <?php checked( $md, 'yes' );?>/> <?php esc_html_e( 'Serve markdown to AI agents', 'geo-forge' );?></label>
+			<div class="gf-hint"><?php esc_html_e( 'Answer Accept: text/markdown requests and serve /{slug}.md variants of products and pages.', 'geo-forge' );?></div>
 		</div>
 
 		<button type="submit" class="gf-btn gf-btn-primary">Save Settings</button>

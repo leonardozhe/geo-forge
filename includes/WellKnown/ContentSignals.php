@@ -27,6 +27,18 @@ class ContentSignals {
 	 */
 	public static function register(): void {
 		add_action( 'wp_head', array( self::class, 'inject_meta_tags' ) );
+		add_action( 'send_headers', array( self::class, 'send_signal_header' ) );
+	}
+
+	/**
+	 * Emit the standard Content-Signal response header (maximum visibility).
+	 * Policy: allow AI search, AI input/agentic use, and model training.
+	 */
+	public static function send_signal_header(): void {
+		if ( is_admin() || ! self::is_enabled() || headers_sent() ) {
+			return;
+		}
+		header( 'Content-Signal: ai-train=yes, search=yes, ai-input=yes' );
 	}
 
 	/**

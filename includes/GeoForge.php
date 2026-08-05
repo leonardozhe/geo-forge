@@ -15,6 +15,7 @@ use GEO_Forge\Cron\Scheduler;
 use GEO_Forge\Api\RestController;
 use GEO_Forge\Fixer\Actions\ContentSignalsFix;
 use GEO_Forge\Fixer\Actions\LlmsTxtFix;
+use GEO_Forge\Fixer\Actions\MarkdownFix;
 use GEO_Forge\Fixer\Actions\RobotsTxtFix;
 use GEO_Forge\Fixer\Actions\SecurityTxtFix;
 use GEO_Forge\Fixer\Actions\StructuredDataFix;
@@ -24,6 +25,7 @@ use GEO_Forge\Log\ErrorCapture;
 use GEO_Forge\Traffic\Capture;
 use GEO_Forge\WellKnown\ContentSignals;
 use GEO_Forge\WellKnown\RobotsTxt;
+use GEO_Forge\WellKnown\Markdown;
 use GEO_Forge\WellKnown\Router;
 use GEO_Forge\WellKnown\StructuredData;
 
@@ -88,6 +90,7 @@ final class GeoForge {
 		RobotsTxt::register();
 		ContentSignals::register();
 		StructuredData::register();
+		Markdown::register();
 
 		// AI traffic capture (well-known routes, markdown negotiation, known bots).
 		// Registered on every request including non-admin — Capture returns
@@ -113,6 +116,7 @@ final class GeoForge {
 	private function boot_fixer(): void {
 		$this->fixer = new Fixer();
 		$this->fixer->register( new LlmsTxtFix() );
+		$this->fixer->register( new MarkdownFix() );
 		$this->fixer->register( new SecurityTxtFix() );
 		$this->fixer->register( new RobotsTxtFix() );
 		$this->fixer->register( new ContentSignalsFix() );

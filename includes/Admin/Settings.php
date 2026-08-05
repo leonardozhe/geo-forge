@@ -54,6 +54,8 @@ final class Settings {
 
 		$auto_regen = isset( $_POST['geo_forge_auto_regen_llms'] ) ? 'yes' : 'no';
 		$auto_scan  = isset( $_POST['geo_forge_auto_scan_enabled'] ) ? 'yes' : 'no';
+		$content_signals = isset( $_POST['geo_forge_content_signals_enabled'] ) ? 'yes' : 'no';
+		$markdown        = isset( $_POST['geo_forge_markdown_enabled'] ) ? 'yes' : 'no';
 
 		// Extra llms.txt languages, e.g. "zh_CN,ja,fr". Keep only valid locales.
 		$clean_languages = array();
@@ -91,6 +93,8 @@ final class Settings {
 		Installer::set_setting( 'api_base', '' !== $api_base ? $api_base : 'https://api.geokami.com' );
 		Installer::set_setting( 'auto_regen_llms', $auto_regen );
 		Installer::set_setting( 'auto_scan_enabled', $auto_scan );
+		Installer::set_setting( 'content_signals_enabled', $content_signals );
+		Installer::set_setting( 'markdown_enabled', $markdown );
 		Installer::set_setting( 'scan_frequency', $frequency );
 		Installer::set_setting( 'llms_languages', implode( ',', $clean_languages ) );
 
