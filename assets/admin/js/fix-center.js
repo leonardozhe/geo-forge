@@ -72,10 +72,53 @@
         });
     }
 
+    // Audit updates the row in place (no reload) so the result is visible.
+    document.querySelectorAll('.geo-forge-fix-audit').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var fixId = btn.getAttribute('data-fix');
+            var originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '…';
+            restFetch('fixes/' + fixId + '/audit')
+                .then(function (res) {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    if (res.ok && res.body.success) {
+                        showStatus(res.body.message || 'Audit done.', false);
+                        var row = document.querySelector('tr[data-fix-id="' + fixId + '"]');
+                        if (!row) { return; }
+                        var pass = !!res.body.pass;
+                        var line = row.querySelector('.geo-forge-fix-audit-line');
+                        var txt = (pass ? '✅ ' : '❌ ') + (res.body.message || 'Audit complete.');
+                        if (line) {
+                            line.textContent = txt;
+                            line.style.color = pass ? '#16a34a' : '#dc2626';
+                        } else {
+                            // No result line yet — create one before the note.
+                            var note = row.querySelector('.geo-forge-fix-note');
+                            var span = document.createElement('span');
+                            span.className = 'geo-forge-fix-audit-line';
+                            span.style.cssText = 'font-size:11px;color:' + (pass ? '#16a34a' : '#dc2626') + ';display:block;';
+                            span.textContent = txt;
+                            (note ? note.parentNode : row.cells[0]).insertBefore(span, note || null);
+                        }
+                        var coverBtn = row.querySelector('.geo-forge-fix-cover');
+                        if (coverBtn) { coverBtn.disabled = pass; coverBtn.title = pass ? 'Audit passed — nothing to override.' : 'Take over after this failed audit'; }
+                    } else {
+                        showStatus((res.body && res.body.error && res.body.error.message) || 'Audit failed.', true);
+                    }
+                })
+                .catch(function () {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    showStatus('Network error.', true);
+                });
+        });
+    });
+
     bind('.geo-forge-fix-apply', 'fixes/{id}/apply');
     bind('.geo-forge-fix-verify', 'fixes/{id}/verify');
     bind('.geo-forge-fix-rollback', 'fixes/{id}/rollback');
-    bind('.geo-forge-fix-audit', 'fixes/{id}/audit');
     bind('.geo-forge-fix-cover', 'fixes/{id}/cover');
     bind('.geo-forge-fix-ignore', 'fixes/{id}/ignore');
 })();
