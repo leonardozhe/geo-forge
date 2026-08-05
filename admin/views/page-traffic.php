@@ -40,11 +40,11 @@ $at=0;foreach($ch['series'] as $s)$at+=array_sum($s);
 
 <?php if ( ! empty( $nf ) ) : ?>
 <div class="gf-card" style="border-color:#dc2626;border-left:3px solid #dc2626;">
-	<div class="gf-card-title">❌ Missing Content — LLM 404s <span class="gf-badge" style="background:#dc2626;color:#fff;"><?php echo esc_html( (string) count( $nf ) ); ?></span></div>
+	<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;"><div class="gf-card-title">❌ Missing Content — LLM 404s <span class="gf-badge" style="background:#dc2626;color:#fff;"><?php echo esc_html( (string) count( $nf ) ); ?></span></div><button class="gf-btn geo-forge-404-clear" type="button" style="border-color:#dc2626;color:#dc2626;"><?php esc_html_e( 'Delete all', 'geo-forge' ); ?></button></div>
 	<p class="gf-muted" style="margin-bottom:8px;"><?php esc_html_e( 'AI agents requested these URLs but we returned 404 — data they wanted that isn\'t provided (e.g. MCP/A2A cards, markdown variants). Adding these can improve your GEO score.', 'geo-forge' ); ?></p>
-	<table class="striped"><thead><tr><th>Time</th><th>Bot</th><th>Source</th><th>Requested URL</th></tr></thead><tbody>
+	<table class="striped"><thead><tr><th>Time</th><th>Bot</th><th>Source</th><th>Requested URL</th><th></th></tr></thead><tbody>
 	<?php foreach ( $nf as $geo_forge_r ) : ?>
-	<tr><td style="font-size:11px;"><?php echo esc_html( $geo_forge_r['recorded_at'] ); ?></td><td><?php echo esc_html( BotFamily::label( (string) $geo_forge_r['bot_family'] ) ); ?></td><td style="font-size:12px;"><?php echo esc_html( $geo_forge_r['source'] ); ?></td><td style="max-width:380px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#dc2626;"><?php echo esc_html( $geo_forge_r['request_url'] ); ?></td></tr>
+	<tr><td style="font-size:11px;"><?php echo esc_html( $geo_forge_r['recorded_at'] ); ?></td><td><?php echo esc_html( BotFamily::label( (string) $geo_forge_r['bot_family'] ) ); ?></td><td style="font-size:12px;"><?php echo esc_html( $geo_forge_r['source'] ); ?></td><td style="max-width:380px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#dc2626;"><?php echo esc_html( $geo_forge_r['request_url'] ); ?></td><td style="white-space:nowrap;"><button class="gf-btn geo-forge-404-delete" type="button" data-id="<?php echo esc_attr( (int) $geo_forge_r['id'] ); ?>" title="<?php esc_attr_e( 'Delete this 404 record', 'geo-forge' ); ?>"><?php esc_html_e( 'Delete', 'geo-forge' ); ?></button></td></tr>
 	<?php endforeach; ?>
 	</tbody></table>
 </div>

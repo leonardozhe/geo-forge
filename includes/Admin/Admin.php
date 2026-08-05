@@ -231,6 +231,22 @@ final class Admin {
 			) );
 		}
 
+		if ( str_contains( $hook, 'geo-forge-traffic' ) ) {
+			wp_enqueue_script(
+				'geo-forge-traffic',
+				$this->js_file( 'traffic' ),
+				array(),
+				GEO_FORGE_VERSION,
+				true
+			);
+			wp_localize_script( 'geo-forge-traffic', 'GeoForgeTraffic', $shared + array(
+				'i18n' => $shared['i18n'] + array(
+					'confirmDelete' => __( 'Delete this 404 record?', 'geo-forge' ),
+					'confirmClear'  => __( 'Delete ALL LLM 404 records? This cannot be undone.', 'geo-forge' ),
+				),
+			) );
+		}
+
 		if ( str_contains( $hook, 'geo-forge-fixes' ) ) {
 			wp_enqueue_script(
 				'geo-forge-fixer',

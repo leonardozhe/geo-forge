@@ -270,6 +270,50 @@ class Store {
 	}
 
 	/**
+	 * Delete a single recorded 404 traffic row.
+	 *
+	 * @param int $id Row ID.
+	 * @return bool True if a row was deleted.
+	 */
+	public static function delete_404( int $id ): bool {
+		global $wpdb;
+		$deleted = $wpdb->query( $wpdb->prepare(
+			"DELETE FROM {$wpdb->prefix}geo_forge_traffic WHERE id = %d AND response_status >= 400",
+			$id
+		) );
+		if ( false !== $deleted && $deleted > 0 ) {
+			self::clear_not_found_cache();
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Delete every recorded 404 traffic row.
+	 *
+	 * @return int Number of rows deleted.
+	 */
+	public static function delete_all_404(): int {
+		global $wpdb;
+		$deleted = $wpdb->query( "DELETE FROM {$wpdb->prefix}geo_forge_traffic WHERE response_status >= 400" );
+		if ( false !== $deleted && $deleted > 0 ) {
+			self::clear_not_found_cache();
+		}
+		return false === $deleted ? 0 : (int) $deleted;
+	}
+
+	/**
+	 * Invalidate the "not found" caches the Traffic page reads.
+	 */
+	private static function clear_not_found_cache(): void {
+		foreach ( array_keys( BotFamily::get_all_families() ) as $geo_forge_family ) {
+			wp_cache_delete( 'geo_forge_traffic_404_20_' . $geo_forge_family, 'geo-forge' );
+		}
+		wp_cache_delete( 'geo_forge_traffic_404_20_all', 'geo-forge' );
+		wp_cache_delete( 'geo_forge_traffic_summary', 'geo-forge' );
+	}
+
+	/**
 	 * Aggregate counts per bot family, per day, for the last N days.
 	 * Used by the dashboard chart.
 	 *

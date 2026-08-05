@@ -25,6 +25,7 @@ use GEO_Forge\GeoForge;
 use GEO_Forge\Log\Level;
 use GEO_Forge\Log\Logger;
 use GEO_Forge\Scanner\Scanner;
+use GEO_Forge\Traffic\Store;
 use GEO_Forge\WellKnown\LlmsTxt;
 use GEO_Forge\WellKnown\RobotsTxt;
 use GEO_Forge\WellKnown\SecurityTxt;
@@ -126,6 +127,34 @@ class RestController {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'handle_clear_logs' ),
+				'permission_callback' => array( $this, 'check_admin_permission' ),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/traffic/404/(?P<id>\d+)',
+			array(
+				'methods'             => \WP_REST_Server::DELETABLE,
+				'callback'            => array( $this, 'handle_delete_404' ),
+				'permission_callback' => array( $this, 'check_admin_permission' ),
+				'args'                => array(
+					'id' => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'minimum'           => 1,
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/traffic/404',
+			array(
+				'methods'             => \WP_REST_Server::DELETABLE,
+				'callback'            => array( $this, 'handle_clear_404' ),
 				'permission_callback' => array( $this, 'check_admin_permission' ),
 			)
 		);
@@ -461,6 +490,35 @@ class RestController {
 			'success' => true,
 			'count'   => count( $rows ),
 			'logs'    => $rows,
+		), 200 );
+	}
+
+	/**
+	 * DELETE /traffic/404/{id} — remove one recorded LLM 404.
+	 */
+	public function handle_delete_404( \WP_REST_Request $request ): \WP_REST_Response {
+		$id = (int) $request['id'];
+		if ( Store::delete_404( $id ) ) {
+			return new \WP_REST_Response( array(
+				'success' => true,
+				'message' => __( '404 record deleted.', 'geo-forge' ),
+			), 200 );
+		}
+		return new \WP_REST_Response( array(
+			'success' => false,
+			'error'   => array( 'message' => __( '404 record not found.', 'geo-forge' ) ),
+		), 404 );
+	}
+
+	/**
+	 * DELETE /traffic/404 — clear every recorded LLM 404.
+	 */
+	public function handle_clear_404(): \WP_REST_Response {
+		$deleted = Store::delete_all_404();
+		return new \WP_REST_Response( array(
+			'success' => true,
+			/* translators: %d: number of records deleted */
+			'message' => sprintf( __( 'Deleted %d LLM 404 record(s).', 'geo-forge' ), $deleted ),
 		), 200 );
 	}
 
