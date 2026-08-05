@@ -396,6 +396,8 @@ class Store {
 		$traffic = $wpdb->prefix . self::TABLE;
 		$stats   = $wpdb->prefix . 'geo_forge_traffic_stats';
 
+		self::ensure_stats_table();
+
 		// 1. Roll old detail rows into daily per-family aggregates.
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 		$rolled = $wpdb->query(
@@ -410,11 +412,18 @@ class Store {
 			)
 		);
 
-		// 2. Clear the detail rows older than the window.
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
-		$deleted = $wpdb->query(
-			$wpdb->prepare( "DELETE FROM {$traffic} WHERE recorded_at < %s", $cutoff )
-		);
+		// 2. Clear the detail rows older than the window — only if the rollup
+		//    actually succeeded, so we never drop detail without preserving stats.
+		$deleted = 0;
+		if ( false !== $rolled ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+			$deleted = $wpdb->query(
+				$wpdb->prepare( "DELETE FROM {$traffic} WHERE recorded_at < %s", $cutoff )
+			);
+			$deleted = false === $deleted ? 0 : (int) $deleted;
+		} else {
+			PluginLogger::error( 'Traffic rollup failed — detail rows kept.', array( 'error' => $wpdb->last_error ) );
+		}
 
 		// 3. Invalidate traffic caches.
 		wp_cache_delete( 'geo_forge_traffic_summary', 'geo-forge' );
@@ -439,6 +448,34 @@ class Store {
 
 		self::rollup_and_prune();
 		update_option( 'geo_forge_traffic_cleanup_at', time(), false );
+	}
+
+	/**
+	 * Make sure the rollup stats table exists (activation may not have run in
+	 * every context — e.g. wp-cli upgrades where current_user_can is false).
+	 */
+	private static function ensure_stats_table(): void {
+		global $wpdb;
+
+		$table = $wpdb->prefix . 'geo_forge_traffic_stats';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+		if ( $exists ) {
+			return;
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		$charset_collate = $wpdb->get_charset_collate();
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange
+		dbDelta( "CREATE TABLE {$table} (
+    id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    stat_day date NOT NULL,
+    bot_family varchar(40) NOT NULL,
+    n int NOT NULL DEFAULT 0,
+    PRIMARY KEY  (id),
+    UNIQUE KEY day_family (stat_day, bot_family),
+    KEY stat_day (stat_day)
+) {$charset_collate};" );
 	}
 
 	/**
