@@ -22,6 +22,7 @@ $geo_forge_tables = array(
 	$wpdb->prefix . 'geo_forge_fixes',
 	$wpdb->prefix . 'geo_forge_logs',
 	$wpdb->prefix . 'geo_forge_traffic',
+	$wpdb->prefix . 'geo_forge_traffic_stats',
 	$wpdb->prefix . 'geo_forge_settings',
 );
 foreach ( $geo_forge_tables as $geo_forge_table ) {

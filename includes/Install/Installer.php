@@ -134,6 +134,16 @@ final class Installer {
     KEY source (source)
 ) {$charset_collate};";
 
+		$traffic_stats_table = "CREATE TABLE {$wpdb->prefix}geo_forge_traffic_stats (
+    id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    stat_day date NOT NULL,
+    bot_family varchar(40) NOT NULL,
+    n int NOT NULL DEFAULT 0,
+    PRIMARY KEY  (id),
+    UNIQUE KEY day_family (stat_day, bot_family),
+    KEY stat_day (stat_day)
+) {$charset_collate};";
+
 		$settings_table = "CREATE TABLE {$wpdb->prefix}geo_forge_settings (
     id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
     setting_key varchar(100) NOT NULL,
@@ -147,6 +157,7 @@ final class Installer {
 		dbDelta( $fixes_table );
 		dbDelta( $logs_table );
 		dbDelta( $traffic_table );
+		dbDelta( $traffic_stats_table );
 		dbDelta( $settings_table );
 
 		update_option( 'geo_forge_db_version', GEO_FORGE_VERSION );

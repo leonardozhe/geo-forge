@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.102
+Stable tag:        1.0.103
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,8 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.103 =
+* New: Traffic retention — detailed activity is kept for the last 7 days; older detail rows are rolled into daily per-bot-family stats and then cleared (so trends/totals survive). Runs daily via cron and opportunistically on the Traffic page.
 = 1.0.102 =
 * New: Traffic monitors LLM 404s — AI agents' requests for content we don't provide (e.g. /.well-known/mcp.json, markdown variants) are recorded and highlighted in a "Missing Content — LLM 404s" card on the Traffic page.
 * UI: Scan Now button progress now shows an estimated percentage (e.g. 42%) instead of a poll counter.

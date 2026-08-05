@@ -285,13 +285,23 @@ class Store {
 			return $cached;
 		}
 
+		// Recent detail rows + rolled-up daily stats for older days (detail
+		// rows older than the retention window are pruned — see rollup_and_prune()).
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT DATE(recorded_at) AS day, bot_family, COUNT(*) AS n
-				 FROM {$wpdb->prefix}geo_forge_traffic
-				 WHERE recorded_at >= DATE_SUB(%s, INTERVAL %d DAY)
-				 GROUP BY day, bot_family
-				 ORDER BY day ASC",
+				"SELECT day, bot_family, n FROM (
+					SELECT DATE(recorded_at) AS day, bot_family, COUNT(*) AS n
+					FROM {$wpdb->prefix}geo_forge_traffic
+					WHERE recorded_at >= DATE_SUB(%s, INTERVAL %d DAY)
+					GROUP BY day, bot_family
+					UNION ALL
+					SELECT stat_day AS day, bot_family, n
+					FROM {$wpdb->prefix}geo_forge_traffic_stats
+					WHERE stat_day >= DATE_SUB(%s, INTERVAL %d DAY)
+				) AS combined
+				ORDER BY day ASC",
+				current_time( 'mysql', true ),
+				$days,
 				current_time( 'mysql', true ),
 				$days
 			),
@@ -366,6 +376,69 @@ class Store {
 		$wpdb->query( "TRUNCATE TABLE `{$wpdb->prefix}geo_forge_traffic`" );
 		wp_cache_delete( 'geo_forge_traffic_summary', 'geo-forge' );
 		wp_cache_delete( 'geo_forge_traffic_chart_all', 'geo-forge' );
+	}
+
+	/**
+	 * Retention window for detailed traffic rows (in days). Older rows are
+	 * rolled into the per-day/per-family stats table and then deleted.
+	 */
+	private const RETENTION_DAYS = 7;
+
+	/**
+	 * Keep detailed rows for RETENTION_DAYS; roll older rows into daily
+	 * per-family stats and delete the detail. Idempotent.
+	 *
+	 * @return array{rolled:int, deleted:int}
+	 */
+	public static function rollup_and_prune( int $retention_days = self::RETENTION_DAYS ): array {
+		global $wpdb;
+		$cutoff  = gmdate( 'Y-m-d H:i:s', time() - $retention_days * DAY_IN_SECONDS );
+		$traffic = $wpdb->prefix . self::TABLE;
+		$stats   = $wpdb->prefix . 'geo_forge_traffic_stats';
+
+		// 1. Roll old detail rows into daily per-family aggregates.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+		$rolled = $wpdb->query(
+			$wpdb->prepare(
+				"INSERT INTO {$stats} (stat_day, bot_family, n)
+				 SELECT DATE(recorded_at), bot_family, COUNT(*)
+				 FROM {$traffic}
+				 WHERE recorded_at < %s
+				 GROUP BY DATE(recorded_at), bot_family
+				 ON DUPLICATE KEY UPDATE n = n + VALUES(n)",
+				$cutoff
+			)
+		);
+
+		// 2. Clear the detail rows older than the window.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+		$deleted = $wpdb->query(
+			$wpdb->prepare( "DELETE FROM {$traffic} WHERE recorded_at < %s", $cutoff )
+		);
+
+		// 3. Invalidate traffic caches.
+		wp_cache_delete( 'geo_forge_traffic_summary', 'geo-forge' );
+		for ( $d = 7; $d <= 30; $d++ ) {
+			wp_cache_delete( 'geo_forge_traffic_chart_' . $d, 'geo-forge' );
+		}
+		wp_cache_delete( 'geo_forge_traffic_chart_all', 'geo-forge' );
+		wp_cache_delete( 'geo_forge_traffic_recent_100_all_all', 'geo-forge' );
+
+		return array( 'rolled' => (int) ( false === $rolled ? 0 : $rolled ), 'deleted' => (int) ( false === $deleted ? 0 : $deleted ) );
+	}
+
+	/**
+	 * Run the retention cleanup at most once per day. Called from the
+	 * scheduled job and opportunistically from the Traffic page.
+	 */
+	public static function maybe_rollup(): void {
+		$last = (int) get_option( 'geo_forge_traffic_cleanup_at', 0 );
+		if ( time() - $last < DAY_IN_SECONDS ) {
+			return;
+		}
+
+		self::rollup_and_prune();
+		update_option( 'geo_forge_traffic_cleanup_at', time(), false );
 	}
 
 	/**

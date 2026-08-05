@@ -9,7 +9,7 @@ if($fs&&!in_array($fs,['bot_ua','well_known','markdown']))$fs=null;
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $tp=isset($_GET['tpage'])?max(1,absint(wp_unslash($_GET['tpage']))):1;
 $rpg=TS::page(50,$tp,$ff,$fs);$rws=$rpg['rows'];$rtt=(int)$rpg['total'];$rpp=(int)$rpg['pages'];
-$rw=TS::recent(100,$ff,$fs);$sm=TS::summary_24h();$ch=TS::chart_data(14);$nf=TS::not_found(20,$ff);
+TS::maybe_rollup();$rw=TS::recent(100,$ff,$fs);$sm=TS::summary_24h();$ch=TS::chart_data(14);$nf=TS::not_found(20,$ff);
 $th=$sm['total_24h'];$ub=count($sm['by_family']);
 $bs=['well_known'=>0,'markdown'=>0,'bot_ua'=>0];foreach($rw as $r)if(isset($bs[$r['source']]))$bs[$r['source']]++;
 $fm=[];foreach($sm['by_family'] as $e)$fm[]=['name'=>BotFamily::label($e['bot_family']),'count'=>(int)$e['n']];

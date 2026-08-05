@@ -23,6 +23,7 @@ use GEO_Forge\Compat\SeoDetector;
 use GEO_Forge\Install\Installer;
 use GEO_Forge\Log\Logger;
 use GEO_Forge\Scanner\Scanner;
+use GEO_Forge\Traffic\Store;
 use GEO_Forge\WellKnown\LlmsTxt;
 use GEO_Forge\WellKnown\RobotsTxt;
 use GEO_Forge\WellKnown\SecurityTxt;
@@ -36,6 +37,7 @@ final class Scheduler {
 	public const EVENT_REGENERATE = 'geo_forge_regenerate_llms';
 	public const EVENT_SCAN       = 'geo_forge_daily_scan';
 	public const EVENT_FINALIZE   = 'geo_forge_finalize_scan';
+	public const EVENT_CLEANUP    = 'geo_forge_traffic_cleanup';
 
 	/** Transient prefix for the per-event re-entrancy lock. */
 	private const LOCK_TRANSIENT = 'geo_forge_cron_lock_';
@@ -48,6 +50,7 @@ final class Scheduler {
 		add_action( self::EVENT_REGENERATE, array( self::class, 'run_regenerate' ) );
 		add_action( self::EVENT_SCAN, array( self::class, 'run_scan' ) );
 		add_action( self::EVENT_FINALIZE, array( self::class, 'run_finalize_scan' ) );
+		add_action( self::EVENT_CLEANUP, array( self::class, 'run_cleanup' ) );
 
 		// Self-heal after upgrades: schedule once per plugin version, on any
 		// request (Installer::activate() only runs for admins).
@@ -89,6 +92,7 @@ final class Scheduler {
 	public static function schedule(): void {
 		$regen_enabled = 'yes' === Installer::get_setting( 'auto_regen_llms', 'yes' );
 		self::toggle_event( self::EVENT_REGENERATE, $regen_enabled, 'daily' );
+		self::toggle_event( self::EVENT_CLEANUP, true, 'daily' );
 
 		$scan_enabled = 'yes' === Installer::get_setting( 'auto_scan_enabled', 'yes' )
 			&& '' !== (string) Installer::get_setting( 'api_key', '' );
@@ -102,6 +106,7 @@ final class Scheduler {
 		wp_clear_scheduled_hook( self::EVENT_REGENERATE );
 		wp_clear_scheduled_hook( self::EVENT_SCAN );
 		wp_clear_scheduled_hook( self::EVENT_FINALIZE );
+		wp_clear_scheduled_hook( self::EVENT_CLEANUP );
 		delete_option( 'geo_forge_pending_scan' );
 	}
 
@@ -245,6 +250,22 @@ final class Scheduler {
 		} catch ( \Throwable $e ) {
 			Logger::warning(
 				'Scheduled scan finalize failed: ' . $e->getMessage(),
+				array( 'exception' => get_class( $e ) )
+			);
+		}
+	}
+
+	/**
+	 * Roll detailed traffic rows older than the retention window into daily
+	 * per-family stats and clear the detail (runs at most once per day).
+	 */
+	public static function run_cleanup(): void {
+		try {
+			Store::maybe_rollup();
+			Logger::info( 'Traffic retention cleanup run.' );
+		} catch ( \Throwable $e ) {
+			Logger::warning(
+				'Traffic retention cleanup failed: ' . $e->getMessage(),
 				array( 'exception' => get_class( $e ) )
 			);
 		}
