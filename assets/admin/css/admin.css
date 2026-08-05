@@ -116,3 +116,5 @@
 
 /* Responsive */
 @media(max-width:768px){.geo-forge-wrap .gf-grid-2,.geo-forge-wrap .gf-grid-3,.geo-forge-wrap .gf-grid-4{grid-template-columns:1fr}.geo-forge-wrap .gf-stat{font-size:24px}}
+.geo-forge-wrap .gf-spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:gf-spin .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes gf-spin{to{transform:rotate(360deg)}}

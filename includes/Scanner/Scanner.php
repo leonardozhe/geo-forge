@@ -262,8 +262,12 @@ class Scanner {
 
 		$wpdb->replace( $wpdb->prefix . 'geo_forge_scans', $row );
 
-		// Invalidate caches tied to scan reads.
+		// Invalidate caches tied to scan reads. Score history is cached per
+		// limit (get_score_history), so clear every limit we ever use.
 		wp_cache_delete( 'geo_forge_last_scan', 'geo-forge' );
+		foreach ( array( 10, 20, 30, 50, 100 ) as $geo_forge_history_limit ) {
+			wp_cache_delete( 'geo_forge_score_history_' . $geo_forge_history_limit, 'geo-forge' );
+		}
 		wp_cache_delete( 'geo_forge_score_history_all', 'geo-forge' );
 
 		// Warm cache.

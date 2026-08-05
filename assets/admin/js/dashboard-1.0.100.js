@@ -18,14 +18,25 @@
         scanPollCount = 0;
     }
 
+    function renderScanBtn(btn, state, count) {
+        if (!btn) return;
+        if (state === 'scanning') {
+            btn.innerHTML = '<span class="gf-spinner"></span> Scanning…' + (count ? ' (' + count + ')' : '');
+            btn.disabled = true;
+        } else {
+            btn.textContent = 'Scan Now';
+            btn.disabled = false;
+        }
+    }
+
     function scanDone(btn, statusEl) {
-        btn.disabled = false;
+        renderScanBtn(btn, 'ready');
         if (statusEl) { statusEl.textContent = '✅ Done — refreshing...'; statusEl.style.color = '#16a34a'; }
         setTimeout(function () { location.reload(); }, 800);
     }
 
     function scanFailed(btn, statusEl, msg) {
-        btn.disabled = false;
+        renderScanBtn(btn, 'ready');
         if (statusEl) { statusEl.textContent = '❌ ' + (msg || 'Scan failed.'); statusEl.style.color = '#dc2626'; }
     }
 
@@ -33,10 +44,11 @@
         scanPollCount++;
         if (scanPollCount > SCAN_POLL_MAX) {
             stopScanPolling();
-            btn.disabled = false;
+            renderScanBtn(btn, 'ready');
             if (statusEl) { statusEl.textContent = '⚠️ Scan still running — check back shortly.'; statusEl.style.color = '#d97706'; }
             return;
         }
+        renderScanBtn(btn, 'scanning', scanPollCount);
         if (statusEl) { statusEl.textContent = 'Scanning… (' + scanPollCount + ')'; }
 
         fetch(restRoot + 'scan/status', {
@@ -56,7 +68,7 @@
         })
         .catch(function () {
             stopScanPolling();
-            btn.disabled = false;
+            renderScanBtn(btn, 'ready');
             if (statusEl) { statusEl.textContent = '❌ Network error'; statusEl.style.color = '#dc2626'; }
         });
     }
@@ -64,7 +76,7 @@
     document.querySelectorAll('#geo-forge-scan-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
             stopScanPolling();
-            btn.disabled = true;
+            renderScanBtn(btn, 'scanning');
             var statusEl = document.getElementById('geo-forge-scan-status');
             if (statusEl) { statusEl.textContent = 'Starting scan…'; statusEl.style.color = '#64748b'; }
             fetch(restRoot + 'scan', {
