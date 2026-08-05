@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.98
+Stable tag:        1.0.99
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,8 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.99 =
+* Fix: REST GET routes were registered with the literal string 'READABLE', which WordPress 7.x no longer normalizes to GET — all read-only endpoints (scan status, scan history, logs, fix list) returned 404. Now uses WP_REST_Server::READABLE (evaluates to GET).
 = 1.0.98 =
 * Fix: Admin JS now uses version-stamped filenames so Cloudflare (with "Ignore query string") and other edge caches always pick up updated scripts instead of serving stale copies for weeks.
 = 1.0.97 =

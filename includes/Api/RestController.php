@@ -52,7 +52,7 @@ class RestController {
 			self::NAMESPACE,
 			'/scan/status',
 			array(
-				'methods'             => 'READABLE',
+				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'handle_scan_status' ),
 				'permission_callback' => array( $this, 'check_admin_permission' ),
 			)
@@ -62,7 +62,7 @@ class RestController {
 			self::NAMESPACE,
 			'/scan/last',
 			array(
-				'methods'             => 'READABLE',
+				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'handle_get_last_scan' ),
 				'permission_callback' => array( $this, 'check_admin_permission' ),
 			)
@@ -72,7 +72,7 @@ class RestController {
 			self::NAMESPACE,
 			'/scan/(?P<id>\d+)',
 			array(
-				'methods'             => 'READABLE',
+				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'handle_get_scan_by_id' ),
 				'permission_callback' => array( $this, 'check_admin_permission' ),
 				'args'                => array(
@@ -100,7 +100,7 @@ class RestController {
 			self::NAMESPACE,
 			'/logs',
 			array(
-				'methods'             => 'READABLE',
+				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'handle_get_logs' ),
 				'permission_callback' => array( $this, 'check_admin_permission' ),
 				'args'                => array(
@@ -157,7 +157,7 @@ class RestController {
 					),
 				),
 				array(
-					'methods'             => 'READABLE',
+					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'handle_get_llms_txt' ),
 					'permission_callback' => array( $this, 'check_admin_permission' ),
 				),
@@ -192,7 +192,7 @@ class RestController {
 					),
 				),
 				array(
-					'methods'             => 'READABLE',
+					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'handle_get_security_txt' ),
 					'permission_callback' => array( $this, 'check_admin_permission' ),
 				),
@@ -227,7 +227,7 @@ class RestController {
 					),
 				),
 				array(
-					'methods'             => 'READABLE',
+					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'handle_get_robots_txt' ),
 					'permission_callback' => array( $this, 'check_admin_permission' ),
 				),
@@ -249,7 +249,7 @@ class RestController {
 			self::NAMESPACE,
 			'/account',
 			array(
-				'methods'             => 'READABLE',
+				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'handle_get_account' ),
 				'permission_callback' => array( $this, 'check_admin_permission' ),
 			)
@@ -260,7 +260,7 @@ class RestController {
 			self::NAMESPACE,
 			'/fixes',
 			array(
-				'methods'             => 'READABLE',
+				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'handle_list_fixes' ),
 				'permission_callback' => array( $this, 'check_admin_permission' ),
 			)
