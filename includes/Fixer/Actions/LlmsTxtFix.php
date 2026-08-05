@@ -186,10 +186,14 @@ class LlmsTxtFix implements FixInterface {
 		if ( 'physical' === $owner ) {
 			$file = ABSPATH . self::PHYSICAL_FILE;
 			if ( file_exists( $file ) ) {
-				if ( ! is_writable( $file ) ) {
+				// Backing up needs read on the file; unlinking needs write on
+				// the containing directory (not the file itself) — e.g. a
+				// root-owned 644 llms.txt in a www-writable web root can be
+				// taken over even though PHP cannot write the file.
+				if ( ! is_readable( $file ) || ! is_writable( dirname( $file ) ) ) {
 					return array(
 						'success' => false,
-						'message' => __( 'The physical llms.txt is not writable — remove it via FTP/panel first, then run Cover again.', 'geo-forge' ),
+						'message' => __( 'The physical llms.txt cannot be removed by the server — the file must be readable and the site root writable. Remove it via FTP/panel first, then run Cover again.', 'geo-forge' ),
 					);
 				}
 				$backup = $file . '.geo-forge-backup';
