@@ -103,7 +103,7 @@
                             (note ? note.parentNode : row.cells[0]).insertBefore(span, note || null);
                         }
                         var coverBtn = row.querySelector('.geo-forge-fix-cover');
-                        if (coverBtn) { coverBtn.disabled = pass; coverBtn.title = pass ? 'Audit passed — nothing to override.' : 'Take over after this failed audit'; }
+                        if (coverBtn) { coverBtn.disabled = false; coverBtn.title = 'Audit complete — Cover to take over, or Ignore to keep the current output.'; }
                     } else {
                         showStatus((res.body && res.body.error && res.body.error.message) || 'Audit failed.', true);
                     }

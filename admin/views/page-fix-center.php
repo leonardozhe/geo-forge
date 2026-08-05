@@ -71,9 +71,9 @@ foreach ( $geo_forge_fs as $geo_forge_f ) {
 		<td class="geo-forge-fix-status-cell"><?php echo esc_html( match ( $geo_forge_fx2['status'] ) { 'covered' => '👁 Audit mode', 'ignored' => '🚫 Ignored', default => $geo_forge_si( $geo_forge_fx2['status'] ) . ' ' . ucfirst( $geo_forge_fx2['status'] ) } ); ?></td>
 		<td class="gf-muted"><?php echo esc_html( $geo_forge_fx2['applied_at'] ?? '—' ); ?></td>
 		<td style="white-space:nowrap;">
-			<?php if ( 'covered' === $geo_forge_fx2['status'] ) : $geo_forge_can_cover = isset( $geo_forge_fx2['audit'] ) && empty( $geo_forge_fx2['audit']['pass'] ); ?>
+			<?php if ( 'covered' === $geo_forge_fx2['status'] ) : $geo_forge_can_cover = isset( $geo_forge_fx2['audit'] ); ?>
 			<button class="gf-btn geo-forge-fix-audit" data-fix="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>"><?php esc_html_e( 'Audit', 'geo-forge' ); ?></button>
-			<button class="gf-btn geo-forge-fix-cover" data-fix="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>" title="<?php esc_attr_e( 'Take over after a failed audit', 'geo-forge' ); ?>" <?php disabled( ! $geo_forge_can_cover ); ?>><?php esc_html_e( 'Cover', 'geo-forge' ); ?></button>
+			<button class="gf-btn geo-forge-fix-cover" data-fix="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>" title="<?php esc_attr_e( 'Take over after auditing — your choice', 'geo-forge' ); ?>" <?php disabled( ! $geo_forge_can_cover ); ?>><?php esc_html_e( 'Cover', 'geo-forge' ); ?></button>
 			<button class="gf-btn geo-forge-fix-ignore" data-fix="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>"><?php esc_html_e( 'Ignore', 'geo-forge' ); ?></button>
 			<?php elseif ( 'ignored' === $geo_forge_fx2['status'] ) : ?>
 			<button class="gf-btn geo-forge-fix-rollback" data-fix="<?php echo esc_attr( $geo_forge_fx2['id'] ); ?>"><?php esc_html_e( 'Undo ignore', 'geo-forge' ); ?></button>

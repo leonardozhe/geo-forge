@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.105
+Stable tag:        1.0.106
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,8 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.106 =
+* UI: Cover is now enabled after Audit (pass or fail) — you decide whether to take over the SEO-owned file or keep the current output. Cover stays disabled only until the first Audit runs.
 = 1.0.105 =
 * New: AI crawler UA coverage expanded to the full documented set (Cloudflare AI Crawl Control reference + OpenAI crawler docs) — added OAI-SearchGPT, OAI-AdsBot, GrokBot/xAI-Grok, PanguBot, meta-externalagent/externalfetcher, DuckAssistBot, Applebot, Google-CloudVertex-Crawl and Googlebot. Traffic now labels xAI (Grok) and Huawei (Petal/Pangu) as their own families.
 * Fix: robots.txt generator/audit share one canonical AI user-agent list, so the audit checks exactly the bots the generator allows.
