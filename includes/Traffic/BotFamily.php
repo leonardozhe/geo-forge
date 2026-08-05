@@ -28,6 +28,8 @@ class BotFamily {
 	private static array $bots = array(
 		// OpenAI bots
 		'OAI-SearchBot'      => 'openai',
+		'OAI-SearchGPT'      => 'openai',
+		'OAI-AdsBot'         => 'openai',
 		'ChatGPT Agent'      => 'openai',
 		'ChatGPT-User'       => 'openai',
 		'GPTBot'             => 'openai',
@@ -55,6 +57,8 @@ class BotFamily {
 		'CloudVertexBot'     => 'google',
 		'Gemini-Deep-Research' => 'google',
 		'NotebookLM'         => 'google',
+		'Google-CloudVertex-Crawl' => 'google',
+		'Googlebot'          => 'google',
 
 		// Perplexity bots
 		'Perplexity-User'    => 'perplexity',
@@ -102,6 +106,11 @@ class BotFamily {
 		// DeepSeek
 		'DeepSeekBot'        => 'deepseek',
 
+		// xAI (Grok)
+		'GrokBot'            => 'xai',
+		'xAI-Grok'           => 'xai',
+		'xAI'                => 'xai',
+
 		// Cohere bots
 		'cohere-ai'          => 'cohere',
 		'cohere-training-data-crawler' => 'cohere',
@@ -135,8 +144,9 @@ class BotFamily {
 		'YandexAdditional'   => 'yandex',
 		'YandexAdditionalBot' => 'yandex',
 
-		// PetalBot (Huawei)
+		// Huawei
 		'PetalBot'           => 'petal',
+		'PanguBot'           => 'petal',
 
 		// Other AI bots
 		'AddSearchBot'       => 'other',
@@ -199,7 +209,6 @@ class BotFamily {
 		'NovaAct'            => 'other',
 		'omgili'             => 'other',
 		'omgilibot'          => 'other',
-		'PanguBot'           => 'other',
 		'Panscient'          => 'other',
 		'panscient.com'      => 'other',
 		'PhindBot'           => 'other',
@@ -278,6 +287,7 @@ class BotFamily {
 			'duckduckgo'    => 'DuckDuckGo',
 			'mistral'       => 'Mistral AI',
 			'deepseek'      => 'DeepSeek',
+			'xai'           => 'xAI (Grok)',
 			'cohere'        => 'Cohere',
 			'ai2'           => 'AI2',
 			'cursor'        => 'Cursor',
@@ -287,7 +297,7 @@ class BotFamily {
 			'scrapy'        => 'Scrapy',
 			'brave'         => 'Brave',
 			'yandex'        => 'Yandex',
-			'petal'         => 'PetalBot (Huawei)',
+			'petal'         => 'Huawei (Petal/Pangu)',
 			'other'         => 'Other AI Bot',
 			'unknown'       => 'Unknown',
 		);

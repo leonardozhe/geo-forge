@@ -50,6 +50,32 @@ class RobotsTxt {
 	}
 
 	/**
+	 * The AI crawler user-agent tokens GEO Forge explicitly allows.
+	 * Shared by the robots.txt generator and the robots audit.
+	 *
+	 * @return string[]
+	 */
+	public static function ai_user_agents(): array {
+		return array(
+			// OpenAI
+			'GPTBot', 'OAI-SearchBot', 'OAI-SearchGPT', 'OAI-AdsBot', 'ChatGPT-User',
+			// Anthropic
+			'ClaudeBot', 'Claude-Web', 'Claude-SearchBot', 'Claude-User', 'anthropic-ai',
+			// Perplexity
+			'PerplexityBot', 'Perplexity-User',
+			// Google
+			'Google-Extended', 'Google-CloudVertexBot', 'Google-CloudVertex-Crawl', 'Googlebot',
+			// Meta
+			'meta-externalagent', 'meta-externalfetcher', 'FacebookBot',
+			// xAI (Grok)
+			'GrokBot', 'xAI-Grok',
+			// Other major AI crawlers
+			'CCBot', 'Amazonbot', 'Bytespider', 'cohere-ai', 'DuckAssistBot',
+			'Applebot', 'Applebot-Extended', 'MistralAI-User', 'PanguBot',
+		);
+	}
+
+	/**
 	 * Generate default AI bot rules.
 	 */
 	public static function generate(): string {
@@ -58,42 +84,13 @@ class RobotsTxt {
 		$lines[] = '# GEO Forge AI Bot Rules';
 		$lines[] = '# Allow AI agents to crawl and index your content';
 		$lines[] = '';
-		$lines[] = 'User-agent: GPTBot';
-		$lines[] = 'Allow: /';
-		$lines[] = '';
-		$lines[] = 'User-agent: ChatGPT-User';
-		$lines[] = 'Allow: /';
-		$lines[] = '';
-		$lines[] = 'User-agent: ClaudeBot';
-		$lines[] = 'Allow: /';
-		$lines[] = '';
-		$lines[] = 'User-agent: PerplexityBot';
-		$lines[] = 'Allow: /';
-		$lines[] = '';
-		$lines[] = 'User-agent: anthropic-ai';
-		$lines[] = 'Allow: /';
-		$lines[] = '';
-		$lines[] = 'User-agent: Google-Extended';
-		$lines[] = 'Allow: /';
-		$lines[] = '';
-		$lines[] = 'User-agent: CCBot';
-		$lines[] = 'Allow: /';
-		$lines[] = '';
-		$lines[] = 'User-agent: Amazonbot';
-		$lines[] = 'Allow: /';
-		$lines[] = '';
-		$lines[] = 'User-agent: Bytespider';
-		$lines[] = 'Allow: /';
-		$lines[] = '';
-		$lines[] = 'User-agent: cohere-ai';
-		$lines[] = 'Allow: /';
-		$lines[] = '';
-		$lines[] = 'User-agent: FacebookBot';
-		$lines[] = 'Allow: /';
-		$lines[] = '';
-		$lines[] = 'User-agent: Applebot-Extended';
-		$lines[] = 'Allow: /';
-		$lines[] = '';
+
+		foreach ( self::ai_user_agents() as $geo_forge_ua ) {
+			$lines[] = 'User-agent: ' . $geo_forge_ua;
+			$lines[] = 'Allow: /';
+			$lines[] = '';
+		}
+
 		$lines[] = '# End GEO Forge AI Bot Rules';
 
 		return implode( "\n", $lines );

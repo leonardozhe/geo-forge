@@ -29,20 +29,7 @@ class RobotsTxtFix implements FixInterface {
 	private const IGNORE_OPTION   = 'geo_forge_ignored_robots_txt';
 	private const PHYSICAL_FILE   = 'robots.txt';
 
-	/** AI crawlers GEO Forge explicitly wants allowed. */
-	private const AI_USER_AGENTS = array(
-		'GPTBot',
-		'ChatGPT-User',
-		'ClaudeBot',
-		'Claude-Web',
-		'PerplexityBot',
-		'anthropic-ai',
-		'Google-Extended',
-		'CCBot',
-		'Amazonbot',
-		'Bytespider',
-		'Applebot-Extended',
-	);
+
 
 	public function get_id(): string {
 		return 'robots_txt';
@@ -162,7 +149,7 @@ class RobotsTxtFix implements FixInterface {
 			$failures[] = 'global Disallow: /';
 		}
 
-		foreach ( self::AI_USER_AGENTS as $ua ) {
+		foreach ( RobotsTxt::ai_user_agents() as $ua ) {
 			if ( preg_match( '/User-agent:\s*' . preg_quote( $ua, '/' ) . '\s*[\r\n]+Disallow:\s*\/\s*[\r\n]*/i', $content ) ) {
 				$failures[] = $ua . ' blocked';
 			}
