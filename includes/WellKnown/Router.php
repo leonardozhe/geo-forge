@@ -55,7 +55,7 @@ class Router {
 	);
 
 	/** Tracks the current set of registered routes — used for flush-on-upgrade detection. */
-	private const ROUTES_VERSION = 4;
+	private const ROUTES_VERSION = 5;
 
 	/**
 	 * Wire everything up. Called from GeoForge::register_hooks().
