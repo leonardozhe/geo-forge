@@ -17,6 +17,7 @@ usort($fm,fn($a,$b)=>$b['count']<=>$a['count']);
 $at=0;foreach($ch['series'] as $s)$at+=array_sum($s);
 ?>
 <div class="geo-forge-wrap">
+<div id="geo-forge-traffic-status" style="display:none;margin-bottom:12px;"></div>
 <div class="gf-header"><h1>Traffic <span class="gf-subtitle">AI agent engagement</span></h1><p class="gf-muted">See how AI agents interact with your store since installing GEO Forge.</p></div>
 
 <div class="gf-grid gf-grid-3" style="margin-bottom:12px;">

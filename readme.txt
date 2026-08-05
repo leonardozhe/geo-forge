@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.109
+Stable tag:        1.0.110
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,8 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.110 =
+* UI: Traffic page shows inline status messages for LLM 404 delete actions (success/error feedback before reload).
 = 1.0.109 =
 * New: "Missing Content — LLM 404s" card now supports deleting individual records or clearing all of them (per-row Delete + Delete all button).
 = 1.0.108 =
