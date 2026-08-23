@@ -49,6 +49,18 @@ final class GeoForge {
 		throw new \RuntimeException( 'GeoForge is a singleton.' );
 	}
 
+	/**
+	 * Upgrade the DB schema/options when the stored version is behind the code.
+	 * Runs on `init` (priority 20) — tables are created even if the activation
+	 * hook never fired, and rewrite flushing is safe here.
+	 */
+	public function maybe_upgrade_db(): void {
+		$db_version = get_option( 'geo_forge_db_version', '0' );
+		if ( version_compare( $db_version, GEO_FORGE_VERSION, '<' ) ) {
+			Installer::activate();
+		}
+	}
+
 	public static function instance(): self {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -66,12 +78,11 @@ final class GeoForge {
 	}
 
 	private function register_hooks(): void {
-		// Check if database needs migration after plugin update.
-		// This ensures tables are created even if activation hook didn't fire.
-		$db_version = get_option( 'geo_forge_db_version', '0' );
-		if ( version_compare( $db_version, GEO_FORGE_VERSION, '<' ) ) {
-			Installer::activate();
-		}
+		// Check if the database needs migration after a plugin update. Deferred
+		// to `init` so WP_Rewrite exists and the current user is resolved —
+		// running Installer::activate() (which flushes rewrite rules) during
+		// `plugins_loaded` fatals on a null $wp_rewrite.
+		add_action( 'init', array( $this, 'maybe_upgrade_db' ), 20 );
 
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );

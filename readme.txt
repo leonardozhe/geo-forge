@@ -5,7 +5,7 @@ Requires at least: 6.0
 Tested up to:      7.0
 Requires PHP:      8.1
 WC requires at least: 8.0
-Stable tag:        1.0.117
+Stable tag:        1.0.118
 License:           GPL v3+
 License URI:       https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -124,6 +124,8 @@ All plugin data is removed: custom tables, options, transients, scheduled hooks,
 
 == Changelog ==
 
+= 1.0.118 =
+* Fix: plugin activation no longer fatals when WordPress fires it before `$wp_rewrite` is initialized — the rewrite flush defers to `init`, and the DB-upgrade check itself moved from `plugins_loaded` to `init` (previously `add_rewrite_rule()` on a null `$wp_rewrite` crashed every uncached request after an upgrade).
 = 1.0.117 =
 * Fix: markdown delivery traffic excludes GEO KAMI's own scanner probes, consistent with the traffic capture exclusion.
 = 1.0.116 =

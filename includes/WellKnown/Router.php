@@ -173,11 +173,24 @@ class Router {
 		exit;
 	}
 
+	/** @var bool Whether a deferred rewrite flush is already scheduled. */
+	private static bool $flush_scheduled = false;
+
 	/**
 	 * Force WordPress to rebuild its rewrite rules.
-	 * Called on activation/deactivation. MUST be called after our rules are registered.
+	 * Called on activation/deactivation/upgrade. If `$wp_rewrite` isn't
+	 * initialized yet (e.g. the DB-upgrade path can run before `init`, when
+	 * WP_Rewrite is still null), defer the flush to `init` — calling
+	 * `add_rewrite_rule()` on a null `$wp_rewrite` is a fatal error.
 	 */
 	public static function flush_rules(): void {
+		if ( ! ( $GLOBALS['wp_rewrite'] ?? null ) instanceof \WP_Rewrite ) {
+			if ( ! self::$flush_scheduled ) {
+				self::$flush_scheduled = true;
+				add_action( 'init', array( self::class, 'flush_rules' ), 20 );
+			}
+			return;
+		}
 		self::register_rewrite_rules();
 		flush_rewrite_rules();
 	}
