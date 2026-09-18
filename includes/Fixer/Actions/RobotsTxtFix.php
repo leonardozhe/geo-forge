@@ -15,6 +15,7 @@
 namespace GEO_Forge\Fixer\Actions;
 
 use GEO_Forge\Compat\SeoDetector;
+use GEO_Forge\Fixer\FileBackup;
 use GEO_Forge\Fixer\FixInterface;
 use GEO_Forge\WellKnown\RobotsTxt;
 
@@ -90,22 +91,29 @@ class RobotsTxtFix implements FixInterface {
 	}
 
 	public function rollback(): array {
-		delete_option( self::OVERRIDE_OPTION );
-		delete_option( self::IGNORE_OPTION );
-		delete_option( self::AUDIT_OPTION );
+		// Restore the byte-identical original regardless of the owner that
+		// is detected after Cover removed the physical file.
+		$file = ABSPATH . self::PHYSICAL_FILE;
+		if ( FileBackup::exists( $file ) ) {
+			$restore = FileBackup::restore( $file );
+			if ( empty( $restore['success'] ) ) {
+				return $restore;
+			}
+		}
 
 		if ( 'geo-forge' !== SeoDetector::robots_txt_owner() ) {
-			$backup = ABSPATH . self::PHYSICAL_FILE . '.geo-forge-backup';
-			if ( file_exists( $backup ) ) {
-				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rename
-				rename( $backup, ABSPATH . self::PHYSICAL_FILE );
-			}
+			delete_option( self::OVERRIDE_OPTION );
+			delete_option( self::IGNORE_OPTION );
+			delete_option( self::AUDIT_OPTION );
 			return array(
 				'success' => true,
 				'message' => __( 'Override removed — ownership returned to the original provider.', 'geo-forge' ),
 			);
 		}
 
+		delete_option( self::OVERRIDE_OPTION );
+		delete_option( self::IGNORE_OPTION );
+		delete_option( self::AUDIT_OPTION );
 		RobotsTxt::rollback();
 		return array(
 			'success' => true,
@@ -186,13 +194,18 @@ class RobotsTxtFix implements FixInterface {
 						'message' => __( 'The physical robots.txt cannot be removed by the server — the file must be readable and the site root writable. Remove it via FTP/panel first, then run Cover again.', 'geo-forge' ),
 					);
 				}
-				$backup = $file . '.geo-forge-backup';
-				if ( ! file_exists( $backup ) ) {
-					// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_copy
-					copy( $file, $backup );
+				$backup = FileBackup::create( $file );
+				if ( empty( $backup['success'] ) ) {
+					return $backup;
 				}
+
 				// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink
-				unlink( $file );
+				if ( ! unlink( $file ) ) {
+					return array(
+						'success' => false,
+						'message' => __( 'The original file could not be removed after backup; no changes were made.', 'geo-forge' ),
+					);
+				}
 			}
 		}
 
