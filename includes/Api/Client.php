@@ -27,6 +27,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Client {
 
+	private const DEFAULT_API_BASE = 'https://api.geokami.com';
+
 	private string $api_base;
 	private string $api_key;
 	private int    $timeout;
@@ -38,7 +40,10 @@ class Client {
 		int $timeout = 30,
 		int $max_retries = 3
 	) {
-		$this->api_base    = '' !== $api_base ? untrailingslashit( $api_base ) : (string) Installer::get_setting( 'api_base', 'https://api.geokami.com' );
+		$configured_base  = '' !== $api_base
+			? $api_base
+			: (string) Installer::get_setting( 'api_base', self::DEFAULT_API_BASE );
+		$this->api_base   = untrailingslashit( trim( $configured_base ) );
 
 		// API keys are encrypted at rest (see Installer::encrypt_secret()).
 		// Legacy plaintext values are migrated on first use.
@@ -49,6 +54,46 @@ class Client {
 		}
 		$this->timeout     = $timeout;
 		$this->max_retries = $max_retries;
+	}
+
+	/**
+	 * Validate an API base URL before it is stored or used.
+	 *
+	 * Only HTTPS URLs on geokami.com or one of its subdomains are allowed.
+	 * Userinfo, non-443 ports, query strings, and fragments are rejected to
+	 * prevent host/port confusion and credential leakage.
+	 */
+	public static function is_valid_api_base( string $api_base ): bool {
+		$api_base = trim( $api_base );
+		if ( '' === $api_base || false === filter_var( $api_base, FILTER_VALIDATE_URL ) ) {
+			return false;
+		}
+
+		$parts = parse_url( $api_base );
+		if ( ! is_array( $parts ) ) {
+			return false;
+		}
+
+		$scheme = strtolower( (string) ( $parts['scheme'] ?? '' ) );
+		$host   = strtolower( (string) ( $parts['host'] ?? '' ) );
+
+		if ( 'https' !== $scheme || ( 'geokami.com' !== $host && ! str_ends_with( $host, '.geokami.com' ) ) ) {
+			return false;
+		}
+
+		if ( isset( $parts['user'] ) || isset( $parts['pass'] ) ) {
+			return false;
+		}
+
+		if ( isset( $parts['port'] ) && 443 !== (int) $parts['port'] ) {
+			return false;
+		}
+
+		if ( isset( $parts['query'] ) || isset( $parts['fragment'] ) ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -142,6 +187,20 @@ class Client {
 	}
 
 	/**
+	 * Send one fix action event to the SaaS activity timeline.
+	 *
+	 * Callers must treat reporting as best-effort: the API call can fail
+	 * independently of the local fix operation.
+	 *
+	 * @param array<string,mixed> $event Event payload.
+	 * @return array<string,mixed>
+	 * @throws ApiException On network/auth/HTTP errors.
+	 */
+	public function report_fix_event( array $event ): array {
+		return $this->request_json( 'POST', '/fixes/events', $event );
+	}
+
+	/**
 	 * Check whether an API key is configured (non-empty).
 	 * This is a local check only — it does not hit the API.
 	 */
@@ -162,7 +221,15 @@ class Client {
 			throw new ApiException( esc_html( ErrorCode::Auth->value ), esc_html__( 'GEO KAMI API key is not configured.', 'geo-forge' ) );
 		}
 
-		$url = $this->api_base . $path;
+		if ( ! self::is_valid_api_base( $this->api_base ) ) {
+			throw new ApiException(
+				esc_html( ErrorCode::InvalidResponse->value ),
+				esc_html__( 'The GEO KAMI API base URL is invalid. It must use HTTPS on geokami.com or a subdomain.', 'geo-forge' ),
+				array( 'api_base' => esc_url_raw( $this->api_base ) )
+			);
+		}
+
+		$url = untrailingslashit( $this->api_base ) . $path;
 
 		$args = array(
 			'method'      => $method,

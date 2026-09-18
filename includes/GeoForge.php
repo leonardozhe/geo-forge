@@ -11,6 +11,7 @@
 namespace GEO_Forge;
 
 use GEO_Forge\Admin\Admin;
+use GEO_Forge\Cli\RollbackCommand;
 use GEO_Forge\Cron\Scheduler;
 use GEO_Forge\Api\RestController;
 use GEO_Forge\Fixer\Actions\ContentSignalsFix;
@@ -110,6 +111,10 @@ final class GeoForge {
 
 		// Fixer engine — register built-in fix actions.
 		$this->boot_fixer();
+
+		if ( class_exists( '\\WP_CLI' ) ) {
+			RollbackCommand::register();
+		}
 
 		if ( is_admin() ) {
 			$admin = new Admin();

@@ -10,6 +10,7 @@
 
 namespace GEO_Forge\Admin;
 
+use GEO_Forge\Api\Client;
 use GEO_Forge\Cron\Scheduler;
 use GEO_Forge\Install\Installer;
 use GEO_Forge\WellKnown\LlmsTxt;
@@ -25,6 +26,16 @@ final class Settings {
 	private const REDIRECT_TO = 'geo-forge-settings';
 
 	private const SCAN_FREQUENCIES = array( 'daily', 'twicedaily', 'weekly' );
+
+	/**
+	 * Validate a GEO KAMI API key.
+	 *
+	 * `gkp_` is the scoped plugin token. `gk_` remains accepted for one
+	 * release so existing installations can migrate without downtime.
+	 */
+	public static function is_valid_api_key( string $api_key ): bool {
+		return 1 === preg_match( '/^(?:gkp_|gk_)[A-Za-z0-9]{32,}\z/', $api_key );
+	}
 
 	/** Wire the handler in. Called from Admin::register(). */
 	public static function register(): void {
@@ -74,16 +85,19 @@ final class Settings {
 			$frequency = 'daily';
 		}
 
-		// 4. Light validation on the key shape.
-		if ( '' !== $api_key && ! preg_match( '/^gk_[A-Za-z0-9]{32,}$/', $api_key ) ) {
-			self::redirect_with_notice( 'error', __( 'API key must start with `gk_` followed by at least 32 alphanumeric characters.', 'geo-forge' ) );
+		// 4. Light validation on the key shape. Prefer the scoped gkp_ key,
+		//    but keep gk_ working for one release for existing installations.
+		if ( '' !== $api_key && ! self::is_valid_api_key( $api_key ) ) {
+			self::redirect_with_notice( 'error', __( 'API key must start with `gkp_` (preferred) or `gk_` (legacy), followed by at least 32 alphanumeric characters.', 'geo-forge' ) );
 			return;
 		}
 
-		if ( '' !== $api_base && ! filter_var( $api_base, FILTER_VALIDATE_URL ) ) {
-			self::redirect_with_notice( 'error', __( 'API base URL is not a valid URL.', 'geo-forge' ) );
+		if ( '' !== $api_base && ! Client::is_valid_api_base( $api_base ) ) {
+			self::redirect_with_notice( 'error', __( 'API base URL must use HTTPS on geokami.com or a subdomain.', 'geo-forge' ) );
 			return;
 		}
+
+		$legacy_api_key = '' !== $api_key && str_starts_with( $api_key, 'gk_' );
 
 		// 5. Persist. The API key is encrypted at rest; an empty field means
 		//    "keep the existing key" — never overwrite with blank.
@@ -106,8 +120,12 @@ final class Settings {
 			LlmsTxt::regenerate_lang( $locale );
 		}
 
-		// 8. Done.
-		self::redirect_with_notice( 'updated', __( 'Settings saved.', 'geo-forge' ) );
+		// 8. Done. Legacy gk_ keys keep working during the migration window,
+		//    but prompt the operator to replace them with a scoped gkp_ key.
+		$saved_message = $legacy_api_key
+			? __( 'Settings saved. The legacy `gk_` key was accepted for this release; please replace it with a scoped `gkp_` key.', 'geo-forge' )
+			: __( 'Settings saved.', 'geo-forge' );
+		self::redirect_with_notice( 'updated', $saved_message );
 	}
 
 	/**

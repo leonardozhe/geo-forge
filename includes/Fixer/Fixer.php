@@ -138,6 +138,8 @@ class Fixer {
 			);
 		}
 
+		$this->report_activity( $id, 'apply', $result, 'applied' );
+
 		return $result;
 	}
 
@@ -195,6 +197,8 @@ class Fixer {
 			empty( $result['success'] ) ? ( $result['message'] ?? '' ) : null
 		);
 
+		$this->report_activity( $id, 'cover', $result, 'applied' );
+
 		return $result;
 	}
 
@@ -223,6 +227,8 @@ class Fixer {
 		if ( ! empty( $result['success'] ) ) {
 			$this->record_fix( $id, 'ignored', 0, null, null );
 		}
+
+		$this->report_activity( $id, 'ignore', $result, 'ignored' );
 
 		return $result;
 	}
@@ -253,6 +259,8 @@ class Fixer {
 		if ( ! empty( $result['success'] ) ) {
 			$this->mark_status( $id, 'rolled_back' );
 		}
+
+		$this->report_activity( $id, 'rollback', $result, 'rolled_back' );
 
 		return $result;
 	}
@@ -307,6 +315,38 @@ class Fixer {
 	/* =====================================================================
 	 * Internal helpers
 	 * ===================================================================== */
+
+	/**
+	 * Report a fix action without letting SaaS/network failures affect the
+	 * local fix result. ActivityReporter catches its own failures, and this
+	 * outer guard protects against future reporter regressions.
+	 *
+	 * @param array<string,mixed> $result Fix result payload.
+	 */
+	private function report_activity( string $id, string $action, array $result, string $default_status ): void {
+		$status = ! empty( $result['success'] )
+			? (string) ( $result['status'] ?? $default_status )
+			: 'failed';
+
+		try {
+			ActivityReporter::report(
+				$id,
+				$action,
+				$status,
+				array(
+					'site_url'       => home_url( '/' ),
+					'plugin_version' => defined( 'GEO_FORGE_VERSION' ) ? GEO_FORGE_VERSION : '',
+					'message'        => (string) ( $result['message'] ?? '' ),
+					'score_change'   => (int) ( $result['score_change'] ?? 0 ),
+				)
+			);
+		} catch ( \Throwable $e ) {
+			Logger::warning(
+				'Fix activity reporter threw.',
+				array( 'fix_id' => $id, 'action' => $action, 'exception' => get_class( $e ) )
+			);
+		}
+	}
 
 	/**
 	 * A fix's "status" comes from its own get_status() if that returns
